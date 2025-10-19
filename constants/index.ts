@@ -1,0 +1,3 @@
+const ONBOARDING_TOKEN = '123';
+
+export { ONBOARDING_TOKEN };
