@@ -20,7 +20,6 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
 } from 'react-native';
 import { styles } from './styles/dashboard.style';
 
@@ -43,7 +42,7 @@ export default function PatientDashboard() {
   };
 
   const renderBanner = () => (
-    <View>
+    <ThemedView>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -56,34 +55,34 @@ export default function PatientDashboard() {
         }}
         scrollEventThrottle={16}
       >
-        <View style={styles.banner}>
-          <View style={styles.bannerContent}>
-            <View>
+        <ThemedView style={styles.banner}>
+          <ThemedView style={styles.bannerContent}>
+            <ThemedView>
               <Text style={styles.bannerTitle}>Medical Checks!</Text>
               <Text style={styles.bannerDescription}>
                 Check your health condition regularly to minimize the incidence
                 of disease in the future.
               </Text>
-            </View>
+            </ThemedView>
             <TouchableOpacity style={styles.bannerButton}>
               <Text style={styles.bannerButtonText}>Check Now</Text>
             </TouchableOpacity>
-          </View>
+          </ThemedView>
           <Image
             source={{ uri: 'https://i.pravatar.cc/300?img=doctor' }}
             style={styles.bannerImage}
             resizeMode="contain"
           />
-        </View>
+        </ThemedView>
 
-        <View style={[styles.banner, { backgroundColor: '#5F27CD' }]}>
-          <View style={styles.bannerContent}>
-            <View>
+        <ThemedView style={[styles.banner, { backgroundColor: '#5F27CD' }]}>
+          <ThemedView style={styles.bannerContent}>
+            <ThemedView>
               <Text style={styles.bannerTitle}>Book Appointment</Text>
               <Text style={styles.bannerDescription}>
                 Schedule appointments with top doctors at your convenience.
               </Text>
-            </View>
+            </ThemedView>
             <TouchableOpacity
               style={styles.bannerButton}
               onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
@@ -92,13 +91,13 @@ export default function PatientDashboard() {
                 Book Now
               </Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
       </ScrollView>
 
-      <View style={styles.bannerDots}>
+      <ThemedView style={styles.bannerDots}>
         {[0, 1].map((index) => (
-          <View
+          <ThemedView
             key={index}
             style={[
               styles.dot,
@@ -106,8 +105,8 @@ export default function PatientDashboard() {
             ]}
           />
         ))}
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 
   const renderSpecialtyItem = ({
@@ -121,9 +120,9 @@ export default function PatientDashboard() {
         item.name !== 'More' && router.push(PATIENT_ROUTES.BROWSE_DOCTORS)
       }
     >
-      <View style={styles.specialtyIcon}>
+      <ThemedView style={styles.specialtyIcon}>
         <MaterialIcons name={item.icon as any} size={28} color={primaryColor} />
-      </View>
+      </ThemedView>
       <ThemedText style={styles.specialtyName} numberOfLines={1}>
         {item.name}
       </ThemedText>
@@ -135,7 +134,7 @@ export default function PatientDashboard() {
       style={{ marginBottom: 16 }}
       onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
     >
-      <View
+      <ThemedView
         style={{
           backgroundColor: '#fff',
           borderRadius: 16,
@@ -157,7 +156,7 @@ export default function PatientDashboard() {
             marginRight: 12,
           }}
         />
-        <View style={{ flex: 1 }}>
+        <ThemedView style={{ flex: 1 }}>
           <ThemedText
             style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}
           >
@@ -168,14 +167,14 @@ export default function PatientDashboard() {
           >
             {item.specialty}
           </ThemedText>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialIcons name="star" size={16} color="#FD9644" />
             <Text style={{ fontSize: 14, marginLeft: 4, color: '#6B7280' }}>
               {item.rating} ({item.reviewCount})
             </Text>
-          </View>
-        </View>
-        <View
+          </ThemedView>
+        </ThemedView>
+        <ThemedView
           style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}
         >
           <MaterialIcons name="favorite-border" size={22} color="#9CA3AF" />
@@ -184,31 +183,31 @@ export default function PatientDashboard() {
           >
             Rs.{item.consultationFee}
           </Text>
-        </View>
-      </View>
+        </ThemedView>
+      </ThemedView>
     </TouchableOpacity>
   );
 
   return (
     <ThemedView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.userInfo}>
+      <ThemedView style={styles.header}>
+        <ThemedView style={styles.headerTop}>
+          <ThemedView style={styles.userInfo}>
             <Image
               source={{
                 uri: user?.avatar || 'https://i.pravatar.cc/150?img=12',
               }}
               style={styles.avatar}
             />
-            <View style={styles.greetingContainer}>
+            <ThemedView style={styles.greetingContainer}>
               <Text style={styles.greeting}>Good Morning 👋</Text>
               <ThemedText style={styles.userName}>
                 {user?.name || 'Andrew Ainsley'}
               </ThemedText>
-            </View>
-          </View>
-          <View style={styles.headerIcons}>
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
               <MaterialIcons
                 name="notifications-none"
@@ -223,9 +222,9 @@ export default function PatientDashboard() {
                 color={textColor}
               />
             </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+          </ThemedView>
+        </ThemedView>
+      </ThemedView>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -235,7 +234,7 @@ export default function PatientDashboard() {
         }
       >
         {/* Search */}
-        <View style={styles.searchSection}>
+        <ThemedView style={styles.searchSection}>
           <SearchBar
             placeholder="Search doctor, specialist..."
             value={searchQuery}
@@ -244,13 +243,13 @@ export default function PatientDashboard() {
             showFilter
             onFilter={() => {}}
           />
-        </View>
+        </ThemedView>
 
         {/* Banner */}
-        <View style={styles.bannerSection}>{renderBanner()}</View>
+        <ThemedView style={styles.bannerSection}>{renderBanner()}</ThemedView>
 
         {/* Doctor Specialty */}
-        <View style={styles.sectionHeader}>
+        <ThemedView style={styles.sectionHeader}>
           <ThemedText style={styles.sectionTitle}>Doctor Speciality</ThemedText>
           <TouchableOpacity
             style={styles.seeAllButton}
@@ -258,7 +257,7 @@ export default function PatientDashboard() {
           >
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
-        </View>
+        </ThemedView>
 
         <FlatList
           data={mockSpecialties}
@@ -271,7 +270,7 @@ export default function PatientDashboard() {
         />
 
         {/* Top Doctors */}
-        <View style={styles.sectionHeader}>
+        <ThemedView style={styles.sectionHeader}>
           <ThemedText style={styles.sectionTitle}>Top Doctors</ThemedText>
           <TouchableOpacity
             style={styles.seeAllButton}
@@ -279,7 +278,7 @@ export default function PatientDashboard() {
           >
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
-        </View>
+        </ThemedView>
 
         {/* Filters */}
         <ScrollView
@@ -309,11 +308,13 @@ export default function PatientDashboard() {
         </ScrollView>
 
         {/* Doctors List */}
-        <View style={styles.doctorsList}>
+        <ThemedView style={styles.doctorsList}>
           {mockDoctors.map((doctor) => (
-            <View key={doctor.id}>{renderDoctorCard({ item: doctor })}</View>
+            <ThemedView key={doctor.id}>
+              {renderDoctorCard({ item: doctor })}
+            </ThemedView>
           ))}
-        </View>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );

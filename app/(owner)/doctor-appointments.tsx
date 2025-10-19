@@ -16,7 +16,7 @@ import { mockAppointments, mockDoctors } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { FlatList, Image, StyleSheet, View } from 'react-native';
+import { FlatList, Image, StyleSheet } from 'react-native';
 
 export default function DoctorAppointmentsScreen() {
   const doctor = mockDoctors[0];
@@ -28,30 +28,30 @@ export default function DoctorAppointmentsScreen() {
     item: (typeof mockAppointments)[0];
   }) => (
     <Card style={styles.appointmentCard}>
-      <View style={styles.cardHeader}>
+      <ThemedView style={styles.cardHeader}>
         <ThemedText style={styles.patientName}>
           Patient: {item.patientId}
         </ThemedText>
         <Badge label={item.status} variant="success" size="small" />
-      </View>
-      <View style={styles.cardInfo}>
-        <View style={styles.infoRow}>
+      </ThemedView>
+      <ThemedView style={styles.cardInfo}>
+        <ThemedView style={styles.infoRow}>
           <MaterialIcons
             name="calendar-today"
             size={16}
             color={NeutralColors.gray500}
           />
           <ThemedText style={styles.infoText}>{item.date}</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
+        </ThemedView>
+        <ThemedView style={styles.infoRow}>
           <MaterialIcons
             name="access-time"
             size={16}
             color={NeutralColors.gray500}
           />
           <ThemedText style={styles.infoText}>{item.time}</ThemedText>
-        </View>
-      </View>
+        </ThemedView>
+      </ThemedView>
       {item.reason && (
         <ThemedText style={styles.reason}>Reason: {item.reason}</ThemedText>
       )}
@@ -76,12 +76,12 @@ export default function DoctorAppointmentsScreen() {
         ListHeaderComponent={
           <Card style={styles.doctorCard}>
             <Image source={{ uri: doctor.avatar }} style={styles.avatar} />
-            <View style={styles.doctorInfo}>
+            <ThemedView style={styles.doctorInfo}>
               <ThemedText style={styles.doctorName}>{doctor.name}</ThemedText>
               <ThemedText style={styles.specialty}>
                 {doctor.specialty}
               </ThemedText>
-            </View>
+            </ThemedView>
           </Card>
         }
       />

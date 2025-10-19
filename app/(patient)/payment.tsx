@@ -21,13 +21,7 @@ import { mockDoctors, mockWallet } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function PaymentScreen() {
   const primaryColor = useThemeColor({}, 'primary');
@@ -85,13 +79,13 @@ export default function PaymentScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Wallet Card */}
         <Card style={styles.walletCard}>
-          <View style={styles.walletHeader}>
-            <View>
+          <ThemedView style={styles.walletHeader}>
+            <ThemedView>
               <ThemedText style={styles.walletLabel}>Wallet Balance</ThemedText>
               <ThemedText style={styles.walletBalance}>
                 Rs.{walletBalance}
               </ThemedText>
-            </View>
+            </ThemedView>
             <TouchableOpacity
               style={[styles.checkbox, useWallet && styles.checkboxActive]}
               onPress={() => setUseWallet(!useWallet)}
@@ -104,7 +98,7 @@ export default function PaymentScreen() {
                 />
               )}
             </TouchableOpacity>
-          </View>
+          </ThemedView>
           {useWallet && (
             <ThemedText style={styles.walletInfo}>
               Rs.{walletAmount} will be used from your wallet
@@ -113,7 +107,7 @@ export default function PaymentScreen() {
         </Card>
 
         {/* Payment Methods */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Payment Method</ThemedText>
           {paymentMethods.map((method) => (
             <TouchableOpacity
@@ -125,8 +119,8 @@ export default function PaymentScreen() {
               ]}
               onPress={() => setSelectedPaymentMethod(method.id)}
             >
-              <View style={styles.paymentMethodContent}>
-                <View style={styles.paymentMethodIcon}>
+              <ThemedView style={styles.paymentMethodContent}>
+                <ThemedView style={styles.paymentMethodIcon}>
                   <MaterialIcons
                     name={method.icon as any}
                     size={24}
@@ -136,38 +130,38 @@ export default function PaymentScreen() {
                         : NeutralColors.gray600
                     }
                   />
-                </View>
+                </ThemedView>
                 <ThemedText style={styles.paymentMethodName}>
                   {method.name}
                 </ThemedText>
-              </View>
-              <View
+              </ThemedView>
+              <ThemedView
                 style={[
                   styles.radio,
                   selectedPaymentMethod === method.id && styles.radioActive,
                 ]}
               >
                 {selectedPaymentMethod === method.id && (
-                  <View style={styles.radioDot} />
+                  <ThemedView style={styles.radioDot} />
                 )}
-              </View>
+              </ThemedView>
             </TouchableOpacity>
           ))}
-        </View>
+        </ThemedView>
 
         {/* Payment Summary */}
         <Card style={styles.summaryCard}>
           <ThemedText style={styles.summaryTitle}>Payment Summary</ThemedText>
-          <View style={styles.summaryRow}>
+          <ThemedView style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>
               Consultation Fee
             </ThemedText>
             <ThemedText style={styles.summaryValue}>
               Rs.{consultationFee}
             </ThemedText>
-          </View>
+          </ThemedView>
           {useWallet && (
-            <View style={styles.summaryRow}>
+            <ThemedView style={styles.summaryRow}>
               <ThemedText
                 style={[styles.summaryLabel, { color: StatusColors.success }]}
               >
@@ -178,30 +172,30 @@ export default function PaymentScreen() {
               >
                 - Rs.{walletAmount}
               </ThemedText>
-            </View>
+            </ThemedView>
           )}
-          <View style={[styles.summaryRow, styles.summaryTotal]}>
+          <ThemedView style={[styles.summaryRow, styles.summaryTotal]}>
             <ThemedText style={styles.totalLabel}>Total Payable</ThemedText>
             <ThemedText style={styles.totalAmount}>
               Rs.{totalPayable}
             </ThemedText>
-          </View>
+          </ThemedView>
         </Card>
       </ScrollView>
 
       {/* Bottom Button */}
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomInfo}>
+      <ThemedView style={styles.bottomBar}>
+        <ThemedView style={styles.bottomInfo}>
           <ThemedText style={styles.bottomLabel}>Total Payable</ThemedText>
           <ThemedText style={styles.bottomAmount}>Rs.{totalPayable}</ThemedText>
-        </View>
+        </ThemedView>
         <Button
           title="Confirm & Pay"
           onPress={handlePayment}
           loading={loading}
           fullWidth
         />
-      </View>
+      </ThemedView>
     </ThemedView>
   );
 }

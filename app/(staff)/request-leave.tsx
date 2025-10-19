@@ -17,13 +17,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function RequestLeaveScreen() {
   const [leaveType, setLeaveType] = useState('');
@@ -79,9 +73,9 @@ export default function RequestLeaveScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Leave Type Selection */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Leave Type</ThemedText>
-          <View style={styles.leaveTypesGrid}>
+          <ThemedView style={styles.leaveTypesGrid}>
             {leaveTypes.map((type) => (
               <TouchableOpacity
                 key={type.id}
@@ -110,14 +104,14 @@ export default function RequestLeaveScreen() {
                 </ThemedText>
               </TouchableOpacity>
             ))}
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
 
         {/* Date Selection */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Duration</ThemedText>
-          <View style={styles.dateRow}>
-            <View style={{ flex: 1 }}>
+          <ThemedView style={styles.dateRow}>
+            <ThemedView style={{ flex: 1 }}>
               <Input
                 label="Start Date"
                 placeholder="YYYY-MM-DD"
@@ -131,8 +125,8 @@ export default function RequestLeaveScreen() {
                   />
                 }
               />
-            </View>
-            <View style={{ flex: 1 }}>
+            </ThemedView>
+            <ThemedView style={{ flex: 1 }}>
               <Input
                 label="End Date"
                 placeholder="YYYY-MM-DD"
@@ -146,12 +140,12 @@ export default function RequestLeaveScreen() {
                   />
                 }
               />
-            </View>
-          </View>
-        </View>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
 
         {/* Reason */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Reason</ThemedText>
           <Input
             placeholder="Explain the reason for your leave..."
@@ -162,25 +156,25 @@ export default function RequestLeaveScreen() {
             containerStyle={styles.reasonInput}
             style={{ height: 100, textAlignVertical: 'top', paddingTop: 12 }}
           />
-        </View>
+        </ThemedView>
 
         {/* Summary Card */}
         {leaveType && startDate && endDate && (
           <Card style={styles.summaryCard}>
             <ThemedText style={styles.summaryTitle}>Leave Summary</ThemedText>
-            <View style={styles.summaryRow}>
+            <ThemedView style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Type:</ThemedText>
               <ThemedText style={styles.summaryValue}>
                 {leaveTypes.find((t) => t.id === leaveType)?.name}
               </ThemedText>
-            </View>
-            <View style={styles.summaryRow}>
+            </ThemedView>
+            <ThemedView style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Duration:</ThemedText>
               <ThemedText style={styles.summaryValue}>
                 {startDate} to {endDate}
               </ThemedText>
-            </View>
-            <View style={styles.summaryRow}>
+            </ThemedView>
+            <ThemedView style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Total Days:</ThemedText>
               <ThemedText
                 style={[styles.summaryValue, { color: BrandColors.primary }]}
@@ -192,20 +186,20 @@ export default function RequestLeaveScreen() {
                 ) + 1}{' '}
                 day(s)
               </ThemedText>
-            </View>
+            </ThemedView>
           </Card>
         )}
       </ScrollView>
 
       {/* Submit Button */}
-      <View style={styles.bottomBar}>
+      <ThemedView style={styles.bottomBar}>
         <Button
           title="Submit Request"
           onPress={handleSubmit}
           loading={loading}
           fullWidth
         />
-      </View>
+      </ThemedView>
     </ThemedView>
   );
 }

@@ -17,7 +17,7 @@ import {
 import { mockAttendanceSummary, mockStaffProfile } from '@/utils/mockData';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
 
 export default function StaffDetailsScreen() {
   const staff = mockStaffProfile;
@@ -50,41 +50,41 @@ export default function StaffDetailsScreen() {
           <ThemedText style={styles.sectionTitle}>
             Employment Details
           </ThemedText>
-          <View style={styles.detailRow}>
+          <ThemedView style={styles.detailRow}>
             <ThemedText style={styles.label}>Employee ID:</ThemedText>
             <ThemedText style={styles.value}>{staff.employeeId}</ThemedText>
-          </View>
-          <View style={styles.detailRow}>
+          </ThemedView>
+          <ThemedView style={styles.detailRow}>
             <ThemedText style={styles.label}>Joining Date:</ThemedText>
             <ThemedText style={styles.value}>{staff.joiningDate}</ThemedText>
-          </View>
-          <View style={styles.detailRow}>
+          </ThemedView>
+          <ThemedView style={styles.detailRow}>
             <ThemedText style={styles.label}>Contact:</ThemedText>
             <ThemedText style={styles.value}>{staff.contactNumber}</ThemedText>
-          </View>
+          </ThemedView>
         </Card>
 
         <Card style={styles.section}>
           <ThemedText style={styles.sectionTitle}>
             Attendance Summary
           </ThemedText>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
+          <ThemedView style={styles.statsGrid}>
+            <ThemedView style={styles.statItem}>
               <ThemedText style={styles.statValue}>
                 {attendance.presentDays}
               </ThemedText>
               <ThemedText style={styles.statLabel}>Present</ThemedText>
-            </View>
-            <View style={styles.statItem}>
+            </ThemedView>
+            <ThemedView style={styles.statItem}>
               <ThemedText style={styles.statValue}>
                 {attendance.totalHours}h
               </ThemedText>
               <ThemedText style={styles.statLabel}>Total Hours</ThemedText>
-            </View>
-          </View>
+            </ThemedView>
+          </ThemedView>
         </Card>
 
-        <View style={styles.actions}>
+        <ThemedView style={styles.actions}>
           <Button
             title="Edit Details"
             variant="outline"
@@ -97,7 +97,7 @@ export default function StaffDetailsScreen() {
             style={{ flex: 1 }}
             onPress={() => Alert.alert('Deactivate', 'Deactivate staff')}
           />
-        </View>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );

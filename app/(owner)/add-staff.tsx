@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 
 export default function AddStaffScreen() {
   const [name, setName] = useState('');
@@ -74,14 +74,14 @@ export default function AddStaffScreen() {
         />
       </ScrollView>
 
-      <View style={styles.bottomBar}>
+      <ThemedView style={styles.bottomBar}>
         <Button
           title="Add Staff Member"
           onPress={handleSubmit}
           loading={loading}
           fullWidth
         />
-      </View>
+      </ThemedView>
     </ThemedView>
   );
 }

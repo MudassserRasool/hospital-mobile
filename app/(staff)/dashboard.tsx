@@ -33,7 +33,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function StaffDashboard() {
@@ -64,33 +63,33 @@ export default function StaffDashboard() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.userInfo}>
+        <ThemedView style={styles.header}>
+          <ThemedView style={styles.userInfo}>
             <Image
               source={{
                 uri: staff.avatar || 'https://i.pravatar.cc/150?img=10',
               }}
               style={styles.avatar}
             />
-            <View style={styles.userDetails}>
+            <ThemedView style={styles.userDetails}>
               <ThemedText style={styles.userName}>{staff.name}</ThemedText>
               <ThemedText style={styles.userRole}>
                 {staff.role} • {staff.employeeId}
               </ThemedText>
-            </View>
-          </View>
+            </ThemedView>
+          </ThemedView>
           <Badge
             label={isCheckedIn ? 'Checked In' : 'Checked Out'}
             variant={isCheckedIn ? 'success' : 'default'}
           />
-        </View>
+        </ThemedView>
 
         {/* Check-in Status Card */}
         <Card
           style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}
         >
-          <View style={styles.statusHeader}>
-            <View>
+          <ThemedView style={styles.statusHeader}>
+            <ThemedView>
               <ThemedText
                 style={[
                   styles.statusTitle,
@@ -110,13 +109,13 @@ export default function StaffDashboard() {
                   })}
                 </ThemedText>
               )}
-            </View>
+            </ThemedView>
             <MaterialIcons
               name={isCheckedIn ? 'check-circle' : 'access-time'}
               size={40}
               color={isCheckedIn ? StatusColors.success : NeutralColors.gray400}
             />
-          </View>
+          </ThemedView>
           <Button
             title={isCheckedIn ? 'Check Out' : 'Check In'}
             onPress={() => router.push(STAFF_ROUTES.CHECK_IN_OUT)}
@@ -127,15 +126,15 @@ export default function StaffDashboard() {
         </Card>
 
         {/* Stats Grid */}
-        <View style={styles.statsGrid}>
+        <ThemedView style={styles.statsGrid}>
           <Card style={styles.statCard}>
-            <View style={styles.statIcon}>
+            <ThemedView style={styles.statIcon}>
               <MaterialIcons
                 name="schedule"
                 size={24}
                 color={BrandColors.primary}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {mockWorkHours.daily}h
             </ThemedText>
@@ -143,13 +142,13 @@ export default function StaffDashboard() {
           </Card>
 
           <Card style={styles.statCard}>
-            <View style={styles.statIcon}>
+            <ThemedView style={styles.statIcon}>
               <MaterialIcons
                 name="event-available"
                 size={24}
                 color={StatusColors.success}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {mockLeaveBalance.remainingLeaves}
             </ThemedText>
@@ -157,13 +156,13 @@ export default function StaffDashboard() {
           </Card>
 
           <Card style={styles.statCard}>
-            <View style={styles.statIcon}>
+            <ThemedView style={styles.statIcon}>
               <MaterialIcons
                 name="calendar-month"
                 size={24}
                 color={StatusColors.info}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {mockWorkHours.weekly}h
             </ThemedText>
@@ -171,31 +170,33 @@ export default function StaffDashboard() {
           </Card>
 
           <Card style={styles.statCard}>
-            <View style={styles.statIcon}>
+            <ThemedView style={styles.statIcon}>
               <MaterialIcons
                 name="pending-actions"
                 size={24}
                 color={StatusColors.warning}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {mockLeaveBalance.pendingLeaves}
             </ThemedText>
             <ThemedText style={styles.statLabel}>Pending</ThemedText>
           </Card>
-        </View>
+        </ThemedView>
 
         {/* Quick Actions */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
-          <View style={styles.actionsGrid}>
+          <ThemedView style={styles.actionsGrid}>
             <TouchableOpacity
               style={styles.actionCard}
               onPress={() => router.push(STAFF_ROUTES.ATTENDANCE_HISTORY)}
             >
-              <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
+              <ThemedView
+                style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}
+              >
                 <MaterialIcons name="history" size={28} color="#1976D2" />
-              </View>
+              </ThemedView>
               <ThemedText style={styles.actionText}>Attendance</ThemedText>
             </TouchableOpacity>
 
@@ -203,9 +204,11 @@ export default function StaffDashboard() {
               style={styles.actionCard}
               onPress={() => router.push(STAFF_ROUTES.LEAVE_MANAGEMENT)}
             >
-              <View style={[styles.actionIcon, { backgroundColor: '#F3E5F5' }]}>
+              <ThemedView
+                style={[styles.actionIcon, { backgroundColor: '#F3E5F5' }]}
+              >
                 <MaterialIcons name="event-busy" size={28} color="#7B1FA2" />
-              </View>
+              </ThemedView>
               <ThemedText style={styles.actionText}>Leaves</ThemedText>
             </TouchableOpacity>
 
@@ -213,9 +216,11 @@ export default function StaffDashboard() {
               style={styles.actionCard}
               onPress={() => router.push(STAFF_ROUTES.WORK_HOURS)}
             >
-              <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
+              <ThemedView
+                style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}
+              >
                 <MaterialIcons name="schedule" size={28} color="#388E3C" />
-              </View>
+              </ThemedView>
               <ThemedText style={styles.actionText}>Work Hours</ThemedText>
             </TouchableOpacity>
 
@@ -223,13 +228,15 @@ export default function StaffDashboard() {
               style={styles.actionCard}
               onPress={() => router.push(STAFF_ROUTES.REQUEST_LEAVE)}
             >
-              <View style={[styles.actionIcon, { backgroundColor: '#FFF3E0' }]}>
+              <ThemedView
+                style={[styles.actionIcon, { backgroundColor: '#FFF3E0' }]}
+              >
                 <MaterialIcons name="add-circle" size={28} color="#F57C00" />
-              </View>
+              </ThemedView>
               <ThemedText style={styles.actionText}>Request Leave</ThemedText>
             </TouchableOpacity>
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );

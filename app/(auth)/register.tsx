@@ -19,7 +19,6 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
 } from 'react-native';
 import { styles } from './login.style'; // Reusing login styles
 
@@ -108,9 +107,9 @@ export default function RegisterScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.content}>
+          <ThemedView style={styles.content}>
             {/* Logo and Title */}
-            <View style={styles.logoContainer}>
+            <ThemedView style={styles.logoContainer}>
               <MaterialIcons
                 name="local-hospital"
                 size={80}
@@ -120,10 +119,10 @@ export default function RegisterScreen() {
               <ThemedText style={styles.subtitle}>
                 Join us for better healthcare
               </ThemedText>
-            </View>
+            </ThemedView>
 
             {/* Registration Form */}
-            <View style={styles.form}>
+            <ThemedView style={styles.form}>
               <Input
                 label="Full Name"
                 placeholder="Enter your full name"
@@ -186,14 +185,14 @@ export default function RegisterScreen() {
                 style={styles.loginButton}
                 fullWidth
               />
-            </View>
+            </ThemedView>
 
             {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
+            <ThemedView style={styles.divider}>
+              <ThemedView style={styles.dividerLine} />
               <Text style={styles.dividerText}>Or continue with</Text>
-              <View style={styles.dividerLine} />
-            </View>
+              <ThemedView style={styles.dividerLine} />
+            </ThemedView>
 
             {/* Google Sign Up */}
             <TouchableOpacity
@@ -213,15 +212,15 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             {/* Footer */}
-            <View style={styles.footer}>
+            <ThemedView style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
               <TouchableOpacity onPress={() => router.back()}>
                 <Text style={[styles.linkText, { color: primaryColor }]}>
                   Sign In
                 </Text>
               </TouchableOpacity>
-            </View>
-          </View>
+            </ThemedView>
+          </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>

@@ -18,7 +18,7 @@ import { mockBonuses } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, StyleSheet } from 'react-native';
 
 export default function BonusesScreen() {
   const [amount, setAmount] = useState('');
@@ -41,10 +41,10 @@ export default function BonusesScreen() {
 
   const renderBonus = ({ item }: { item: (typeof mockBonuses)[0] }) => (
     <Card style={styles.bonusCard}>
-      <View style={styles.bonusHeader}>
+      <ThemedView style={styles.bonusHeader}>
         <ThemedText style={styles.staffName}>{item.staff?.name}</ThemedText>
         <ThemedText style={styles.amount}>Rs.{item.amount}</ThemedText>
-      </View>
+      </ThemedView>
       <ThemedText style={styles.reason}>{item.reason}</ThemedText>
       <ThemedText style={styles.date}>{item.date}</ThemedText>
     </Card>

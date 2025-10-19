@@ -18,7 +18,7 @@ import { mockAppointments } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
 
 export default function AppointmentDetailsScreen() {
   const appointment = mockAppointments[1]; // Mock completed appointment with details
@@ -55,27 +55,27 @@ export default function AppointmentDetailsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Doctor Info */}
         <Card style={styles.section}>
-          <View style={styles.doctorInfo}>
+          <ThemedView style={styles.doctorInfo}>
             <Image
               source={{ uri: appointment.doctor.avatar }}
               style={styles.doctorImage}
             />
-            <View style={styles.doctorDetails}>
+            <ThemedView style={styles.doctorDetails}>
               <ThemedText style={styles.doctorName}>
                 {appointment.doctor.name}
               </ThemedText>
               <ThemedText style={styles.specialty}>
                 {appointment.doctor.specialty}
               </ThemedText>
-              <View style={styles.rating}>
+              <ThemedView style={styles.rating}>
                 <MaterialIcons name="star" size={16} color="#FD9644" />
                 <ThemedText style={styles.ratingText}>
                   {appointment.doctor.rating} ({appointment.doctor.reviewCount}{' '}
                   reviews)
                 </ThemedText>
-              </View>
-            </View>
-          </View>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
         </Card>
 
         {/* Appointment Info */}
@@ -83,98 +83,98 @@ export default function AppointmentDetailsScreen() {
           <ThemedText style={styles.cardTitle}>
             Appointment Information
           </ThemedText>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
+          <ThemedView style={styles.infoRow}>
+            <ThemedView style={styles.infoItem}>
               <MaterialIcons
                 name="calendar-today"
                 size={20}
                 color={BrandColors.primary}
               />
-              <View style={styles.infoText}>
+              <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Date</ThemedText>
                 <ThemedText style={styles.infoValue}>
                   {appointment.date}
                 </ThemedText>
-              </View>
-            </View>
-            <View style={styles.infoItem}>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={styles.infoItem}>
               <MaterialIcons
                 name="access-time"
                 size={20}
                 color={BrandColors.primary}
               />
-              <View style={styles.infoText}>
+              <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Time</ThemedText>
                 <ThemedText style={styles.infoValue}>
                   {appointment.time}
                 </ThemedText>
-              </View>
-            </View>
-          </View>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={styles.infoRow}>
+            <ThemedView style={styles.infoItem}>
               <MaterialIcons
                 name="local-hospital"
                 size={20}
                 color={BrandColors.primary}
               />
-              <View style={styles.infoText}>
+              <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Status</ThemedText>
                 <Badge
                   label={appointment.status}
                   variant="success"
                   size="small"
                 />
-              </View>
-            </View>
-            <View style={styles.infoItem}>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={styles.infoItem}>
               <MaterialIcons
                 name="attach-money"
                 size={20}
                 color={BrandColors.primary}
               />
-              <View style={styles.infoText}>
+              <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Fee</ThemedText>
                 <ThemedText style={styles.infoValue}>
                   Rs.{appointment.doctor.consultationFee}
                 </ThemedText>
-              </View>
-            </View>
-          </View>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
         </Card>
 
         {/* Vitals (if available) */}
         {appointment.vitals && (
           <Card style={styles.section}>
             <ThemedText style={styles.cardTitle}>Vitals Recorded</ThemedText>
-            <View style={styles.vitalsGrid}>
-              <View style={styles.vitalItem}>
+            <ThemedView style={styles.vitalsGrid}>
+              <ThemedView style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>
                   Blood Pressure
                 </ThemedText>
                 <ThemedText style={styles.vitalValue}>
                   {appointment.vitals.bloodPressure}
                 </ThemedText>
-              </View>
-              <View style={styles.vitalItem}>
+              </ThemedView>
+              <ThemedView style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Heart Rate</ThemedText>
                 <ThemedText style={styles.vitalValue}>
                   {appointment.vitals.heartRate} bpm
                 </ThemedText>
-              </View>
-              <View style={styles.vitalItem}>
+              </ThemedView>
+              <ThemedView style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Temperature</ThemedText>
                 <ThemedText style={styles.vitalValue}>
                   {appointment.vitals.temperature}°F
                 </ThemedText>
-              </View>
-              <View style={styles.vitalItem}>
+              </ThemedView>
+              <ThemedView style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Weight</ThemedText>
                 <ThemedText style={styles.vitalValue}>
                   {appointment.vitals.weight} kg
                 </ThemedText>
-              </View>
-            </View>
+              </ThemedView>
+            </ThemedView>
           </Card>
         )}
 
@@ -192,14 +192,14 @@ export default function AppointmentDetailsScreen() {
           <Card style={styles.section}>
             <ThemedText style={styles.cardTitle}>Prescription</ThemedText>
             {appointment.prescription.map((med, index) => (
-              <View key={index} style={styles.prescriptionItem}>
+              <ThemedView key={index} style={styles.prescriptionItem}>
                 <MaterialIcons
                   name="medication"
                   size={20}
                   color={BrandColors.primary}
                 />
                 <ThemedText style={styles.prescriptionText}>{med}</ThemedText>
-              </View>
+              </ThemedView>
             ))}
           </Card>
         )}
@@ -218,7 +218,7 @@ export default function AppointmentDetailsScreen() {
       {/* Action Buttons */}
       {appointment.status !== 'completed' &&
         appointment.status !== 'cancelled' && (
-          <View style={styles.bottomBar}>
+          <ThemedView style={styles.bottomBar}>
             <Button
               title="Reschedule"
               variant="outline"
@@ -231,7 +231,7 @@ export default function AppointmentDetailsScreen() {
               onPress={handleCancel}
               style={{ flex: 1 }}
             />
-          </View>
+          </ThemedView>
         )}
     </ThemedView>
   );

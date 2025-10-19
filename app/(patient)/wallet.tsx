@@ -19,7 +19,7 @@ import { mockWallet } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet } from 'react-native';
 
 export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -52,8 +52,8 @@ export default function WalletScreen() {
   }: {
     item: (typeof wallet.transactions)[0];
   }) => (
-    <View style={styles.transactionCard}>
-      <View
+    <ThemedView style={styles.transactionCard}>
+      <ThemedView
         style={[
           styles.transactionIcon,
           { backgroundColor: item.type === 'credit' ? '#E8F5E9' : '#FFEBEE' },
@@ -66,21 +66,21 @@ export default function WalletScreen() {
             item.type === 'credit' ? StatusColors.success : StatusColors.error
           }
         />
-      </View>
-      <View style={styles.transactionInfo}>
+      </ThemedView>
+      <ThemedView style={styles.transactionInfo}>
         <ThemedText style={styles.transactionDescription}>
           {item.description}
         </ThemedText>
-        <View style={styles.transactionMeta}>
+        <ThemedView style={styles.transactionMeta}>
           <ThemedText style={styles.transactionDate}>
             {formatDate(item.createdAt)}
           </ThemedText>
           <ThemedText style={styles.transactionTime}>
             {formatTime(item.createdAt)}
           </ThemedText>
-        </View>
-      </View>
-      <View style={styles.transactionAmount}>
+        </ThemedView>
+      </ThemedView>
+      <ThemedView style={styles.transactionAmount}>
         <ThemedText
           style={[
             styles.amount,
@@ -94,8 +94,8 @@ export default function WalletScreen() {
         >
           {item.type === 'credit' ? '+' : '-'} Rs.{item.amount}
         </ThemedText>
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 
   return (
@@ -117,11 +117,11 @@ export default function WalletScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
-          <View>
+          <ThemedView>
             {/* Balance Card */}
             <Card style={styles.balanceCard}>
-              <View style={styles.balanceContent}>
-                <View>
+              <ThemedView style={styles.balanceContent}>
+                <ThemedView>
                   <ThemedText style={styles.balanceLabel}>
                     Available Balance
                   </ThemedText>
@@ -131,19 +131,19 @@ export default function WalletScreen() {
                   <ThemedText style={styles.balanceHint}>
                     Use for appointments and get 10% back on cancellations
                   </ThemedText>
-                </View>
-                <View style={styles.walletIconContainer}>
+                </ThemedView>
+                <ThemedView style={styles.walletIconContainer}>
                   <MaterialIcons
                     name="account-balance-wallet"
                     size={48}
                     color={BrandColors.primary}
                   />
-                </View>
-              </View>
+                </ThemedView>
+              </ThemedView>
             </Card>
 
             {/* Stats Cards */}
-            <View style={styles.statsRow}>
+            <ThemedView style={styles.statsRow}>
               <Card style={styles.statCard}>
                 <MaterialIcons
                   name="arrow-downward"
@@ -172,16 +172,16 @@ export default function WalletScreen() {
                 </ThemedText>
                 <ThemedText style={styles.statLabel}>Total Debits</ThemedText>
               </Card>
-            </View>
+            </ThemedView>
 
             {/* Transaction History Title */}
             <ThemedText style={styles.sectionTitle}>
               Transaction History
             </ThemedText>
-          </View>
+          </ThemedView>
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <ThemedView style={styles.emptyContainer}>
             <MaterialIcons
               name="receipt-long"
               size={64}
@@ -190,7 +190,7 @@ export default function WalletScreen() {
             <ThemedText style={styles.emptyText}>
               No transactions yet
             </ThemedText>
-          </View>
+          </ThemedView>
         }
       />
     </ThemedView>

@@ -6,7 +6,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -113,8 +113,8 @@ export default function CheckInOutScreen() {
         <Card
           style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}
         >
-          <View style={styles.statusHeader}>
-            <View style={styles.statusIconContainer}>
+          <ThemedView style={styles.statusHeader}>
+            <ThemedView style={styles.statusIconContainer}>
               <MaterialIcons
                 name={isCheckedIn ? 'check-circle' : 'access-time'}
                 size={60}
@@ -122,7 +122,7 @@ export default function CheckInOutScreen() {
                   isCheckedIn ? StatusColors.success : NeutralColors.gray400
                 }
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statusTitle}>
               {isCheckedIn ? 'Checked In' : 'Not Checked In'}
             </ThemedText>
@@ -137,16 +137,16 @@ export default function CheckInOutScreen() {
                 })}
               </ThemedText>
             )}
-          </View>
+          </ThemedView>
         </Card>
 
         {/* Verification Status */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>
             Verification Status
           </ThemedText>
           <Card style={styles.verificationCard}>
-            <View style={styles.verificationItem}>
+            <ThemedView style={styles.verificationItem}>
               <MaterialIcons
                 name={locationVerified ? 'check-circle' : 'cancel'}
                 size={24}
@@ -154,7 +154,7 @@ export default function CheckInOutScreen() {
                   locationVerified ? StatusColors.success : StatusColors.error
                 }
               />
-              <View style={styles.verificationText}>
+              <ThemedView style={styles.verificationText}>
                 <ThemedText style={styles.verificationLabel}>
                   Location
                 </ThemedText>
@@ -163,15 +163,15 @@ export default function CheckInOutScreen() {
                     ? 'Within hospital premises'
                     : 'Outside hospital'}
                 </ThemedText>
-              </View>
-            </View>
-            <View style={styles.verificationItem}>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={styles.verificationItem}>
               <MaterialIcons
                 name={wifiVerified ? 'check-circle' : 'cancel'}
                 size={24}
                 color={wifiVerified ? StatusColors.success : StatusColors.error}
               />
-              <View style={styles.verificationText}>
+              <ThemedView style={styles.verificationText}>
                 <ThemedText style={styles.verificationLabel}>
                   WiFi Connection
                 </ThemedText>
@@ -180,18 +180,18 @@ export default function CheckInOutScreen() {
                     ? 'Connected to hospital WiFi'
                     : 'Not connected'}
                 </ThemedText>
-              </View>
-            </View>
+              </ThemedView>
+            </ThemedView>
           </Card>
-        </View>
+        </ThemedView>
 
         {/* Today's Summary */}
         {isCheckedIn && (
-          <View style={styles.section}>
+          <ThemedView style={styles.section}>
             <ThemedText style={styles.sectionTitle}>
               Today&apos;s Summary
             </ThemedText>
-            <View style={styles.summaryGrid}>
+            <ThemedView style={styles.summaryGrid}>
               <Card style={styles.summaryCard}>
                 <ThemedText style={styles.summaryLabel}>
                   Hours Worked
@@ -202,13 +202,13 @@ export default function CheckInOutScreen() {
                 <ThemedText style={styles.summaryLabel}>Status</ThemedText>
                 <Badge label="On Time" variant="success" />
               </Card>
-            </View>
-          </View>
+            </ThemedView>
+          </ThemedView>
         )}
       </ScrollView>
 
       {/* Action Button */}
-      <View style={styles.bottomBar}>
+      <ThemedView style={styles.bottomBar}>
         <Button
           title={isCheckedIn ? 'Check Out' : 'Check In'}
           onPress={isCheckedIn ? handleCheckOut : handleCheckIn}
@@ -216,7 +216,7 @@ export default function CheckInOutScreen() {
           variant={isCheckedIn ? 'danger' : 'primary'}
           fullWidth
         />
-      </View>
+      </ThemedView>
     </ThemedView>
   );
 }

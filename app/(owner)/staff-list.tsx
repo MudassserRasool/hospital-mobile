@@ -25,7 +25,6 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function StaffListScreen() {
@@ -55,13 +54,13 @@ export default function StaffListScreen() {
       onPress={() => router.push(OWNER_ROUTES.STAFF_DETAILS)}
     >
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <View style={styles.staffInfo}>
+      <ThemedView style={styles.staffInfo}>
         <ThemedText style={styles.staffName}>{item.name}</ThemedText>
         <ThemedText style={styles.staffRole}>
           {item.role} • {item.department}
         </ThemedText>
         <ThemedText style={styles.employeeId}>{item.employeeId}</ThemedText>
-      </View>
+      </ThemedView>
       <Badge
         label={item.isActive ? 'Active' : 'Inactive'}
         variant={item.isActive ? 'success' : 'default'}
@@ -81,7 +80,7 @@ export default function StaffListScreen() {
       />
 
       {/* Search */}
-      <View style={styles.searchSection}>
+      <ThemedView style={styles.searchSection}>
         <SearchBar
           placeholder="Search staff..."
           value={searchQuery}
@@ -89,10 +88,10 @@ export default function StaffListScreen() {
           onClear={() => setSearchQuery('')}
           showFilter
         />
-      </View>
+      </ThemedView>
 
       {/* Role Filters */}
-      <View style={styles.filtersSection}>
+      <ThemedView style={styles.filtersSection}>
         {roles.map((role) => (
           <TouchableOpacity
             key={role}
@@ -114,7 +113,7 @@ export default function StaffListScreen() {
             </ThemedText>
           </TouchableOpacity>
         ))}
-      </View>
+      </ThemedView>
 
       {/* Staff List */}
       <FlatList

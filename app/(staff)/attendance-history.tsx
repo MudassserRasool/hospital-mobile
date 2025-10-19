@@ -18,7 +18,7 @@ import { mockAttendanceRecords } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet } from 'react-native';
 
 export default function AttendanceHistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -49,8 +49,8 @@ export default function AttendanceHistoryScreen() {
     item: (typeof mockAttendanceRecords)[0];
   }) => (
     <Card style={styles.attendanceCard}>
-      <View style={styles.cardHeader}>
-        <View>
+      <ThemedView style={styles.cardHeader}>
+        <ThemedView>
           <ThemedText style={styles.date}>
             {new Date(item.date).toLocaleDateString('en-US', {
               weekday: 'short',
@@ -58,7 +58,7 @@ export default function AttendanceHistoryScreen() {
               day: 'numeric',
             })}
           </ThemedText>
-          <View style={styles.timeRow}>
+          <ThemedView style={styles.timeRow}>
             <MaterialIcons
               name="login"
               size={16}
@@ -86,12 +86,12 @@ export default function AttendanceHistoryScreen() {
                   })
                 : '--:--'}
             </ThemedText>
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
         <Badge label={item.status} variant={getStatusVariant(item.status)} />
-      </View>
-      <View style={styles.cardFooter}>
-        <View style={styles.hoursRow}>
+      </ThemedView>
+      <ThemedView style={styles.cardFooter}>
+        <ThemedView style={styles.hoursRow}>
           <MaterialIcons
             name="schedule"
             size={16}
@@ -100,11 +100,11 @@ export default function AttendanceHistoryScreen() {
           <ThemedText style={styles.hoursText}>
             {item.totalHours}h worked
           </ThemedText>
-        </View>
+        </ThemedView>
         {item.notes && (
           <ThemedText style={styles.notes}>{item.notes}</ThemedText>
         )}
-      </View>
+      </ThemedView>
     </Card>
   );
 
@@ -127,7 +127,7 @@ export default function AttendanceHistoryScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
-          <View style={styles.statsContainer}>
+          <ThemedView style={styles.statsContainer}>
             <Card style={styles.statCard}>
               <ThemedText style={styles.statValue}>20</ThemedText>
               <ThemedText style={styles.statLabel}>Present Days</ThemedText>
@@ -140,10 +140,10 @@ export default function AttendanceHistoryScreen() {
               <ThemedText style={styles.statValue}>9h</ThemedText>
               <ThemedText style={styles.statLabel}>Avg/Day</ThemedText>
             </Card>
-          </View>
+          </ThemedView>
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <ThemedView style={styles.emptyContainer}>
             <MaterialIcons
               name="event-busy"
               size={64}
@@ -152,7 +152,7 @@ export default function AttendanceHistoryScreen() {
             <ThemedText style={styles.emptyText}>
               No attendance records
             </ThemedText>
-          </View>
+          </ThemedView>
         }
       />
     </ThemedView>

@@ -26,7 +26,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function BookAppointmentScreen() {
@@ -80,28 +79,28 @@ export default function BookAppointmentScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Doctor Info Card */}
         <Card style={styles.doctorCard}>
-          <View style={styles.doctorInfo}>
+          <ThemedView style={styles.doctorInfo}>
             <Image source={{ uri: doctor.avatar }} style={styles.doctorImage} />
-            <View style={styles.doctorDetails}>
+            <ThemedView style={styles.doctorDetails}>
               <ThemedText style={styles.doctorName}>{doctor.name}</ThemedText>
               <ThemedText style={styles.specialty}>
                 {doctor.specialty}
               </ThemedText>
-              <View style={styles.rating}>
+              <ThemedView style={styles.rating}>
                 <MaterialIcons name="star" size={16} color="#FD9644" />
                 <ThemedText style={styles.ratingText}>
                   {doctor.rating} ({doctor.reviewCount} reviews)
                 </ThemedText>
-              </View>
-            </View>
-          </View>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
         </Card>
 
         {/* Select Date */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Select Date</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.dateContainer}>
+            <ThemedView style={styles.dateContainer}>
               {dates.map((item) => (
                 <TouchableOpacity
                   key={item.full}
@@ -129,14 +128,14 @@ export default function BookAppointmentScreen() {
                   </ThemedText>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ThemedView>
           </ScrollView>
-        </View>
+        </ThemedView>
 
         {/* Select Time */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Select Time</ThemedText>
-          <View style={styles.timeContainer}>
+          <ThemedView style={styles.timeContainer}>
             {timeSlots.map((time) => (
               <TouchableOpacity
                 key={time}
@@ -156,41 +155,41 @@ export default function BookAppointmentScreen() {
                 </ThemedText>
               </TouchableOpacity>
             ))}
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
 
         {/* Summary */}
         <Card style={styles.summaryCard}>
           <ThemedText style={styles.summaryTitle}>
             Appointment Summary
           </ThemedText>
-          <View style={styles.summaryRow}>
+          <ThemedView style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>Date:</ThemedText>
             <ThemedText style={styles.summaryValue}>
               {selectedDate || 'Not selected'}
             </ThemedText>
-          </View>
-          <View style={styles.summaryRow}>
+          </ThemedView>
+          <ThemedView style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>Time:</ThemedText>
             <ThemedText style={styles.summaryValue}>
               {selectedTime || 'Not selected'}
             </ThemedText>
-          </View>
-          <View style={[styles.summaryRow, styles.summaryTotal]}>
+          </ThemedView>
+          <ThemedView style={[styles.summaryRow, styles.summaryTotal]}>
             <ThemedText style={styles.summaryLabel}>
               Consultation Fee:
             </ThemedText>
             <ThemedText style={styles.totalAmount}>
               Rs.{doctor.consultationFee}
             </ThemedText>
-          </View>
+          </ThemedView>
         </Card>
       </ScrollView>
 
       {/* Bottom Button */}
-      <View style={styles.bottomBar}>
+      <ThemedView style={styles.bottomBar}>
         <Button title="Continue to Payment" onPress={handleBooking} fullWidth />
-      </View>
+      </ThemedView>
     </ThemedView>
   );
 }

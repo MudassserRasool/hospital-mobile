@@ -25,7 +25,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function BrowseDoctorsScreen() {
@@ -56,8 +55,8 @@ export default function BrowseDoctorsScreen() {
       onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
     >
       <Image source={{ uri: item.avatar }} style={styles.doctorImage} />
-      <View style={styles.doctorInfo}>
-        <View style={styles.doctorHeader}>
+      <ThemedView style={styles.doctorInfo}>
+        <ThemedView style={styles.doctorHeader}>
           <ThemedText style={styles.doctorName}>{item.name}</ThemedText>
           <TouchableOpacity style={styles.favoriteButton}>
             <MaterialIcons
@@ -66,26 +65,26 @@ export default function BrowseDoctorsScreen() {
               color={NeutralColors.gray400}
             />
           </TouchableOpacity>
-        </View>
+        </ThemedView>
         <ThemedText style={styles.specialty}>{item.specialty}</ThemedText>
-        <View style={styles.doctorMeta}>
-          <View style={styles.rating}>
+        <ThemedView style={styles.doctorMeta}>
+          <ThemedView style={styles.rating}>
             <MaterialIcons name="star" size={16} color="#FD9644" />
             <ThemedText style={styles.ratingText}>
               {item.rating} ({item.reviewCount})
             </ThemedText>
-          </View>
+          </ThemedView>
           <Badge
             label={`${item.experience}y exp`}
             variant="info"
             size="small"
           />
-        </View>
-        <View style={styles.footer}>
+        </ThemedView>
+        <ThemedView style={styles.footer}>
           <ThemedText style={styles.fee}>Rs.{item.consultationFee}</ThemedText>
           <ThemedText style={styles.perConsultation}>/ consultation</ThemedText>
-        </View>
-      </View>
+        </ThemedView>
+      </ThemedView>
     </TouchableOpacity>
   );
 
@@ -100,7 +99,7 @@ export default function BrowseDoctorsScreen() {
       />
 
       {/* Search */}
-      <View style={styles.searchSection}>
+      <ThemedView style={styles.searchSection}>
         <SearchBar
           placeholder="Search doctors..."
           value={searchQuery}
@@ -108,7 +107,7 @@ export default function BrowseDoctorsScreen() {
           onClear={() => setSearchQuery('')}
           showFilter
         />
-      </View>
+      </ThemedView>
 
       {/* Specialties Filter */}
       <ScrollView
@@ -166,14 +165,14 @@ export default function BrowseDoctorsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <ThemedView style={styles.emptyContainer}>
             <MaterialIcons
               name="search-off"
               size={64}
               color={NeutralColors.gray300}
             />
             <ThemedText style={styles.emptyText}>No doctors found</ThemedText>
-          </View>
+          </ThemedView>
         }
       />
     </ThemedView>

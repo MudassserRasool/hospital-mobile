@@ -15,13 +15,7 @@ import {
 import { mockLeaveRequests } from '@/utils/mockData';
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, FlatList, RefreshControl, StyleSheet } from 'react-native';
 
 export default function LeaveApprovalsScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -58,15 +52,15 @@ export default function LeaveApprovalsScreen() {
     item: (typeof mockLeaveRequests)[0];
   }) => (
     <Card style={styles.leaveCard}>
-      <View style={styles.leaveHeader}>
+      <ThemedView style={styles.leaveHeader}>
         <ThemedText style={styles.staffName}>Staff Member</ThemedText>
         <Badge label={item.type} variant="info" size="small" />
-      </View>
+      </ThemedView>
       <ThemedText style={styles.dates}>
         {item.startDate} - {item.endDate} ({item.totalDays} days)
       </ThemedText>
       <ThemedText style={styles.reason}>{item.reason}</ThemedText>
-      <View style={styles.actions}>
+      <ThemedView style={styles.actions}>
         <Button
           title="Reject"
           variant="outline"
@@ -79,7 +73,7 @@ export default function LeaveApprovalsScreen() {
           style={{ flex: 1 }}
           onPress={() => handleApprove(item.id)}
         />
-      </View>
+      </ThemedView>
     </Card>
   );
 

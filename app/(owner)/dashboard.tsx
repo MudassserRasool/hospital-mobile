@@ -26,7 +26,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function OwnerDashboard() {
@@ -96,19 +95,19 @@ export default function OwnerDashboard() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View>
+        <ThemedView style={styles.header}>
+          <ThemedView>
             <ThemedText style={styles.greeting}>Welcome Back 👋</ThemedText>
             <ThemedText style={styles.userName}>
               {user?.name || 'Admin'}
             </ThemedText>
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
 
         {/* Stats Grid */}
-        <View style={styles.statsGrid}>
+        <ThemedView style={styles.statsGrid}>
           <Card style={[styles.statCard, { backgroundColor: '#EFF3FF' }]}>
-            <View
+            <ThemedView
               style={[
                 styles.statIcon,
                 { backgroundColor: BrandColors.primary },
@@ -119,7 +118,7 @@ export default function OwnerDashboard() {
                 size={24}
                 color={NeutralColors.white}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>{stats.totalStaff}</ThemedText>
             <ThemedText style={styles.statLabel}>Total Staff</ThemedText>
             <ThemedText style={styles.statSubtext}>
@@ -128,7 +127,7 @@ export default function OwnerDashboard() {
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#F3E5F5' }]}>
-            <View
+            <ThemedView
               style={[
                 styles.statIcon,
                 { backgroundColor: BrandColors.secondary },
@@ -139,7 +138,7 @@ export default function OwnerDashboard() {
                 size={24}
                 color={NeutralColors.white}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {stats.totalDoctors}
             </ThemedText>
@@ -148,7 +147,7 @@ export default function OwnerDashboard() {
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#E8F5E9' }]}>
-            <View
+            <ThemedView
               style={[
                 styles.statIcon,
                 { backgroundColor: StatusColors.success },
@@ -159,7 +158,7 @@ export default function OwnerDashboard() {
                 size={24}
                 color={NeutralColors.white}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               {stats.todayAppointments}
             </ThemedText>
@@ -170,7 +169,7 @@ export default function OwnerDashboard() {
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#FFF3E0' }]}>
-            <View
+            <ThemedView
               style={[
                 styles.statIcon,
                 { backgroundColor: StatusColors.warning },
@@ -181,19 +180,19 @@ export default function OwnerDashboard() {
                 size={24}
                 color={NeutralColors.white}
               />
-            </View>
+            </ThemedView>
             <ThemedText style={styles.statValue}>
               Rs.{(stats.monthlyRevenue / 1000).toFixed(0)}K
             </ThemedText>
             <ThemedText style={styles.statLabel}>Revenue</ThemedText>
             <ThemedText style={styles.statSubtext}>this month</ThemedText>
           </Card>
-        </View>
+        </ThemedView>
 
         {/* Pending Leaves */}
         {stats.pendingLeaves > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
+          <ThemedView style={styles.section}>
+            <ThemedView style={styles.sectionHeader}>
               <ThemedText style={styles.sectionTitle}>
                 Pending Leave Requests
               </ThemedText>
@@ -202,7 +201,7 @@ export default function OwnerDashboard() {
               >
                 <ThemedText style={styles.seeAll}>See All</ThemedText>
               </TouchableOpacity>
-            </View>
+            </ThemedView>
             {mockLeaveRequests
               .filter((l) => l.status === 'pending')
               .slice(0, 2)
@@ -212,36 +211,36 @@ export default function OwnerDashboard() {
                   style={styles.leaveCard}
                   onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
                 >
-                  <View style={styles.leaveHeader}>
-                    <View style={styles.leaveInfo}>
+                  <ThemedView style={styles.leaveHeader}>
+                    <ThemedView style={styles.leaveInfo}>
                       <ThemedText style={styles.leaveName}>
                         {leave.staffId}
                       </ThemedText>
                       <ThemedText style={styles.leaveType}>
                         {leave.type} Leave
                       </ThemedText>
-                    </View>
+                    </ThemedView>
                     <Badge label="Pending" variant="warning" size="small" />
-                  </View>
+                  </ThemedView>
                   <ThemedText style={styles.leaveDates}>
                     {leave.startDate} - {leave.endDate} ({leave.totalDays} days)
                   </ThemedText>
                 </Card>
               ))}
-          </View>
+          </ThemedView>
         )}
 
         {/* Quick Actions */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
-          <View style={styles.actionsGrid}>
+          <ThemedView style={styles.actionsGrid}>
             {quickActions.map((action) => (
               <TouchableOpacity
                 key={action.id}
                 style={styles.actionCard}
                 onPress={() => router.push(action.route as any)}
               >
-                <View
+                <ThemedView
                   style={[
                     styles.actionIcon,
                     { backgroundColor: action.color + '20' },
@@ -253,34 +252,34 @@ export default function OwnerDashboard() {
                     color={action.color}
                   />
                   {action.badge && action.badge > 0 && (
-                    <View style={styles.actionBadge}>
+                    <ThemedView style={styles.actionBadge}>
                       <ThemedText style={styles.actionBadgeText}>
                         {action.badge}
                       </ThemedText>
-                    </View>
+                    </ThemedView>
                   )}
-                </View>
+                </ThemedView>
                 <ThemedText style={styles.actionText}>
                   {action.title}
                 </ThemedText>
               </TouchableOpacity>
             ))}
-          </View>
-        </View>
+          </ThemedView>
+        </ThemedView>
 
         {/* Hospital Rating */}
         <Card style={styles.ratingCard}>
-          <View style={styles.ratingHeader}>
+          <ThemedView style={styles.ratingHeader}>
             <MaterialIcons name="star" size={40} color="#FD9644" />
-            <View style={styles.ratingInfo}>
+            <ThemedView style={styles.ratingInfo}>
               <ThemedText style={styles.ratingValue}>
                 {stats.averageRating}
               </ThemedText>
               <ThemedText style={styles.ratingLabel}>
                 Hospital Rating
               </ThemedText>
-            </View>
-          </View>
+            </ThemedView>
+          </ThemedView>
         </Card>
       </ScrollView>
     </ThemedView>

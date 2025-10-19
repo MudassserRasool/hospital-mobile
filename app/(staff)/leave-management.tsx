@@ -25,7 +25,6 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function LeaveManagementScreen() {
@@ -55,8 +54,8 @@ export default function LeaveManagementScreen() {
     item: (typeof mockLeaveRequests)[0];
   }) => (
     <Card style={styles.leaveCard}>
-      <View style={styles.leaveHeader}>
-        <View style={styles.leaveType}>
+      <ThemedView style={styles.leaveHeader}>
+        <ThemedView style={styles.leaveType}>
           <MaterialIcons
             name={
               item.type === 'sick'
@@ -71,46 +70,46 @@ export default function LeaveManagementScreen() {
           <ThemedText style={styles.leaveTypeText}>
             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} Leave
           </ThemedText>
-        </View>
+        </ThemedView>
         <Badge
           label={item.status}
           variant={getStatusVariant(item.status)}
           size="small"
         />
-      </View>
+      </ThemedView>
 
-      <View style={styles.leaveDates}>
-        <View style={styles.dateItem}>
+      <ThemedView style={styles.leaveDates}>
+        <ThemedView style={styles.dateItem}>
           <ThemedText style={styles.dateLabel}>From</ThemedText>
           <ThemedText style={styles.dateValue}>{item.startDate}</ThemedText>
-        </View>
+        </ThemedView>
         <MaterialIcons
           name="arrow-forward"
           size={16}
           color={NeutralColors.gray400}
         />
-        <View style={styles.dateItem}>
+        <ThemedView style={styles.dateItem}>
           <ThemedText style={styles.dateLabel}>To</ThemedText>
           <ThemedText style={styles.dateValue}>{item.endDate}</ThemedText>
-        </View>
-      </View>
+        </ThemedView>
+      </ThemedView>
 
-      <View style={styles.leaveInfo}>
+      <ThemedView style={styles.leaveInfo}>
         <ThemedText style={styles.daysText}>{item.totalDays} day(s)</ThemedText>
         {item.reason && (
           <ThemedText style={styles.reasonText} numberOfLines={2}>
             {item.reason}
           </ThemedText>
         )}
-      </View>
+      </ThemedView>
 
       {item.approver && (
-        <View style={styles.approverSection}>
+        <ThemedView style={styles.approverSection}>
           <ThemedText style={styles.approverText}>
             {item.status === 'approved' ? 'Approved by' : 'Reviewed by'}{' '}
             {item.approver.name}
           </ThemedText>
-        </View>
+        </ThemedView>
       )}
     </Card>
   );
@@ -134,10 +133,10 @@ export default function LeaveManagementScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
-          <View>
+          <ThemedView>
             {/* Leave Balance */}
             <Card style={styles.balanceCard}>
-              <View style={styles.balanceHeader}>
+              <ThemedView style={styles.balanceHeader}>
                 <ThemedText style={styles.balanceTitle}>
                   Leave Balance
                 </ThemedText>
@@ -150,23 +149,23 @@ export default function LeaveManagementScreen() {
                     color={BrandColors.primary}
                   />
                 </TouchableOpacity>
-              </View>
-              <View style={styles.balanceGrid}>
-                <View style={styles.balanceItem}>
+              </ThemedView>
+              <ThemedView style={styles.balanceGrid}>
+                <ThemedView style={styles.balanceItem}>
                   <ThemedText style={styles.balanceValue}>
                     {mockLeaveBalance.totalLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Total</ThemedText>
-                </View>
-                <View style={styles.balanceItem}>
+                </ThemedView>
+                <ThemedView style={styles.balanceItem}>
                   <ThemedText
                     style={[styles.balanceValue, { color: StatusColors.error }]}
                   >
                     {mockLeaveBalance.usedLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Used</ThemedText>
-                </View>
-                <View style={styles.balanceItem}>
+                </ThemedView>
+                <ThemedView style={styles.balanceItem}>
                   <ThemedText
                     style={[
                       styles.balanceValue,
@@ -176,8 +175,8 @@ export default function LeaveManagementScreen() {
                     {mockLeaveBalance.pendingLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Pending</ThemedText>
-                </View>
-                <View style={styles.balanceItem}>
+                </ThemedView>
+                <ThemedView style={styles.balanceItem}>
                   <ThemedText
                     style={[
                       styles.balanceValue,
@@ -187,16 +186,16 @@ export default function LeaveManagementScreen() {
                     {mockLeaveBalance.remainingLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Available</ThemedText>
-                </View>
-              </View>
+                </ThemedView>
+              </ThemedView>
             </Card>
 
             {/* Section Title */}
             <ThemedText style={styles.sectionTitle}>Leave Requests</ThemedText>
-          </View>
+          </ThemedView>
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <ThemedView style={styles.emptyContainer}>
             <MaterialIcons
               name="event-available"
               size={64}
@@ -208,7 +207,7 @@ export default function LeaveManagementScreen() {
               onPress={() => router.push(STAFF_ROUTES.REQUEST_LEAVE)}
               style={{ marginTop: Spacing.md }}
             />
-          </View>
+          </ThemedView>
         }
       />
 

@@ -24,7 +24,6 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 export default function AppointmentHistoryScreen() {
@@ -70,13 +69,13 @@ export default function AppointmentHistoryScreen() {
       style={styles.appointmentCard}
       onPress={() => router.push(PATIENT_ROUTES.APPOINTMENT_DETAILS)}
     >
-      <View style={styles.appointmentHeader}>
+      <ThemedView style={styles.appointmentHeader}>
         <Image
           source={{ uri: item.doctor.avatar }}
           style={styles.doctorImage}
         />
-        <View style={styles.appointmentInfo}>
-          <View style={styles.infoHeader}>
+        <ThemedView style={styles.appointmentInfo}>
+          <ThemedView style={styles.infoHeader}>
             <ThemedText style={styles.doctorName}>
               {item.doctor.name}
             </ThemedText>
@@ -85,35 +84,35 @@ export default function AppointmentHistoryScreen() {
               variant={getStatusVariant(item.status)}
               size="small"
             />
-          </View>
+          </ThemedView>
           <ThemedText style={styles.specialty}>
             {item.doctor.specialty}
           </ThemedText>
-          <View style={styles.dateTimeRow}>
-            <View style={styles.dateTime}>
+          <ThemedView style={styles.dateTimeRow}>
+            <ThemedView style={styles.dateTime}>
               <MaterialIcons
                 name="calendar-today"
                 size={14}
                 color={NeutralColors.gray500}
               />
               <ThemedText style={styles.dateTimeText}>{item.date}</ThemedText>
-            </View>
-            <View style={styles.dateTime}>
+            </ThemedView>
+            <ThemedView style={styles.dateTime}>
               <MaterialIcons
                 name="access-time"
                 size={14}
                 color={NeutralColors.gray500}
               />
               <ThemedText style={styles.dateTimeText}>{item.time}</ThemedText>
-            </View>
-          </View>
-        </View>
-      </View>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </ThemedView>
       {item.reason && (
-        <View style={styles.reasonContainer}>
+        <ThemedView style={styles.reasonContainer}>
           <ThemedText style={styles.reasonLabel}>Reason: </ThemedText>
           <ThemedText style={styles.reasonText}>{item.reason}</ThemedText>
-        </View>
+        </ThemedView>
       )}
     </TouchableOpacity>
   );
@@ -129,7 +128,7 @@ export default function AppointmentHistoryScreen() {
       />
 
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <ThemedView style={styles.tabs}>
         {(['upcoming', 'completed', 'cancelled'] as const).map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -146,7 +145,7 @@ export default function AppointmentHistoryScreen() {
             </ThemedText>
           </TouchableOpacity>
         ))}
-      </View>
+      </ThemedView>
 
       {/* Appointments List */}
       <FlatList
@@ -158,7 +157,7 @@ export default function AppointmentHistoryScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <ThemedView style={styles.emptyContainer}>
             <MaterialIcons
               name="event-busy"
               size={64}
@@ -167,7 +166,7 @@ export default function AppointmentHistoryScreen() {
             <ThemedText style={styles.emptyText}>
               No appointments found
             </ThemedText>
-          </View>
+          </ThemedView>
         }
       />
     </ThemedView>

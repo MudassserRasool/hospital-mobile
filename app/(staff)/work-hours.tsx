@@ -19,7 +19,7 @@ import { mockWorkHours } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 export default function WorkHoursScreen() {
   const workHours = mockWorkHours;
@@ -79,8 +79,8 @@ export default function WorkHoursScreen() {
           <ThemedText style={styles.summaryValue}>
             {workHours.monthly}h
           </ThemedText>
-          <View style={styles.progressBar}>
-            <View
+          <ThemedView style={styles.progressBar}>
+            <ThemedView
               style={[
                 styles.progressFill,
                 {
@@ -95,7 +95,7 @@ export default function WorkHoursScreen() {
                 },
               ]}
             />
-          </View>
+          </ThemedView>
           <ThemedText style={styles.progressText}>
             {getPercentage(workHours.monthly, workHours.expectedMonthly)}% of{' '}
             {workHours.expectedMonthly}h expected
@@ -105,32 +105,32 @@ export default function WorkHoursScreen() {
         {/* Period Cards */}
         {periods.map((period) => (
           <Card key={period.id} style={styles.periodCard}>
-            <View style={styles.periodHeader}>
-              <View style={styles.periodIconContainer}>
+            <ThemedView style={styles.periodHeader}>
+              <ThemedView style={styles.periodIconContainer}>
                 <MaterialIcons
                   name={period.icon as any}
                   size={24}
                   color={BrandColors.primary}
                 />
-              </View>
-              <View style={styles.periodInfo}>
+              </ThemedView>
+              <ThemedView style={styles.periodInfo}>
                 <ThemedText style={styles.periodTitle}>
                   {period.title}
                 </ThemedText>
-                <View style={styles.hoursRow}>
+                <ThemedView style={styles.hoursRow}>
                   <ThemedText style={styles.actualHours}>
                     {period.actual}h
                   </ThemedText>
                   <ThemedText style={styles.expectedHours}>
                     / {period.expected}h
                   </ThemedText>
-                </View>
-              </View>
-            </View>
+                </ThemedView>
+              </ThemedView>
+            </ThemedView>
 
             {/* Mini Progress Bar */}
-            <View style={styles.miniProgressBar}>
-              <View
+            <ThemedView style={styles.miniProgressBar}>
+              <ThemedView
                 style={[
                   styles.miniProgressFill,
                   {
@@ -145,11 +145,11 @@ export default function WorkHoursScreen() {
                   },
                 ]}
               />
-            </View>
+            </ThemedView>
 
             {/* Stats Grid */}
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
+            <ThemedView style={styles.statsGrid}>
+              <ThemedView style={styles.statItem}>
                 <ThemedText style={styles.statLabel}>Completed</ThemedText>
                 <ThemedText
                   style={[
@@ -159,25 +159,25 @@ export default function WorkHoursScreen() {
                 >
                   {getPercentage(period.actual, period.expected)}%
                 </ThemedText>
-              </View>
-              <View style={styles.statItem}>
+              </ThemedView>
+              <ThemedView style={styles.statItem}>
                 <ThemedText style={styles.statLabel}>Remaining</ThemedText>
                 <ThemedText style={styles.statValue}>
                   {Math.max(0, period.expected - period.actual)}h
                 </ThemedText>
-              </View>
-            </View>
+              </ThemedView>
+            </ThemedView>
           </Card>
         ))}
 
         {/* Breakdown */}
-        <View style={styles.section}>
+        <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>
             Work Hours Breakdown
           </ThemedText>
           <Card>
-            <View style={styles.breakdownItem}>
-              <View
+            <ThemedView style={styles.breakdownItem}>
+              <ThemedView
                 style={[
                   styles.breakdownDot,
                   { backgroundColor: StatusColors.success },
@@ -187,9 +187,9 @@ export default function WorkHoursScreen() {
                 Regular Hours
               </ThemedText>
               <ThemedText style={styles.breakdownValue}>165h</ThemedText>
-            </View>
-            <View style={styles.breakdownItem}>
-              <View
+            </ThemedView>
+            <ThemedView style={styles.breakdownItem}>
+              <ThemedView
                 style={[
                   styles.breakdownDot,
                   { backgroundColor: StatusColors.info },
@@ -197,9 +197,9 @@ export default function WorkHoursScreen() {
               />
               <ThemedText style={styles.breakdownLabel}>Overtime</ThemedText>
               <ThemedText style={styles.breakdownValue}>15h</ThemedText>
-            </View>
-            <View style={styles.breakdownItem}>
-              <View
+            </ThemedView>
+            <ThemedView style={styles.breakdownItem}>
+              <ThemedView
                 style={[
                   styles.breakdownDot,
                   { backgroundColor: StatusColors.warning },
@@ -207,9 +207,9 @@ export default function WorkHoursScreen() {
               />
               <ThemedText style={styles.breakdownLabel}>Weekend</ThemedText>
               <ThemedText style={styles.breakdownValue}>0h</ThemedText>
-            </View>
-            <View style={styles.breakdownItem}>
-              <View
+            </ThemedView>
+            <ThemedView style={styles.breakdownItem}>
+              <ThemedView
                 style={[
                   styles.breakdownDot,
                   { backgroundColor: StatusColors.error },
@@ -217,9 +217,9 @@ export default function WorkHoursScreen() {
               />
               <ThemedText style={styles.breakdownLabel}>Holiday</ThemedText>
               <ThemedText style={styles.breakdownValue}>0h</ThemedText>
-            </View>
+            </ThemedView>
           </Card>
-        </View>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );
