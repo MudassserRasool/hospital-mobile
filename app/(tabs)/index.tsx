@@ -18,13 +18,13 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Welcome!</ThemedThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
+        <ThemedText type="subtitle">Step 1: Try it</ThemedThemedText>
+        <ThemedThemedText>
+          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedThemedText> to see changes.
           Press{' '}
           <ThemedText type="defaultSemiBold">
             {Platform.select({
@@ -32,14 +32,14 @@ export default function HomeScreen() {
               android: 'cmd + m',
               web: 'F12',
             })}
-          </ThemedText>{' '}
+          </ThemedThemedText>{' '}
           to open developer tools.
-        </ThemedText>
+        </ThemedThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <Link href="/modal">
           <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+            <ThemedText type="subtitle">Step 2: Explore</ThemedThemedText>
           </Link.Trigger>
           <Link.Preview />
           <Link.Menu>
@@ -60,19 +60,19 @@ export default function HomeScreen() {
           </Link.Menu>
         </Link>
 
-        <ThemedText>
+        <ThemedThemedText>
           {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+        </ThemedThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
+        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedThemedText>
+        <ThemedThemedText>
           {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedThemedText> to get a fresh{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedThemedText> directory. This will move the current{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedThemedText> to{' '}
+          <ThemedText type="defaultSemiBold">app-example</ThemedThemedText>.
+        </ThemedThemedText>
       </ThemedView>
     </ParallaxScrollView>
   );
