@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, ViewStyle, TextStyle } from 'react-native';
+import { TextStyle, View, ViewStyle } from 'react-native';
 import { styles } from './Badge.style';
 
 export interface BadgeProps {
@@ -84,10 +84,16 @@ export function Badge({
 
   return (
     <View style={[styles.badge, getVariantStyle(), getSizeStyle(), style]}>
-      <Text style={[styles.text, getTextVariantStyle(), getTextSizeStyle(), textStyle]}>
+      <ThemedText
+        style={[
+          styles.text,
+          getTextVariantStyle(),
+          getTextSizeStyle(),
+          textStyle,
+        ]}
+      >
         {label}
-      </Text>
+      </ThemedText>
     </View>
   );
 }
-

@@ -17,7 +17,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   TouchableOpacity,
 } from 'react-native';
 import { styles } from './login.style'; // Reusing login styles
@@ -190,7 +189,9 @@ export default function RegisterScreen() {
             {/* Divider */}
             <ThemedView style={styles.divider}>
               <ThemedView style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Or continue with</Text>
+              <ThemedText style={styles.dividerText}>
+                Or continue with
+              </ThemedText>
               <ThemedView style={styles.dividerLine} />
             </ThemedView>
 
@@ -206,18 +207,22 @@ export default function RegisterScreen() {
                 size={24}
                 color={primaryColor}
               />
-              <Text style={[styles.googleButtonText, { color: textColor }]}>
+              <ThemedText
+                style={[styles.googleButtonText, { color: textColor }]}
+              >
                 Sign up with Google
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
 
             {/* Footer */}
             <ThemedView style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
+              <ThemedText style={styles.footerText}>
+                Already have an account?
+              </ThemedText>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={[styles.linkText, { color: primaryColor }]}>
+                <ThemedText style={[styles.linkText, { color: primaryColor }]}>
                   Sign In
-                </Text>
+                </ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>

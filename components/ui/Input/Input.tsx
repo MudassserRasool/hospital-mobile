@@ -3,10 +3,12 @@
  * Modern text input with label and error states
  */
 
-import React from 'react';
-import { View, TextInput, Text, TextInputProps } from 'react-native';
-import { styles } from './Input.style';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import React from 'react';
+import { TextInput, TextInputProps } from 'react-native';
+import { styles } from './Input.style';
 
 export interface InputProps extends TextInputProps {
   label?: string;
@@ -32,12 +34,18 @@ export function Input({
   const backgroundColor = useThemeColor({}, 'background');
 
   return (
-    <View style={[styles.container, containerStyle]}>
-      {label && <Text style={[styles.label, { color: textColor }]}>{label}</Text>}
-      
-      <View style={[styles.inputContainer, error && styles.inputError]}>
-        {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-        
+    <ThemedView style={[styles.container, containerStyle]}>
+      {label && (
+        <ThemedText style={[styles.label, { color: textColor }]}>
+          {label}
+        </ThemedText>
+      )}
+
+      <ThemedView style={[styles.inputContainer, error && styles.inputError]}>
+        {leftIcon && (
+          <ThemedView style={styles.leftIcon}>{leftIcon}</ThemedView>
+        )}
+
         <TextInput
           style={[
             styles.input,
@@ -49,13 +57,16 @@ export function Input({
           placeholderTextColor="#9CA3AF"
           {...props}
         />
-        
-        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
-      </View>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      {helperText && !error && <Text style={styles.helperText}>{helperText}</Text>}
-    </View>
+        {rightIcon && (
+          <ThemedView style={styles.rightIcon}>{rightIcon}</ThemedView>
+        )}
+      </ThemedView>
+
+      {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
+      {helperText && !error && (
+        <ThemedText style={styles.helperText}>{helperText}</ThemedText>
+      )}
+    </ThemedView>
   );
 }
-

@@ -18,7 +18,6 @@ import {
   Image,
   RefreshControl,
   ScrollView,
-  Text,
   TouchableOpacity,
 } from 'react-native';
 import { styles } from './styles/dashboard.style';
@@ -58,14 +57,16 @@ export default function PatientDashboard() {
         <ThemedView style={styles.banner}>
           <ThemedView style={styles.bannerContent}>
             <ThemedView>
-              <Text style={styles.bannerTitle}>Medical Checks!</Text>
-              <Text style={styles.bannerDescription}>
+              <ThemedText style={styles.bannerTitle}>
+                Medical Checks!
+              </ThemedText>
+              <ThemedText style={styles.bannerDescription}>
                 Check your health condition regularly to minimize the incidence
                 of disease in the future.
-              </Text>
+              </ThemedText>
             </ThemedView>
             <TouchableOpacity style={styles.bannerButton}>
-              <Text style={styles.bannerButtonText}>Check Now</Text>
+              <ThemedText style={styles.bannerButtonText}>Check Now</ThemedText>
             </TouchableOpacity>
           </ThemedView>
           <Image
@@ -78,18 +79,22 @@ export default function PatientDashboard() {
         <ThemedView style={[styles.banner, { backgroundColor: '#5F27CD' }]}>
           <ThemedView style={styles.bannerContent}>
             <ThemedView>
-              <Text style={styles.bannerTitle}>Book Appointment</Text>
-              <Text style={styles.bannerDescription}>
+              <ThemedText style={styles.bannerTitle}>
+                Book Appointment
+              </ThemedText>
+              <ThemedText style={styles.bannerDescription}>
                 Schedule appointments with top doctors at your convenience.
-              </Text>
+              </ThemedText>
             </ThemedView>
             <TouchableOpacity
               style={styles.bannerButton}
               onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
             >
-              <Text style={[styles.bannerButtonText, { color: '#5F27CD' }]}>
+              <ThemedText
+                style={[styles.bannerButtonText, { color: '#5F27CD' }]}
+              >
                 Book Now
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>
@@ -169,20 +174,22 @@ export default function PatientDashboard() {
           </ThemedText>
           <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialIcons name="star" size={16} color="#FD9644" />
-            <Text style={{ fontSize: 14, marginLeft: 4, color: '#6B7280' }}>
+            <ThemedText
+              style={{ fontSize: 14, marginLeft: 4, color: '#6B7280' }}
+            >
               {item.rating} ({item.reviewCount})
-            </Text>
+            </ThemedText>
           </ThemedView>
         </ThemedView>
         <ThemedView
           style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}
         >
           <MaterialIcons name="favorite-border" size={22} color="#9CA3AF" />
-          <Text
+          <ThemedText
             style={{ fontSize: 16, fontWeight: '600', color: primaryColor }}
           >
             Rs.{item.consultationFee}
-          </Text>
+          </ThemedText>
         </ThemedView>
       </ThemedView>
     </TouchableOpacity>
@@ -201,7 +208,7 @@ export default function PatientDashboard() {
               style={styles.avatar}
             />
             <ThemedView style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Good Morning 👋</Text>
+              <ThemedText style={styles.greeting}>Good Morning 👋</ThemedText>
               <ThemedText style={styles.userName}>
                 {user?.name || 'Andrew Ainsley'}
               </ThemedText>
@@ -255,7 +262,7 @@ export default function PatientDashboard() {
             style={styles.seeAllButton}
             onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <ThemedText style={styles.seeAllText}>See All</ThemedText>
           </TouchableOpacity>
         </ThemedView>
 
@@ -276,7 +283,7 @@ export default function PatientDashboard() {
             style={styles.seeAllButton}
             onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <ThemedText style={styles.seeAllText}>See All</ThemedText>
           </TouchableOpacity>
         </ThemedView>
 
@@ -295,14 +302,14 @@ export default function PatientDashboard() {
               ]}
               onPress={() => setSelectedFilter(filter)}
             >
-              <Text
+              <ThemedText
                 style={[
                   styles.filterChipText,
                   selectedFilter === filter && styles.filterChipTextActive,
                 ]}
               >
                 {filter}
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
           ))}
         </ScrollView>

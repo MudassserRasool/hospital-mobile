@@ -3,17 +3,16 @@
  * Modern, accessible button with multiple variants
  */
 
+import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import {
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
-  ViewStyle,
   TextStyle,
+  TouchableOpacity,
   TouchableOpacityProps,
+  ViewStyle,
 } from 'react-native';
 import { styles } from './Button.style';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
 export interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -42,7 +41,7 @@ export function Button({
 }: ButtonProps) {
   const primaryColor = useThemeColor({}, 'primary');
   const textColor = useThemeColor({}, 'text');
-  
+
   const getVariantStyle = () => {
     switch (variant) {
       case 'primary':
@@ -119,13 +118,17 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : primaryColor}
+          color={
+            variant === 'primary' || variant === 'danger'
+              ? '#FFFFFF'
+              : primaryColor
+          }
           size="small"
         />
       ) : (
         <>
           {leftIcon && <>{leftIcon}</>}
-          <Text
+          <ThemedText
             style={[
               styles.text,
               getTextVariantStyle(),
@@ -135,11 +138,10 @@ export function Button({
             ]}
           >
             {title}
-          </Text>
+          </ThemedText>
           {rightIcon && <>{rightIcon}</>}
         </>
       )}
     </TouchableOpacity>
   );
 }
-

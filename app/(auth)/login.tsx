@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   TouchableOpacity,
 } from 'react-native';
 // import { ThemedText } from '@/components/themed-text';
@@ -166,7 +165,9 @@ export default function LoginScreen() {
             {/* Divider */}
             <ThemedView style={styles.divider}>
               <ThemedView style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Or continue with</Text>
+              <ThemedText style={styles.dividerText}>
+                Or continue with
+              </ThemedText>
               <ThemedView style={styles.dividerLine} />
             </ThemedView>
 
@@ -182,18 +183,22 @@ export default function LoginScreen() {
                 size={24}
                 color={primaryColor}
               />
-              <Text style={[styles.googleButtonText, { color: textColor }]}>
+              <ThemedText
+                style={[styles.googleButtonText, { color: textColor }]}
+              >
                 Sign in with Google
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
 
             {/* Footer */}
             <ThemedView style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
+              <ThemedText style={styles.footerText}>
+                Don't have an account?
+              </ThemedText>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-                <Text style={[styles.linkText, { color: primaryColor }]}>
+                <ThemedText style={[styles.linkText, { color: primaryColor }]}>
                   Sign Up
-                </Text>
+                </ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>

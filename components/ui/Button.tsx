@@ -1,10 +1,19 @@
-import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import React from 'react';
+import { TouchableOpacity } from 'react-native';
 
-export default function Button({ children, onPress }:{ children:any; onPress?:any }){
+export default function Button({
+  children,
+  onPress,
+}: {
+  children: any;
+  onPress?: any;
+}) {
   return (
-    <TouchableOpacity onPress={onPress} style={{padding:10, backgroundColor:'#0066ff', borderRadius:8}}>
-      <Text style={{color:'#fff'}}>{children}</Text>
+    <TouchableOpacity
+      onPress={onPress}
+      style={{ padding: 10, backgroundColor: '#0066ff', borderRadius: 8 }}
+    >
+      <ThemedText style={{ color: '#fff' }}>{children}</ThemedText>
     </TouchableOpacity>
-  )
+  );
 }

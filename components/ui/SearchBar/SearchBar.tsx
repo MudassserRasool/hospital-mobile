@@ -3,11 +3,17 @@
  * Search input with icon and clear button
  */
 
-import React from 'react';
-import { View, TextInput, TouchableOpacity, TextInputProps } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { styles } from './SearchBar.style';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import {
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { styles } from './SearchBar.style';
+// import { styles } from './SearchBar.style';
 
 export interface SearchBarProps extends TextInputProps {
   onClear?: () => void;
@@ -31,8 +37,13 @@ export function SearchBar({
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <MaterialIcons name="search" size={20} color={iconColor} style={styles.searchIcon} />
-        
+        <MaterialIcons
+          name="search"
+          size={20}
+          color={iconColor}
+          style={styles.searchIcon}
+        />
+
         <TextInput
           style={[styles.input, { color: textColor }]}
           placeholder={placeholder}
@@ -41,7 +52,7 @@ export function SearchBar({
           onChangeText={onChangeText}
           {...props}
         />
-        
+
         {value && value.length > 0 && (
           <TouchableOpacity onPress={onClear} style={styles.clearButton}>
             <MaterialIcons name="close" size={18} color={iconColor} />
@@ -57,4 +68,3 @@ export function SearchBar({
     </View>
   );
 }
-
