@@ -1,104 +1,57 @@
-// src/redux/authSlice.js
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createSlice, Dispatch } from '@reduxjs/toolkit';
+/**
+ * Authentication Redux Slice
+ */
 
-// Helper function to manage AsyncStorage interactions
-const setTokenToStorage = async (token: string) => {
-  try {
-    await AsyncStorage.setItem('token', token);
-  } catch (error) {
-    console.error('Failed to save the token to storage:', error);
-  }
-};
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User } from '@/types';
 
-const setRoleToStorage = async (role: string) => {
-  try {
-    await AsyncStorage.setItem('role', role);
-  } catch (error) {
-    console.error('Failed to save the role to storage:', error);
-  }
-};
-
-const removeTokenFromStorage = async () => {
-  try {
-    await AsyncStorage.removeItem('token');
-  } catch (error) {
-    console.error('Failed to remove the token from storage:', error);
-  }
-};
-const removeRoleFromStorage = async () => {
-  try {
-    await AsyncStorage.removeItem('role');
-  } catch (error) {
-    console.error('Failed to remove the role from storage:', error);
-  }
-};
-
-const getTokenFromStorage = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    return token || null;
-  } catch (error) {
-    console.error('Failed to retrieve the token from storage:', error);
-    return null;
-  }
-};
-
-const getRoleFromStorage = async () => {
-  try {
-    const role = await AsyncStorage.getItem('role');
-    return role || null;
-  } catch (error) {
-    console.error('Failed to retrieve the role from storage:', error);
-    return null;
-  }
-};
 interface AuthState {
+  user: User | null;
   token: string | null;
-  role: string | null;
+  role: 'patient' | 'staff' | 'owner' | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
+
 const initialState: AuthState = {
+  user: null,
   token: null,
   role: null,
+  isAuthenticated: false,
+  isLoading: false,
 };
 
-// Define the slice
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials: (state, action) => {
-      const { token, role } = action.payload;
-      state.token = token;
-      state.role = role;
-
-      // Persist the token in AsyncStorage
-      setTokenToStorage(token);
-      setRoleToStorage(role);
+    setCredentials: (
+      state,
+      action: PayloadAction<{ user: User; token: string; role: 'patient' | 'staff' | 'owner' }>
+    ) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.role = action.payload.role;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
     },
     logout: (state) => {
+      state.user = null;
       state.token = null;
       state.role = null;
-
-      removeTokenFromStorage();
-      removeRoleFromStorage();
+      state.isAuthenticated = false;
+      state.isLoading = false;
     },
-    initializeToken: (state, action) => {
-      const { token, role } = action.payload;
-      state.token = token;
-      state.role = role;
+    updateUser: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
     },
   },
 });
 
-export const { setCredentials, logout, initializeToken } = authSlice.actions;
-
-// Thunk to initialize token from AsyncStorage
-export const initializeAuth = () => async (dispatch: Dispatch) => {
-  const token = await getTokenFromStorage();
-  const role = await getRoleFromStorage();
-  // dispatch(setCredentials({ token, role }));
-  dispatch(initializeToken({ token, role }));
-};
-
+export const { setCredentials, setLoading, logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;

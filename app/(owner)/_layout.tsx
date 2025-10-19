@@ -1,11 +1,21 @@
-import React from "react";
-import { Slot } from "expo-router";
-
 /**
- * Owner group layout
- * Created: 2025-10-19T08:48:30.736Z
+ * Owner Module Layout
+ * Stack navigation for owner screens
  */
 
-export default function Layout() {
-  return <Slot />;
+import { Stack } from 'expo-router';
+
+export default function OwnerLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="dashboard" />
+      <Stack.Screen name="staff-list" />
+      <Stack.Screen name="staff-details" />
+      <Stack.Screen name="add-staff" />
+      <Stack.Screen name="leave-approvals" />
+      <Stack.Screen name="doctor-appointments" />
+      <Stack.Screen name="hospital-profile" />
+      <Stack.Screen name="bonuses" />
+    </Stack>
+  );
 }

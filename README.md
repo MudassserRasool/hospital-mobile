@@ -1,53 +1,195 @@
-# Welcome to your Expo app 👋
+# Hospital Management Mobile App 🏥
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive Hospital Management System built with **React Native (Expo)** featuring three distinct user roles: Patient, Staff, and Owner. Beautiful, modern UI with role-based navigation.
 
-## Get started
+## 📱 Features
 
-1. Install dependencies
+### Patient Module
+- ✨ Beautiful dashboard with doctor specialties
+- 🔍 Browse and search doctors with filters
+- 📅 Book appointments with date/time selection
+- 💳 Integrated payment system with wallet
+- 📊 Appointment history and detailed views
+- 💰 Digital wallet with transaction history
 
-   ```bash
-   npm install
-   ```
+### Staff Module
+- 📍 Check-in/Check-out with location & WiFi verification
+- 📆 Attendance history and tracking
+- 🏖️ Leave management system
+- 📝 Request leave functionality
+- ⏰ Work hours statistics
+- 📊 Performance dashboards
 
-2. Start the app
+### Owner Module
+- 📊 Comprehensive hospital dashboard
+- 👥 Staff management (add, edit, view)
+- ✅ Leave request approvals
+- 📅 Doctor appointment management
+- 🏥 Hospital profile management
+- 🎁 Staff bonus system
+- 💰 Revenue and analytics
 
-   ```bash
-   npx expo start
-   ```
+## 🛠️ Tech Stack
 
-In the output, you'll find options to open the app in a
+- **Framework**: React Native with Expo SDK 54
+- **Language**: TypeScript
+- **State Management**: Redux Toolkit (RTK)
+- **API Integration**: RTK Query
+- **Navigation**: Expo Router (file-based routing)
+- **Styling**: Custom StyleSheets with modern theme
+- **Icons**: @expo/vector-icons (Material Icons)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🎨 Design System
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Theme Colors
+- **Primary**: `#4B7BEC` (Vibrant Blue)
+- **Secondary**: `#5F27CD` (Purple)
+- **Success**: `#26DE81`
+- **Warning**: `#FD9644`
+- **Error**: `#FC5C65`
 
-## Get a fresh project
+### Typography
+- Font sizes: xs (12px) to 5xl (40px)
+- Weights: regular, medium, semibold, bold, extrabold
 
-When you're ready, run:
+### Components
+- Modern Button component with variants
+- Card component with elevation/outlined styles
+- Input component with icons and validation
+- SearchBar with filters
+- Badge for status indicators
 
+## 📁 Project Structure
+
+```
+hospital-mobile/
+├── app/                          # Screens (Expo Router)
+│   ├── (auth)/                  # Authentication screens
+│   ├── (patient)/               # Patient module (7 screens)
+│   ├── (staff)/                 # Staff module (6 screens)
+│   ├── (owner)/                 # Owner module (8 screens)
+│   └── index.tsx                # Entry point with role-based routing
+├── components/
+│   ├── ui/                      # Reusable UI components
+│   └── role-specific/           # Role-specific components
+├── redux/
+│   ├── features/                # Redux slices & RTK Query APIs
+│   │   ├── auth/
+│   │   ├── patient/
+│   │   ├── staff/
+│   │   └── owner/
+│   ├── apiSlice.ts             # RTK Query base API
+│   ├── rootReducer.ts          # Combined reducers
+│   └── store.ts                # Redux store
+├── constants/
+│   ├── theme.ts                # Theme configuration
+│   ├── routes.ts               # Route definitions
+│   ├── roles.ts                # User roles
+│   └── enviroment.ts           # Environment variables
+├── types/                       # TypeScript type definitions
+├── utils/
+│   └── mockData.ts             # Mock data for development
+└── hooks/                       # Custom React hooks
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+
+### Installation
+
+1. Clone the repository
 ```bash
-npm run reset-project
+git clone <repository-url>
+cd hospital-mobile
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies
+```bash
+npm install
+```
 
-## Learn more
+3. Create `.env` file in the root directory
+```env
+EXPO_PUBLIC_API_BASE_URL=https://api.yourhospital.com
+EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID=your-client-id
+EXPO_PUBLIC_EASYPAISA_MERCHANT_ID=your-merchant-id
+EXPO_PUBLIC_HOSPITAL_WIFI_SSID=HospitalWiFi
+EXPO_PUBLIC_HOSPITAL_LATITUDE=31.4697
+EXPO_PUBLIC_HOSPITAL_LONGITUDE=74.2728
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Start the development server
+```bash
+npm start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+5. Run on your device
+- Install Expo Go app on your mobile device
+- Scan the QR code from the terminal
+- Or press `a` for Android emulator, `i` for iOS simulator
 
-## Join the community
+## 📱 User Roles & Access
 
-Join our community of developers creating universal apps.
+### Mock Login Credentials
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Patient:**
+- Any email with mock authentication
+- Navigates to Patient Dashboard
 
-Bootstrap project
-npm run bootstrap:structure
+**Staff:**
+- Change role in login.tsx to 'staff'
+- Navigates to Staff Dashboard
+
+**Owner:**
+- Change role in login.tsx to 'owner'
+- Navigates to Owner Dashboard
+
+## 🎯 Key Features Implemented
+
+### Authentication
+- ✅ Login with Google OAuth support
+- ✅ Registration screen
+- ✅ Role-based routing
+- ✅ Persistent authentication with AsyncStorage
+
+### UI/UX
+- ✅ Modern, clean interface
+- ✅ Smooth animations
+- ✅ Pull-to-refresh functionality
+- ✅ Loading states
+- ✅ Empty states
+- ✅ Error handling
+- ✅ Search and filter functionality
+
+### Data Management
+- ✅ Complete Redux Toolkit setup
+- ✅ RTK Query for API calls
+- ✅ Mock data for development
+- ✅ Type-safe throughout
+
+## 🔜 Future Enhancements
+
+- [ ] Real API integration
+- [ ] Push notifications
+- [ ] Real-time updates
+- [ ] Image upload functionality
+- [ ] PDF report generation
+- [ ] Analytics dashboard
+- [ ] Multi-language support
+- [ ] Dark mode
+- [ ] Offline support
+
+## 📄 License
+
+This project is private and proprietary.
+
+## 👥 Credits
+
+Developed with ❤️ for modern healthcare management.
+
+---
+
+**Note**: This app uses mock data for development. Replace with real API endpoints for production use.

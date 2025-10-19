@@ -1,88 +1,73 @@
-import { apiSlice } from '@/redux/apiSlice';
-import { EndpointBuilder } from '@reduxjs/toolkit/query';
+/**
+ * Authentication API endpoints
+ */
+
+import { apiSlice } from '../../apiSlice';
+import { User } from '@/types';
+
+interface LoginRequest {
+  googleToken: string;
+}
+
+interface LoginResponse {
+  user: User;
+  token: string;
+  role: 'patient' | 'staff' | 'owner';
+}
+
+interface RegisterRequest {
+  googleToken: string;
+  role: 'patient' | 'staff' | 'owner';
+  name: string;
+  email: string;
+}
 
 export const authApi = apiSlice.injectEndpoints({
-  endpoints: (builder: EndpointBuilder<any, any, any>) => ({
-    login: builder.mutation({
-      query: (credentials: Login) => ({
-        url: '/user/login',
+  endpoints: (builder) => ({
+    googleLogin: builder.mutation<LoginResponse, LoginRequest>({
+      query: (credentials) => ({
+        url: '/auth/google/login',
         method: 'POST',
         body: credentials,
       }),
-      // invalidatesTags: ['users'],
+      invalidatesTags: ['Auth', 'User'],
     }),
-
-    signup: builder.mutation({
-      query: (credentials: Signup) => ({
-        url: '/user/register',
-        method: 'POST',
-        body: credentials,
-      }),
-      // invalidatesTags: ['users'],
-    }),
-
-    // verify signup otp
-    verifyOtp: builder.mutation({
+    
+    googleRegister: builder.mutation<LoginResponse, RegisterRequest>({
       query: (data) => ({
-        url: '/user/verify-signup-otp',
+        url: '/auth/google/register',
         method: 'POST',
         body: data,
       }),
-      // invalidatesTags: ['users'],
+      invalidatesTags: ['Auth', 'User'],
     }),
-
-    // resend signup otp
-
-    resendOtp: builder.mutation({
-      query: (email: string) => ({
-        url: '/user/resend-otp',
+    
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/auth/logout',
         method: 'POST',
-        body: { email },
       }),
-      // invalidatesTags: ['users'],
+      invalidatesTags: ['Auth'],
     }),
-
-    // GET OTP FORGOT PASSWORD
-    // getOtpForgotPassword: builder.mutation({
-    //   query: (email: string) => ({
-    //     url: '/user/forget-password',
-    //     method: 'POST',
-    //     body: { email },
-    //   }),
-    //   // invalidatesTags: ['users'],
-    // }),
-
-    // verify forgot password otp
-    verifyResendOtp: builder.mutation({
-      query: (data) => ({
-        url: '/user/verify-resend-otp',
-        method: 'POST',
-        body: data,
-      }),
-      // invalidatesTags: ['users'],
+    
+    getCurrentUser: builder.query<User, void>({
+      query: () => '/auth/me',
+      providesTags: ['User'],
     }),
-
-    // reset password
-    resetPassword: builder.mutation({
-      query: (data) => ({
-        url: '/user/reset-password',
+    
+    refreshToken: builder.mutation<{ token: string }, void>({
+      query: () => ({
+        url: '/auth/refresh',
         method: 'POST',
-        body: data,
       }),
-      // invalidatesTags: ['users'],
     }),
   }),
 });
 
 export const {
-  useLoginMutation,
-  useSignupMutation,
-  useVerifyOtpMutation,
-  useResendOtpMutation,
-  // useGetOtpForgotPasswordMutation,
-  useVerifyResendOtpMutation,
-  useResetPasswordMutation,
+  useGoogleLoginMutation,
+  useGoogleRegisterMutation,
+  useLogoutMutation,
+  useGetCurrentUserQuery,
+  useRefreshTokenMutation,
 } = authApi;
-
-// how to sue useResetPasswordMutation
-// const [resetPassword, { isLoading: resetPasswordLoading }] = useResetPasswordMutation();
