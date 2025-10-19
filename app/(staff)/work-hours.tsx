@@ -3,18 +3,23 @@
  * View detailed work hours statistics
  */
 
-import React from 'react';
-import {
-  View,
-  ScrollView,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
 import { mockWorkHours } from '@/utils/mockData';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 export default function WorkHoursScreen() {
   const workHours = mockWorkHours;
@@ -68,21 +73,32 @@ export default function WorkHoursScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Summary Card */}
         <Card style={styles.summaryCard}>
-          <ThemedText style={styles.summaryTitle}>Total Hours This Month</ThemedText>
-          <ThemedText style={styles.summaryValue}>{workHours.monthly}h</ThemedText>
+          <ThemedText style={styles.summaryTitle}>
+            Total Hours This Month
+          </ThemedText>
+          <ThemedText style={styles.summaryValue}>
+            {workHours.monthly}h
+          </ThemedText>
           <View style={styles.progressBar}>
             <View
               style={[
                 styles.progressFill,
                 {
-                  width: `${Math.min(getPercentage(workHours.monthly, workHours.expectedMonthly), 100)}%`,
-                  backgroundColor: getStatusColor(workHours.monthly, workHours.expectedMonthly),
+                  width: `${Math.min(
+                    getPercentage(workHours.monthly, workHours.expectedMonthly),
+                    100
+                  )}%`,
+                  backgroundColor: getStatusColor(
+                    workHours.monthly,
+                    workHours.expectedMonthly
+                  ),
                 },
               ]}
             />
           </View>
           <ThemedText style={styles.progressText}>
-            {getPercentage(workHours.monthly, workHours.expectedMonthly)}% of {workHours.expectedMonthly}h expected
+            {getPercentage(workHours.monthly, workHours.expectedMonthly)}% of{' '}
+            {workHours.expectedMonthly}h expected
           </ThemedText>
         </Card>
 
@@ -98,10 +114,16 @@ export default function WorkHoursScreen() {
                 />
               </View>
               <View style={styles.periodInfo}>
-                <ThemedText style={styles.periodTitle}>{period.title}</ThemedText>
+                <ThemedText style={styles.periodTitle}>
+                  {period.title}
+                </ThemedText>
                 <View style={styles.hoursRow}>
-                  <ThemedText style={styles.actualHours}>{period.actual}h</ThemedText>
-                  <ThemedText style={styles.expectedHours}>/ {period.expected}h</ThemedText>
+                  <ThemedText style={styles.actualHours}>
+                    {period.actual}h
+                  </ThemedText>
+                  <ThemedText style={styles.expectedHours}>
+                    / {period.expected}h
+                  </ThemedText>
                 </View>
               </View>
             </View>
@@ -112,8 +134,14 @@ export default function WorkHoursScreen() {
                 style={[
                   styles.miniProgressFill,
                   {
-                    width: `${Math.min(getPercentage(period.actual, period.expected), 100)}%`,
-                    backgroundColor: getStatusColor(period.actual, period.expected),
+                    width: `${Math.min(
+                      getPercentage(period.actual, period.expected),
+                      100
+                    )}%`,
+                    backgroundColor: getStatusColor(
+                      period.actual,
+                      period.expected
+                    ),
                   },
                 ]}
               />
@@ -123,7 +151,12 @@ export default function WorkHoursScreen() {
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <ThemedText style={styles.statLabel}>Completed</ThemedText>
-                <ThemedText style={[styles.statValue, { color: getStatusColor(period.actual, period.expected) }]}>
+                <ThemedText
+                  style={[
+                    styles.statValue,
+                    { color: getStatusColor(period.actual, period.expected) },
+                  ]}
+                >
                   {getPercentage(period.actual, period.expected)}%
                 </ThemedText>
               </View>
@@ -139,25 +172,49 @@ export default function WorkHoursScreen() {
 
         {/* Breakdown */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Work Hours Breakdown</ThemedText>
+          <ThemedText style={styles.sectionTitle}>
+            Work Hours Breakdown
+          </ThemedText>
           <Card>
             <View style={styles.breakdownItem}>
-              <View style={[styles.breakdownDot, { backgroundColor: StatusColors.success }]} />
-              <ThemedText style={styles.breakdownLabel}>Regular Hours</ThemedText>
+              <View
+                style={[
+                  styles.breakdownDot,
+                  { backgroundColor: StatusColors.success },
+                ]}
+              />
+              <ThemedText style={styles.breakdownLabel}>
+                Regular Hours
+              </ThemedText>
               <ThemedText style={styles.breakdownValue}>165h</ThemedText>
             </View>
             <View style={styles.breakdownItem}>
-              <View style={[styles.breakdownDot, { backgroundColor: StatusColors.info }]} />
+              <View
+                style={[
+                  styles.breakdownDot,
+                  { backgroundColor: StatusColors.info },
+                ]}
+              />
               <ThemedText style={styles.breakdownLabel}>Overtime</ThemedText>
               <ThemedText style={styles.breakdownValue}>15h</ThemedText>
             </View>
             <View style={styles.breakdownItem}>
-              <View style={[styles.breakdownDot, { backgroundColor: StatusColors.warning }]} />
+              <View
+                style={[
+                  styles.breakdownDot,
+                  { backgroundColor: StatusColors.warning },
+                ]}
+              />
               <ThemedText style={styles.breakdownLabel}>Weekend</ThemedText>
               <ThemedText style={styles.breakdownValue}>0h</ThemedText>
             </View>
             <View style={styles.breakdownItem}>
-              <View style={[styles.breakdownDot, { backgroundColor: StatusColors.error }]} />
+              <View
+                style={[
+                  styles.breakdownDot,
+                  { backgroundColor: StatusColors.error },
+                ]}
+              />
               <ThemedText style={styles.breakdownLabel}>Holiday</ThemedText>
               <ThemedText style={styles.breakdownValue}>0h</ThemedText>
             </View>

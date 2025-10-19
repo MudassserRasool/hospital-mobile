@@ -3,20 +3,23 @@
  * Staff attendance check-in with verification
  */
 
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Card, Button, Badge } from '@/components/ui';
+import { Badge, Button, Card } from '@/components/ui';
+import {
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
 import { mockCurrentCheckIn } from '@/utils/mockData';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
 
 export default function CheckInOutScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +35,10 @@ export default function CheckInOutScreen() {
 
   const handleCheckIn = async () => {
     if (!locationVerified || !wifiVerified) {
-      Alert.alert('Verification Failed', 'Please ensure you are at the hospital premises with hospital WiFi');
+      Alert.alert(
+        'Verification Failed',
+        'Please ensure you are at the hospital premises with hospital WiFi'
+      );
       return;
     }
 
@@ -50,30 +56,26 @@ export default function CheckInOutScreen() {
   };
 
   const handleCheckOut = async () => {
-    Alert.alert(
-      'Confirm Check Out',
-      'Are you sure you want to check out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Check Out',
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              await new Promise((resolve) => setTimeout(resolve, 1500));
-              setIsCheckedIn(false);
-              Alert.alert('Success', 'Successfully checked out!', [
-                { text: 'OK', onPress: () => router.back() },
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to check out. Please try again.');
-            } finally {
-              setIsLoading(false);
-            }
-          },
+    Alert.alert('Confirm Check Out', 'Are you sure you want to check out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Check Out',
+        onPress: async () => {
+          setIsLoading(true);
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            setIsCheckedIn(false);
+            Alert.alert('Success', 'Successfully checked out!', [
+              { text: 'OK', onPress: () => router.back() },
+            ]);
+          } catch (error) {
+            Alert.alert('Error', 'Failed to check out. Please try again.');
+          } finally {
+            setIsLoading(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -91,21 +93,34 @@ export default function CheckInOutScreen() {
         <Card style={styles.timeCard}>
           <ThemedText style={styles.timeLabel}>Current Time</ThemedText>
           <ThemedText style={styles.timeValue}>
-            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {currentTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            })}
           </ThemedText>
           <ThemedText style={styles.dateValue}>
-            {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {currentTime.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </ThemedText>
         </Card>
 
         {/* Status */}
-        <Card style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}>
+        <Card
+          style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}
+        >
           <View style={styles.statusHeader}>
             <View style={styles.statusIconContainer}>
               <MaterialIcons
                 name={isCheckedIn ? 'check-circle' : 'access-time'}
                 size={60}
-                color={isCheckedIn ? StatusColors.success : NeutralColors.gray400}
+                color={
+                  isCheckedIn ? StatusColors.success : NeutralColors.gray400
+                }
               />
             </View>
             <ThemedText style={styles.statusTitle}>
@@ -113,7 +128,13 @@ export default function CheckInOutScreen() {
             </ThemedText>
             {isCheckedIn && mockCurrentCheckIn && (
               <ThemedText style={styles.statusTime}>
-                Since {new Date(mockCurrentCheckIn.checkInTime || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                Since{' '}
+                {new Date(
+                  mockCurrentCheckIn.checkInTime || ''
+                ).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </ThemedText>
             )}
           </View>
@@ -121,18 +142,26 @@ export default function CheckInOutScreen() {
 
         {/* Verification Status */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Verification Status</ThemedText>
+          <ThemedText style={styles.sectionTitle}>
+            Verification Status
+          </ThemedText>
           <Card style={styles.verificationCard}>
             <View style={styles.verificationItem}>
               <MaterialIcons
                 name={locationVerified ? 'check-circle' : 'cancel'}
                 size={24}
-                color={locationVerified ? StatusColors.success : StatusColors.error}
+                color={
+                  locationVerified ? StatusColors.success : StatusColors.error
+                }
               />
               <View style={styles.verificationText}>
-                <ThemedText style={styles.verificationLabel}>Location</ThemedText>
+                <ThemedText style={styles.verificationLabel}>
+                  Location
+                </ThemedText>
                 <ThemedText style={styles.verificationStatus}>
-                  {locationVerified ? 'Within hospital premises' : 'Outside hospital'}
+                  {locationVerified
+                    ? 'Within hospital premises'
+                    : 'Outside hospital'}
                 </ThemedText>
               </View>
             </View>
@@ -143,9 +172,13 @@ export default function CheckInOutScreen() {
                 color={wifiVerified ? StatusColors.success : StatusColors.error}
               />
               <View style={styles.verificationText}>
-                <ThemedText style={styles.verificationLabel}>WiFi Connection</ThemedText>
+                <ThemedText style={styles.verificationLabel}>
+                  WiFi Connection
+                </ThemedText>
                 <ThemedText style={styles.verificationStatus}>
-                  {wifiVerified ? 'Connected to hospital WiFi' : 'Not connected'}
+                  {wifiVerified
+                    ? 'Connected to hospital WiFi'
+                    : 'Not connected'}
                 </ThemedText>
               </View>
             </View>
@@ -155,10 +188,14 @@ export default function CheckInOutScreen() {
         {/* Today's Summary */}
         {isCheckedIn && (
           <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Today's Summary</ThemedText>
+            <ThemedText style={styles.sectionTitle}>
+              Today&apos;s Summary
+            </ThemedText>
             <View style={styles.summaryGrid}>
               <Card style={styles.summaryCard}>
-                <ThemedText style={styles.summaryLabel}>Hours Worked</ThemedText>
+                <ThemedText style={styles.summaryLabel}>
+                  Hours Worked
+                </ThemedText>
                 <ThemedText style={styles.summaryValue}>7.5h</ThemedText>
               </Card>
               <Card style={styles.summaryCard}>
@@ -166,7 +203,7 @@ export default function CheckInOutScreen() {
                 <Badge label="On Time" variant="success" />
               </Card>
             </View>
-          </Card>
+          </View>
         )}
       </ScrollView>
 

@@ -3,19 +3,27 @@
  * Submit new leave request
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Button, Card, Input } from '@/components/ui';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Button, Card, Input } from '@/components/ui';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius } from '@/constants/theme';
 
 export default function RequestLeaveScreen() {
   const [leaveType, setLeaveType] = useState('');
@@ -41,7 +49,7 @@ export default function RequestLeaveScreen() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       Alert.alert(
         'Success!',
         'Your leave request has been submitted successfully.',
@@ -86,12 +94,18 @@ export default function RequestLeaveScreen() {
                 <MaterialIcons
                   name={type.icon as any}
                   size={32}
-                  color={leaveType === type.id ? BrandColors.primary : NeutralColors.gray600}
+                  color={
+                    leaveType === type.id
+                      ? BrandColors.primary
+                      : NeutralColors.gray600
+                  }
                 />
-                <ThemedText style={[
-                  styles.leaveTypeName,
-                  leaveType === type.id && styles.leaveTypeNameActive,
-                ]}>
+                <ThemedText
+                  style={[
+                    styles.leaveTypeName,
+                    leaveType === type.id && styles.leaveTypeNameActive,
+                  ]}
+                >
                   {type.name}
                 </ThemedText>
               </TouchableOpacity>
@@ -109,7 +123,13 @@ export default function RequestLeaveScreen() {
                 placeholder="YYYY-MM-DD"
                 value={startDate}
                 onChangeText={setStartDate}
-                leftIcon={<MaterialIcons name="calendar-today" size={20} color={NeutralColors.gray500} />}
+                leftIcon={
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={20}
+                    color={NeutralColors.gray500}
+                  />
+                }
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -118,7 +138,13 @@ export default function RequestLeaveScreen() {
                 placeholder="YYYY-MM-DD"
                 value={endDate}
                 onChangeText={setEndDate}
-                leftIcon={<MaterialIcons name="event" size={20} color={NeutralColors.gray500} />}
+                leftIcon={
+                  <MaterialIcons
+                    name="event"
+                    size={20}
+                    color={NeutralColors.gray500}
+                  />
+                }
               />
             </View>
           </View>
@@ -145,7 +171,7 @@ export default function RequestLeaveScreen() {
             <View style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Type:</ThemedText>
               <ThemedText style={styles.summaryValue}>
-                {leaveTypes.find(t => t.id === leaveType)?.name}
+                {leaveTypes.find((t) => t.id === leaveType)?.name}
               </ThemedText>
             </View>
             <View style={styles.summaryRow}>
@@ -156,8 +182,15 @@ export default function RequestLeaveScreen() {
             </View>
             <View style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Total Days:</ThemedText>
-              <ThemedText style={[styles.summaryValue, { color: BrandColors.primary }]}>
-                {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} day(s)
+              <ThemedText
+                style={[styles.summaryValue, { color: BrandColors.primary }]}
+              >
+                {Math.ceil(
+                  (new Date(endDate).getTime() -
+                    new Date(startDate).getTime()) /
+                    (1000 * 60 * 60 * 24)
+                ) + 1}{' '}
+                day(s)
               </ThemedText>
             </View>
           </Card>

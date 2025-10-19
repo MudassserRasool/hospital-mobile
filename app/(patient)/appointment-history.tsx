@@ -3,26 +3,34 @@
  * View past and upcoming appointments
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge } from '@/components/ui';
+import { PATIENT_ROUTES } from '@/constants/routes';
+import {
+  BorderRadius,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
+import { mockAppointments } from '@/utils/mockData';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
   FlatList,
-  TouchableOpacity,
   Image,
   RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Badge } from '@/components/ui';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { mockAppointments } from '@/utils/mockData';
-import { PATIENT_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, StatusColors, BorderRadius } from '@/constants/theme';
 
 export default function AppointmentHistoryScreen() {
-  const [selectedTab, setSelectedTab] = useState<'upcoming' | 'completed' | 'cancelled'>('upcoming');
+  const [selectedTab, setSelectedTab] = useState<
+    'upcoming' | 'completed' | 'cancelled'
+  >('upcoming');
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -46,32 +54,56 @@ export default function AppointmentHistoryScreen() {
   };
 
   const filteredAppointments = mockAppointments.filter((apt) => {
-    if (selectedTab === 'upcoming') return apt.status === 'confirmed' || apt.status === 'pending';
+    if (selectedTab === 'upcoming')
+      return apt.status === 'confirmed' || apt.status === 'pending';
     if (selectedTab === 'completed') return apt.status === 'completed';
     if (selectedTab === 'cancelled') return apt.status === 'cancelled';
     return true;
   });
 
-  const renderAppointmentCard = ({ item }: { item: typeof mockAppointments[0] }) => (
+  const renderAppointmentCard = ({
+    item,
+  }: {
+    item: (typeof mockAppointments)[0];
+  }) => (
     <TouchableOpacity
       style={styles.appointmentCard}
       onPress={() => router.push(PATIENT_ROUTES.APPOINTMENT_DETAILS)}
     >
       <View style={styles.appointmentHeader}>
-        <Image source={{ uri: item.doctor.avatar }} style={styles.doctorImage} />
+        <Image
+          source={{ uri: item.doctor.avatar }}
+          style={styles.doctorImage}
+        />
         <View style={styles.appointmentInfo}>
           <View style={styles.infoHeader}>
-            <ThemedText style={styles.doctorName}>{item.doctor.name}</ThemedText>
-            <Badge label={item.status} variant={getStatusVariant(item.status)} size="small" />
+            <ThemedText style={styles.doctorName}>
+              {item.doctor.name}
+            </ThemedText>
+            <Badge
+              label={item.status}
+              variant={getStatusVariant(item.status)}
+              size="small"
+            />
           </View>
-          <ThemedText style={styles.specialty}>{item.doctor.specialty}</ThemedText>
+          <ThemedText style={styles.specialty}>
+            {item.doctor.specialty}
+          </ThemedText>
           <View style={styles.dateTimeRow}>
             <View style={styles.dateTime}>
-              <MaterialIcons name="calendar-today" size={14} color={NeutralColors.gray500} />
+              <MaterialIcons
+                name="calendar-today"
+                size={14}
+                color={NeutralColors.gray500}
+              />
               <ThemedText style={styles.dateTimeText}>{item.date}</ThemedText>
             </View>
             <View style={styles.dateTime}>
-              <MaterialIcons name="access-time" size={14} color={NeutralColors.gray500} />
+              <MaterialIcons
+                name="access-time"
+                size={14}
+                color={NeutralColors.gray500}
+              />
               <ThemedText style={styles.dateTimeText}>{item.time}</ThemedText>
             </View>
           </View>
@@ -101,16 +133,15 @@ export default function AppointmentHistoryScreen() {
         {(['upcoming', 'completed', 'cancelled'] as const).map((tab) => (
           <TouchableOpacity
             key={tab}
-            style={[
-              styles.tab,
-              selectedTab === tab && styles.tabActive,
-            ]}
+            style={[styles.tab, selectedTab === tab && styles.tabActive]}
             onPress={() => setSelectedTab(tab)}
           >
-            <ThemedText style={[
-              styles.tabText,
-              selectedTab === tab && styles.tabTextActive,
-            ]}>
+            <ThemedText
+              style={[
+                styles.tabText,
+                selectedTab === tab && styles.tabTextActive,
+              ]}
+            >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </ThemedText>
           </TouchableOpacity>
@@ -123,11 +154,19 @@ export default function AppointmentHistoryScreen() {
         renderItem={renderAppointmentCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="event-busy" size={64} color={NeutralColors.gray300} />
-            <ThemedText style={styles.emptyText}>No appointments found</ThemedText>
+            <MaterialIcons
+              name="event-busy"
+              size={64}
+              color={NeutralColors.gray300}
+            />
+            <ThemedText style={styles.emptyText}>
+              No appointments found
+            </ThemedText>
           </View>
         }
       />

@@ -3,23 +3,24 @@
  * User registration with Google OAuth
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Button, Input } from '@/components/ui';
+import { PATIENT_ROUTES } from '@/constants/routes';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/hooks/useAuth';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Button, Input } from '@/components/ui';
-import { useAuth } from '@/hooks/useAuth';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { PATIENT_ROUTES } from '@/constants/routes';
 import { styles } from './login.style'; // Reusing login styles
 
 export default function RegisterScreen() {
@@ -110,7 +111,11 @@ export default function RegisterScreen() {
           <View style={styles.content}>
             {/* Logo and Title */}
             <View style={styles.logoContainer}>
-              <MaterialIcons name="local-hospital" size={80} color={primaryColor} />
+              <MaterialIcons
+                name="local-hospital"
+                size={80}
+                color={primaryColor}
+              />
               <ThemedText style={styles.title}>Create Account</ThemedText>
               <ThemedText style={styles.subtitle}>
                 Join us for better healthcare
@@ -124,7 +129,9 @@ export default function RegisterScreen() {
                 placeholder="Enter your full name"
                 value={name}
                 onChangeText={setName}
-                leftIcon={<MaterialIcons name="person" size={20} color="#9CA3AF" />}
+                leftIcon={
+                  <MaterialIcons name="person" size={20} color="#9CA3AF" />
+                }
               />
 
               <Input
@@ -134,7 +141,9 @@ export default function RegisterScreen() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<MaterialIcons name="email" size={20} color="#9CA3AF" />}
+                leftIcon={
+                  <MaterialIcons name="email" size={20} color="#9CA3AF" />
+                }
               />
 
               <Input
@@ -143,9 +152,13 @@ export default function RegisterScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                leftIcon={<MaterialIcons name="lock" size={20} color="#9CA3AF" />}
+                leftIcon={
+                  <MaterialIcons name="lock" size={20} color="#9CA3AF" />
+                }
                 rightIcon={
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
                     <MaterialIcons
                       name={showPassword ? 'visibility' : 'visibility-off'}
                       size={20}
@@ -161,7 +174,9 @@ export default function RegisterScreen() {
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
-                leftIcon={<MaterialIcons name="lock" size={20} color="#9CA3AF" />}
+                leftIcon={
+                  <MaterialIcons name="lock" size={20} color="#9CA3AF" />
+                }
               />
 
               <Button
@@ -187,7 +202,11 @@ export default function RegisterScreen() {
               activeOpacity={0.7}
               disabled={loading}
             >
-              <MaterialIcons name="g-translate" size={24} color={primaryColor} />
+              <MaterialIcons
+                name="g-translate"
+                size={24}
+                color={primaryColor}
+              />
               <Text style={[styles.googleButtonText, { color: textColor }]}>
                 Sign up with Google
               </Text>
@@ -197,7 +216,9 @@ export default function RegisterScreen() {
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={[styles.linkText, { color: primaryColor }]}>Sign In</Text>
+                <Text style={[styles.linkText, { color: primaryColor }]}>
+                  Sign In
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

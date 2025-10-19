@@ -3,21 +3,22 @@
  * View detailed information about an appointment
  */
 
-import React from 'react';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, Button, Card } from '@/components/ui';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Button, Card, Badge } from '@/components/ui';
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
 import { mockAppointments } from '@/utils/mockData';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
+import React from 'react';
+import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
 
 export default function AppointmentDetailsScreen() {
   const appointment = mockAppointments[1]; // Mock completed appointment with details
@@ -32,7 +33,11 @@ export default function AppointmentDetailsScreen() {
       'Are you sure you want to cancel this appointment? 10% of the fee will be credited to your wallet.',
       [
         { text: 'No', style: 'cancel' },
-        { text: 'Yes, Cancel', style: 'destructive', onPress: () => router.back() },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: () => router.back(),
+        },
       ]
     );
   };
@@ -51,14 +56,22 @@ export default function AppointmentDetailsScreen() {
         {/* Doctor Info */}
         <Card style={styles.section}>
           <View style={styles.doctorInfo}>
-            <Image source={{ uri: appointment.doctor.avatar }} style={styles.doctorImage} />
+            <Image
+              source={{ uri: appointment.doctor.avatar }}
+              style={styles.doctorImage}
+            />
             <View style={styles.doctorDetails}>
-              <ThemedText style={styles.doctorName}>{appointment.doctor.name}</ThemedText>
-              <ThemedText style={styles.specialty}>{appointment.doctor.specialty}</ThemedText>
+              <ThemedText style={styles.doctorName}>
+                {appointment.doctor.name}
+              </ThemedText>
+              <ThemedText style={styles.specialty}>
+                {appointment.doctor.specialty}
+              </ThemedText>
               <View style={styles.rating}>
                 <MaterialIcons name="star" size={16} color="#FD9644" />
                 <ThemedText style={styles.ratingText}>
-                  {appointment.doctor.rating} ({appointment.doctor.reviewCount} reviews)
+                  {appointment.doctor.rating} ({appointment.doctor.reviewCount}{' '}
+                  reviews)
                 </ThemedText>
               </View>
             </View>
@@ -67,33 +80,59 @@ export default function AppointmentDetailsScreen() {
 
         {/* Appointment Info */}
         <Card style={styles.section}>
-          <ThemedText style={styles.cardTitle}>Appointment Information</ThemedText>
+          <ThemedText style={styles.cardTitle}>
+            Appointment Information
+          </ThemedText>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
-              <MaterialIcons name="calendar-today" size={20} color={BrandColors.primary} />
+              <MaterialIcons
+                name="calendar-today"
+                size={20}
+                color={BrandColors.primary}
+              />
               <View style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Date</ThemedText>
-                <ThemedText style={styles.infoValue}>{appointment.date}</ThemedText>
+                <ThemedText style={styles.infoValue}>
+                  {appointment.date}
+                </ThemedText>
               </View>
             </View>
             <View style={styles.infoItem}>
-              <MaterialIcons name="access-time" size={20} color={BrandColors.primary} />
+              <MaterialIcons
+                name="access-time"
+                size={20}
+                color={BrandColors.primary}
+              />
               <View style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Time</ThemedText>
-                <ThemedText style={styles.infoValue}>{appointment.time}</ThemedText>
+                <ThemedText style={styles.infoValue}>
+                  {appointment.time}
+                </ThemedText>
               </View>
             </View>
           </View>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
-              <MaterialIcons name="local-hospital" size={20} color={BrandColors.primary} />
+              <MaterialIcons
+                name="local-hospital"
+                size={20}
+                color={BrandColors.primary}
+              />
               <View style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Status</ThemedText>
-                <Badge label={appointment.status} variant="success" size="small" />
+                <Badge
+                  label={appointment.status}
+                  variant="success"
+                  size="small"
+                />
               </View>
             </View>
             <View style={styles.infoItem}>
-              <MaterialIcons name="attach-money" size={20} color={BrandColors.primary} />
+              <MaterialIcons
+                name="attach-money"
+                size={20}
+                color={BrandColors.primary}
+              />
               <View style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Fee</ThemedText>
                 <ThemedText style={styles.infoValue}>
@@ -110,20 +149,30 @@ export default function AppointmentDetailsScreen() {
             <ThemedText style={styles.cardTitle}>Vitals Recorded</ThemedText>
             <View style={styles.vitalsGrid}>
               <View style={styles.vitalItem}>
-                <ThemedText style={styles.vitalLabel}>Blood Pressure</ThemedText>
-                <ThemedText style={styles.vitalValue}>{appointment.vitals.bloodPressure}</ThemedText>
+                <ThemedText style={styles.vitalLabel}>
+                  Blood Pressure
+                </ThemedText>
+                <ThemedText style={styles.vitalValue}>
+                  {appointment.vitals.bloodPressure}
+                </ThemedText>
               </View>
               <View style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Heart Rate</ThemedText>
-                <ThemedText style={styles.vitalValue}>{appointment.vitals.heartRate} bpm</ThemedText>
+                <ThemedText style={styles.vitalValue}>
+                  {appointment.vitals.heartRate} bpm
+                </ThemedText>
               </View>
               <View style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Temperature</ThemedText>
-                <ThemedText style={styles.vitalValue}>{appointment.vitals.temperature}°F</ThemedText>
+                <ThemedText style={styles.vitalValue}>
+                  {appointment.vitals.temperature}°F
+                </ThemedText>
               </View>
               <View style={styles.vitalItem}>
                 <ThemedText style={styles.vitalLabel}>Weight</ThemedText>
-                <ThemedText style={styles.vitalValue}>{appointment.vitals.weight} kg</ThemedText>
+                <ThemedText style={styles.vitalValue}>
+                  {appointment.vitals.weight} kg
+                </ThemedText>
               </View>
             </View>
           </Card>
@@ -133,7 +182,9 @@ export default function AppointmentDetailsScreen() {
         {appointment.diagnosis && (
           <Card style={styles.section}>
             <ThemedText style={styles.cardTitle}>Diagnosis</ThemedText>
-            <ThemedText style={styles.diagnosisText}>{appointment.diagnosis}</ThemedText>
+            <ThemedText style={styles.diagnosisText}>
+              {appointment.diagnosis}
+            </ThemedText>
           </Card>
         )}
 
@@ -142,7 +193,11 @@ export default function AppointmentDetailsScreen() {
             <ThemedText style={styles.cardTitle}>Prescription</ThemedText>
             {appointment.prescription.map((med, index) => (
               <View key={index} style={styles.prescriptionItem}>
-                <MaterialIcons name="medication" size={20} color={BrandColors.primary} />
+                <MaterialIcons
+                  name="medication"
+                  size={20}
+                  color={BrandColors.primary}
+                />
                 <ThemedText style={styles.prescriptionText}>{med}</ThemedText>
               </View>
             ))}
@@ -153,28 +208,31 @@ export default function AppointmentDetailsScreen() {
         {appointment.notes && (
           <Card style={styles.section}>
             <ThemedText style={styles.cardTitle}>Notes</ThemedText>
-            <ThemedText style={styles.notesText}>{appointment.notes}</ThemedText>
+            <ThemedText style={styles.notesText}>
+              {appointment.notes}
+            </ThemedText>
           </Card>
         )}
       </ScrollView>
 
       {/* Action Buttons */}
-      {appointment.status !== 'completed' && appointment.status !== 'cancelled' && (
-        <View style={styles.bottomBar}>
-          <Button
-            title="Reschedule"
-            variant="outline"
-            onPress={handleReschedule}
-            style={{ flex: 1 }}
-          />
-          <Button
-            title="Cancel"
-            variant="danger"
-            onPress={handleCancel}
-            style={{ flex: 1 }}
-          />
-        </View>
-      )}
+      {appointment.status !== 'completed' &&
+        appointment.status !== 'cancelled' && (
+          <View style={styles.bottomBar}>
+            <Button
+              title="Reschedule"
+              variant="outline"
+              onPress={handleReschedule}
+              style={{ flex: 1 }}
+            />
+            <Button
+              title="Cancel"
+              variant="danger"
+              onPress={handleCancel}
+              style={{ flex: 1 }}
+            />
+          </View>
+        )}
     </ThemedView>
   );
 }

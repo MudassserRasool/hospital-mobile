@@ -3,19 +3,23 @@
  * View wallet balance and transaction history
  */
 
-import React, { useState } from 'react';
-import {
-  View,
-  FlatList,
-  RefreshControl,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
 import { mockWallet } from '@/utils/mockData';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -28,38 +32,66 @@ export default function WalletScreen() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
-  const renderTransaction = ({ item }: { item: typeof wallet.transactions[0] }) => (
+  const renderTransaction = ({
+    item,
+  }: {
+    item: (typeof wallet.transactions)[0];
+  }) => (
     <View style={styles.transactionCard}>
-      <View style={[
-        styles.transactionIcon,
-        { backgroundColor: item.type === 'credit' ? '#E8F5E9' : '#FFEBEE' },
-      ]}>
+      <View
+        style={[
+          styles.transactionIcon,
+          { backgroundColor: item.type === 'credit' ? '#E8F5E9' : '#FFEBEE' },
+        ]}
+      >
         <MaterialIcons
           name={item.type === 'credit' ? 'arrow-downward' : 'arrow-upward'}
           size={20}
-          color={item.type === 'credit' ? StatusColors.success : StatusColors.error}
+          color={
+            item.type === 'credit' ? StatusColors.success : StatusColors.error
+          }
         />
       </View>
       <View style={styles.transactionInfo}>
-        <ThemedText style={styles.transactionDescription}>{item.description}</ThemedText>
+        <ThemedText style={styles.transactionDescription}>
+          {item.description}
+        </ThemedText>
         <View style={styles.transactionMeta}>
-          <ThemedText style={styles.transactionDate}>{formatDate(item.createdAt)}</ThemedText>
-          <ThemedText style={styles.transactionTime}>{formatTime(item.createdAt)}</ThemedText>
+          <ThemedText style={styles.transactionDate}>
+            {formatDate(item.createdAt)}
+          </ThemedText>
+          <ThemedText style={styles.transactionTime}>
+            {formatTime(item.createdAt)}
+          </ThemedText>
         </View>
       </View>
       <View style={styles.transactionAmount}>
-        <ThemedText style={[
-          styles.amount,
-          { color: item.type === 'credit' ? StatusColors.success : StatusColors.error },
-        ]}>
+        <ThemedText
+          style={[
+            styles.amount,
+            {
+              color:
+                item.type === 'credit'
+                  ? StatusColors.success
+                  : StatusColors.error,
+            },
+          ]}
+        >
           {item.type === 'credit' ? '+' : '-'} Rs.{item.amount}
         </ThemedText>
       </View>
@@ -81,21 +113,31 @@ export default function WalletScreen() {
         renderItem={renderTransaction}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListHeaderComponent={
           <View>
             {/* Balance Card */}
             <Card style={styles.balanceCard}>
               <View style={styles.balanceContent}>
                 <View>
-                  <ThemedText style={styles.balanceLabel}>Available Balance</ThemedText>
-                  <ThemedText style={styles.balanceAmount}>Rs.{wallet.balance}</ThemedText>
+                  <ThemedText style={styles.balanceLabel}>
+                    Available Balance
+                  </ThemedText>
+                  <ThemedText style={styles.balanceAmount}>
+                    Rs.{wallet.balance}
+                  </ThemedText>
                   <ThemedText style={styles.balanceHint}>
                     Use for appointments and get 10% back on cancellations
                   </ThemedText>
                 </View>
                 <View style={styles.walletIconContainer}>
-                  <MaterialIcons name="account-balance-wallet" size={48} color={BrandColors.primary} />
+                  <MaterialIcons
+                    name="account-balance-wallet"
+                    size={48}
+                    color={BrandColors.primary}
+                  />
                 </View>
               </View>
             </Card>
@@ -103,29 +145,51 @@ export default function WalletScreen() {
             {/* Stats Cards */}
             <View style={styles.statsRow}>
               <Card style={styles.statCard}>
-                <MaterialIcons name="arrow-downward" size={24} color={StatusColors.success} />
+                <MaterialIcons
+                  name="arrow-downward"
+                  size={24}
+                  color={StatusColors.success}
+                />
                 <ThemedText style={styles.statValue}>
-                  Rs.{wallet.transactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0)}
+                  Rs.
+                  {wallet.transactions
+                    .filter((t) => t.type === 'credit')
+                    .reduce((sum, t) => sum + t.amount, 0)}
                 </ThemedText>
                 <ThemedText style={styles.statLabel}>Total Credits</ThemedText>
               </Card>
               <Card style={styles.statCard}>
-                <MaterialIcons name="arrow-upward" size={24} color={StatusColors.error} />
+                <MaterialIcons
+                  name="arrow-upward"
+                  size={24}
+                  color={StatusColors.error}
+                />
                 <ThemedText style={styles.statValue}>
-                  Rs.{wallet.transactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0)}
+                  Rs.
+                  {wallet.transactions
+                    .filter((t) => t.type === 'debit')
+                    .reduce((sum, t) => sum + t.amount, 0)}
                 </ThemedText>
                 <ThemedText style={styles.statLabel}>Total Debits</ThemedText>
               </Card>
             </View>
 
             {/* Transaction History Title */}
-            <ThemedText style={styles.sectionTitle}>Transaction History</ThemedText>
+            <ThemedText style={styles.sectionTitle}>
+              Transaction History
+            </ThemedText>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="receipt-long" size={64} color={NeutralColors.gray300} />
-            <ThemedText style={styles.emptyText}>No transactions yet</ThemedText>
+            <MaterialIcons
+              name="receipt-long"
+              size={64}
+              color={NeutralColors.gray300}
+            />
+            <ThemedText style={styles.emptyText}>
+              No transactions yet
+            </ThemedText>
           </View>
         }
       />

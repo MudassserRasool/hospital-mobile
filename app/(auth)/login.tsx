@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-// import { ThemedView, ThemedText } from '@/components';
+// import { ThemedText } from '@/components/themed-text';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';

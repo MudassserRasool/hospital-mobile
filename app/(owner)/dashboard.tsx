@@ -3,22 +3,31 @@
  * Hospital overview with key metrics
  */
 
-import React, { useState } from 'react';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, Card } from '@/components/ui';
+import { OWNER_ROUTES } from '@/constants/routes';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Card, Badge } from '@/components/ui';
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { mockDashboardStats, mockLeaveRequests } from '@/utils/mockData';
-import { OWNER_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
@@ -31,12 +40,49 @@ export default function OwnerDashboard() {
   };
 
   const quickActions = [
-    { id: 'staff', title: 'Staff Management', icon: 'people', route: OWNER_ROUTES.STAFF_LIST, color: '#4B7BEC' },
-    { id: 'leaves', title: 'Leave Approvals', icon: 'event-available', route: OWNER_ROUTES.LEAVE_APPROVALS, color: '#5F27CD', badge: stats.pendingLeaves },
-    { id: 'appointments', title: 'Appointments', icon: 'calendar-month', route: OWNER_ROUTES.DOCTOR_APPOINTMENTS, color: '#26DE81' },
-    { id: 'profile', title: 'Hospital Profile', icon: 'local-hospital', route: OWNER_ROUTES.HOSPITAL_PROFILE, color: '#FC5C65' },
-    { id: 'add', title: 'Add Staff', icon: 'person-add', route: OWNER_ROUTES.ADD_STAFF, color: '#FD9644' },
-    { id: 'bonus', title: 'Bonuses', icon: 'card-giftcard', route: OWNER_ROUTES.BONUSES, color: '#45AAF2' },
+    {
+      id: 'staff',
+      title: 'Staff Management',
+      icon: 'people',
+      route: OWNER_ROUTES.STAFF_LIST,
+      color: '#4B7BEC',
+    },
+    {
+      id: 'leaves',
+      title: 'Leave Approvals',
+      icon: 'event-available',
+      route: OWNER_ROUTES.LEAVE_APPROVALS,
+      color: '#5F27CD',
+      badge: stats.pendingLeaves,
+    },
+    {
+      id: 'appointments',
+      title: 'Appointments',
+      icon: 'calendar-month',
+      route: OWNER_ROUTES.DOCTOR_APPOINTMENTS,
+      color: '#26DE81',
+    },
+    {
+      id: 'profile',
+      title: 'Hospital Profile',
+      icon: 'local-hospital',
+      route: OWNER_ROUTES.HOSPITAL_PROFILE,
+      color: '#FC5C65',
+    },
+    {
+      id: 'add',
+      title: 'Add Staff',
+      icon: 'person-add',
+      route: OWNER_ROUTES.ADD_STAFF,
+      color: '#FD9644',
+    },
+    {
+      id: 'bonus',
+      title: 'Bonuses',
+      icon: 'card-giftcard',
+      route: OWNER_ROUTES.BONUSES,
+      color: '#45AAF2',
+    },
   ];
 
   return (
@@ -45,50 +91,100 @@ export default function OwnerDashboard() {
 
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Header */}
         <View style={styles.header}>
           <View>
             <ThemedText style={styles.greeting}>Welcome Back 👋</ThemedText>
-            <ThemedText style={styles.userName}>{user?.name || 'Admin'}</ThemedText>
+            <ThemedText style={styles.userName}>
+              {user?.name || 'Admin'}
+            </ThemedText>
           </View>
         </View>
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <Card style={[styles.statCard, { backgroundColor: '#EFF3FF' }]}>
-            <View style={[styles.statIcon, { backgroundColor: BrandColors.primary }]}>
-              <MaterialIcons name="people" size={24} color={NeutralColors.white} />
+            <View
+              style={[
+                styles.statIcon,
+                { backgroundColor: BrandColors.primary },
+              ]}
+            >
+              <MaterialIcons
+                name="people"
+                size={24}
+                color={NeutralColors.white}
+              />
             </View>
             <ThemedText style={styles.statValue}>{stats.totalStaff}</ThemedText>
             <ThemedText style={styles.statLabel}>Total Staff</ThemedText>
-            <ThemedText style={styles.statSubtext}>{stats.activeStaff} active</ThemedText>
+            <ThemedText style={styles.statSubtext}>
+              {stats.activeStaff} active
+            </ThemedText>
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#F3E5F5' }]}>
-            <View style={[styles.statIcon, { backgroundColor: BrandColors.secondary }]}>
-              <MaterialIcons name="medical-services" size={24} color={NeutralColors.white} />
+            <View
+              style={[
+                styles.statIcon,
+                { backgroundColor: BrandColors.secondary },
+              ]}
+            >
+              <MaterialIcons
+                name="medical-services"
+                size={24}
+                color={NeutralColors.white}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{stats.totalDoctors}</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {stats.totalDoctors}
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Doctors</ThemedText>
             <ThemedText style={styles.statSubtext}>specialists</ThemedText>
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#E8F5E9' }]}>
-            <View style={[styles.statIcon, { backgroundColor: StatusColors.success }]}>
-              <MaterialIcons name="event" size={24} color={NeutralColors.white} />
+            <View
+              style={[
+                styles.statIcon,
+                { backgroundColor: StatusColors.success },
+              ]}
+            >
+              <MaterialIcons
+                name="event"
+                size={24}
+                color={NeutralColors.white}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{stats.todayAppointments}</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {stats.todayAppointments}
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Today's Appts</ThemedText>
-            <ThemedText style={styles.statSubtext}>{stats.monthlyAppointments} this month</ThemedText>
+            <ThemedText style={styles.statSubtext}>
+              {stats.monthlyAppointments} this month
+            </ThemedText>
           </Card>
 
           <Card style={[styles.statCard, { backgroundColor: '#FFF3E0' }]}>
-            <View style={[styles.statIcon, { backgroundColor: StatusColors.warning }]}>
-              <MaterialIcons name="attach-money" size={24} color={NeutralColors.white} />
+            <View
+              style={[
+                styles.statIcon,
+                { backgroundColor: StatusColors.warning },
+              ]}
+            >
+              <MaterialIcons
+                name="attach-money"
+                size={24}
+                color={NeutralColors.white}
+              />
             </View>
-            <ThemedText style={styles.statValue}>Rs.{(stats.monthlyRevenue / 1000).toFixed(0)}K</ThemedText>
+            <ThemedText style={styles.statValue}>
+              Rs.{(stats.monthlyRevenue / 1000).toFixed(0)}K
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Revenue</ThemedText>
             <ThemedText style={styles.statSubtext}>this month</ThemedText>
           </Card>
@@ -98,25 +194,40 @@ export default function OwnerDashboard() {
         {stats.pendingLeaves > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <ThemedText style={styles.sectionTitle}>Pending Leave Requests</ThemedText>
-              <TouchableOpacity onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}>
+              <ThemedText style={styles.sectionTitle}>
+                Pending Leave Requests
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
+              >
                 <ThemedText style={styles.seeAll}>See All</ThemedText>
               </TouchableOpacity>
             </View>
-            {mockLeaveRequests.filter(l => l.status === 'pending').slice(0, 2).map((leave) => (
-              <Card key={leave.id} style={styles.leaveCard} onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}>
-                <View style={styles.leaveHeader}>
-                  <View style={styles.leaveInfo}>
-                    <ThemedText style={styles.leaveName}>{leave.staffId}</ThemedText>
-                    <ThemedText style={styles.leaveType}>{leave.type} Leave</ThemedText>
+            {mockLeaveRequests
+              .filter((l) => l.status === 'pending')
+              .slice(0, 2)
+              .map((leave) => (
+                <Card
+                  key={leave.id}
+                  style={styles.leaveCard}
+                  onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
+                >
+                  <View style={styles.leaveHeader}>
+                    <View style={styles.leaveInfo}>
+                      <ThemedText style={styles.leaveName}>
+                        {leave.staffId}
+                      </ThemedText>
+                      <ThemedText style={styles.leaveType}>
+                        {leave.type} Leave
+                      </ThemedText>
+                    </View>
+                    <Badge label="Pending" variant="warning" size="small" />
                   </View>
-                  <Badge label="Pending" variant="warning" size="small" />
-                </View>
-                <ThemedText style={styles.leaveDates}>
-                  {leave.startDate} - {leave.endDate} ({leave.totalDays} days)
-                </ThemedText>
-              </Card>
-            ))}
+                  <ThemedText style={styles.leaveDates}>
+                    {leave.startDate} - {leave.endDate} ({leave.totalDays} days)
+                  </ThemedText>
+                </Card>
+              ))}
           </View>
         )}
 
@@ -130,15 +241,28 @@ export default function OwnerDashboard() {
                 style={styles.actionCard}
                 onPress={() => router.push(action.route as any)}
               >
-                <View style={[styles.actionIcon, { backgroundColor: action.color + '20' }]}>
-                  <MaterialIcons name={action.icon as any} size={28} color={action.color} />
+                <View
+                  style={[
+                    styles.actionIcon,
+                    { backgroundColor: action.color + '20' },
+                  ]}
+                >
+                  <MaterialIcons
+                    name={action.icon as any}
+                    size={28}
+                    color={action.color}
+                  />
                   {action.badge && action.badge > 0 && (
                     <View style={styles.actionBadge}>
-                      <ThemedText style={styles.actionBadgeText}>{action.badge}</ThemedText>
+                      <ThemedText style={styles.actionBadgeText}>
+                        {action.badge}
+                      </ThemedText>
                     </View>
                   )}
                 </View>
-                <ThemedText style={styles.actionText}>{action.title}</ThemedText>
+                <ThemedText style={styles.actionText}>
+                  {action.title}
+                </ThemedText>
               </TouchableOpacity>
             ))}
           </View>
@@ -149,8 +273,12 @@ export default function OwnerDashboard() {
           <View style={styles.ratingHeader}>
             <MaterialIcons name="star" size={40} color="#FD9644" />
             <View style={styles.ratingInfo}>
-              <ThemedText style={styles.ratingValue}>{stats.averageRating}</ThemedText>
-              <ThemedText style={styles.ratingLabel}>Hospital Rating</ThemedText>
+              <ThemedText style={styles.ratingValue}>
+                {stats.averageRating}
+              </ThemedText>
+              <ThemedText style={styles.ratingLabel}>
+                Hospital Rating
+              </ThemedText>
             </View>
           </View>
         </Card>

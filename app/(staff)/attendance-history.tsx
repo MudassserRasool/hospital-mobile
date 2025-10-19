@@ -3,19 +3,22 @@
  * View attendance records
  */
 
-import React, { useState } from 'react';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, Card } from '@/components/ui';
 import {
-  View,
-  FlatList,
-  RefreshControl,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Card, Badge } from '@/components/ui';
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
 import { mockAttendanceRecords } from '@/utils/mockData';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 export default function AttendanceHistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -40,21 +43,48 @@ export default function AttendanceHistoryScreen() {
     }
   };
 
-  const renderAttendanceCard = ({ item }: { item: typeof mockAttendanceRecords[0] }) => (
+  const renderAttendanceCard = ({
+    item,
+  }: {
+    item: (typeof mockAttendanceRecords)[0];
+  }) => (
     <Card style={styles.attendanceCard}>
       <View style={styles.cardHeader}>
         <View>
           <ThemedText style={styles.date}>
-            {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            {new Date(item.date).toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
           </ThemedText>
           <View style={styles.timeRow}>
-            <MaterialIcons name="login" size={16} color={StatusColors.success} />
+            <MaterialIcons
+              name="login"
+              size={16}
+              color={StatusColors.success}
+            />
             <ThemedText style={styles.timeText}>
-              {item.checkInTime ? new Date(item.checkInTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+              {item.checkInTime
+                ? new Date(item.checkInTime).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '--:--'}
             </ThemedText>
-            <MaterialIcons name="logout" size={16} color={StatusColors.error} style={{ marginLeft: 16 }} />
+            <MaterialIcons
+              name="logout"
+              size={16}
+              color={StatusColors.error}
+              style={{ marginLeft: 16 }}
+            />
             <ThemedText style={styles.timeText}>
-              {item.checkOutTime ? new Date(item.checkOutTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+              {item.checkOutTime
+                ? new Date(item.checkOutTime).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '--:--'}
             </ThemedText>
           </View>
         </View>
@@ -62,8 +92,14 @@ export default function AttendanceHistoryScreen() {
       </View>
       <View style={styles.cardFooter}>
         <View style={styles.hoursRow}>
-          <MaterialIcons name="schedule" size={16} color={NeutralColors.gray500} />
-          <ThemedText style={styles.hoursText}>{item.totalHours}h worked</ThemedText>
+          <MaterialIcons
+            name="schedule"
+            size={16}
+            color={NeutralColors.gray500}
+          />
+          <ThemedText style={styles.hoursText}>
+            {item.totalHours}h worked
+          </ThemedText>
         </View>
         {item.notes && (
           <ThemedText style={styles.notes}>{item.notes}</ThemedText>
@@ -87,7 +123,9 @@ export default function AttendanceHistoryScreen() {
         renderItem={renderAttendanceCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListHeaderComponent={
           <View style={styles.statsContainer}>
             <Card style={styles.statCard}>
@@ -106,8 +144,14 @@ export default function AttendanceHistoryScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="event-busy" size={64} color={NeutralColors.gray300} />
-            <ThemedText style={styles.emptyText}>No attendance records</ThemedText>
+            <MaterialIcons
+              name="event-busy"
+              size={64}
+              color={NeutralColors.gray300}
+            />
+            <ThemedText style={styles.emptyText}>
+              No attendance records
+            </ThemedText>
           </View>
         }
       />

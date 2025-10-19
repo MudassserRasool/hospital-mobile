@@ -3,21 +3,30 @@
  * View leave balance and requests
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, Button, Card } from '@/components/ui';
+import { STAFF_ROUTES } from '@/constants/routes';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
+import { mockLeaveBalance, mockLeaveRequests } from '@/utils/mockData';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
   FlatList,
-  TouchableOpacity,
   RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Card, Badge, Button } from '@/components/ui';
-import { mockLeaveBalance, mockLeaveRequests } from '@/utils/mockData';
-import { STAFF_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
 
 export default function LeaveManagementScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -40,12 +49,22 @@ export default function LeaveManagementScreen() {
     }
   };
 
-  const renderLeaveCard = ({ item }: { item: typeof mockLeaveRequests[0] }) => (
+  const renderLeaveCard = ({
+    item,
+  }: {
+    item: (typeof mockLeaveRequests)[0];
+  }) => (
     <Card style={styles.leaveCard}>
       <View style={styles.leaveHeader}>
         <View style={styles.leaveType}>
           <MaterialIcons
-            name={item.type === 'sick' ? 'local-hospital' : item.type === 'vacation' ? 'beach-access' : 'emergency'}
+            name={
+              item.type === 'sick'
+                ? 'local-hospital'
+                : item.type === 'vacation'
+                ? 'beach-access'
+                : 'emergency'
+            }
             size={20}
             color={BrandColors.primary}
           />
@@ -53,7 +72,11 @@ export default function LeaveManagementScreen() {
             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} Leave
           </ThemedText>
         </View>
-        <Badge label={item.status} variant={getStatusVariant(item.status)} size="small" />
+        <Badge
+          label={item.status}
+          variant={getStatusVariant(item.status)}
+          size="small"
+        />
       </View>
 
       <View style={styles.leaveDates}>
@@ -61,7 +84,11 @@ export default function LeaveManagementScreen() {
           <ThemedText style={styles.dateLabel}>From</ThemedText>
           <ThemedText style={styles.dateValue}>{item.startDate}</ThemedText>
         </View>
-        <MaterialIcons name="arrow-forward" size={16} color={NeutralColors.gray400} />
+        <MaterialIcons
+          name="arrow-forward"
+          size={16}
+          color={NeutralColors.gray400}
+        />
         <View style={styles.dateItem}>
           <ThemedText style={styles.dateLabel}>To</ThemedText>
           <ThemedText style={styles.dateValue}>{item.endDate}</ThemedText>
@@ -80,7 +107,8 @@ export default function LeaveManagementScreen() {
       {item.approver && (
         <View style={styles.approverSection}>
           <ThemedText style={styles.approverText}>
-            {item.status === 'approved' ? 'Approved by' : 'Reviewed by'} {item.approver.name}
+            {item.status === 'approved' ? 'Approved by' : 'Reviewed by'}{' '}
+            {item.approver.name}
           </ThemedText>
         </View>
       )}
@@ -102,36 +130,60 @@ export default function LeaveManagementScreen() {
         renderItem={renderLeaveCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListHeaderComponent={
           <View>
             {/* Leave Balance */}
             <Card style={styles.balanceCard}>
               <View style={styles.balanceHeader}>
-                <ThemedText style={styles.balanceTitle}>Leave Balance</ThemedText>
-                <TouchableOpacity onPress={() => router.push(STAFF_ROUTES.REQUEST_LEAVE)}>
-                  <MaterialIcons name="add-circle" size={28} color={BrandColors.primary} />
+                <ThemedText style={styles.balanceTitle}>
+                  Leave Balance
+                </ThemedText>
+                <TouchableOpacity
+                  onPress={() => router.push(STAFF_ROUTES.REQUEST_LEAVE)}
+                >
+                  <MaterialIcons
+                    name="add-circle"
+                    size={28}
+                    color={BrandColors.primary}
+                  />
                 </TouchableOpacity>
               </View>
               <View style={styles.balanceGrid}>
                 <View style={styles.balanceItem}>
-                  <ThemedText style={styles.balanceValue}>{mockLeaveBalance.totalLeaves}</ThemedText>
+                  <ThemedText style={styles.balanceValue}>
+                    {mockLeaveBalance.totalLeaves}
+                  </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Total</ThemedText>
                 </View>
                 <View style={styles.balanceItem}>
-                  <ThemedText style={[styles.balanceValue, { color: StatusColors.error }]}>
+                  <ThemedText
+                    style={[styles.balanceValue, { color: StatusColors.error }]}
+                  >
                     {mockLeaveBalance.usedLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Used</ThemedText>
                 </View>
                 <View style={styles.balanceItem}>
-                  <ThemedText style={[styles.balanceValue, { color: StatusColors.warning }]}>
+                  <ThemedText
+                    style={[
+                      styles.balanceValue,
+                      { color: StatusColors.warning },
+                    ]}
+                  >
                     {mockLeaveBalance.pendingLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Pending</ThemedText>
                 </View>
                 <View style={styles.balanceItem}>
-                  <ThemedText style={[styles.balanceValue, { color: StatusColors.success }]}>
+                  <ThemedText
+                    style={[
+                      styles.balanceValue,
+                      { color: StatusColors.success },
+                    ]}
+                  >
                     {mockLeaveBalance.remainingLeaves}
                   </ThemedText>
                   <ThemedText style={styles.balanceLabel}>Available</ThemedText>
@@ -145,7 +197,11 @@ export default function LeaveManagementScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="event-available" size={64} color={NeutralColors.gray300} />
+            <MaterialIcons
+              name="event-available"
+              size={64}
+              color={NeutralColors.gray300}
+            />
             <ThemedText style={styles.emptyText}>No leave requests</ThemedText>
             <Button
               title="Request Leave"

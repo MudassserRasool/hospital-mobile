@@ -3,22 +3,30 @@
  * View and manage all hospital staff
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, SearchBar } from '@/components/ui';
+import { OWNER_ROUTES } from '@/constants/routes';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
+import { mockAllStaff } from '@/utils/mockData';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
   FlatList,
-  TouchableOpacity,
   Image,
   RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { SearchBar, Badge } from '@/components/ui';
-import { mockAllStaff } from '@/utils/mockData';
-import { OWNER_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius } from '@/constants/theme';
 
 export default function StaffListScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,9 +36,11 @@ export default function StaffListScreen() {
   const roles = ['All', 'doctor', 'nurse', 'receptionist'];
 
   const filteredStaff = mockAllStaff.filter((staff) => {
-    const matchesSearch = staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       staff.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = !selectedRole || selectedRole === 'All' || staff.role === selectedRole;
+    const matchesRole =
+      !selectedRole || selectedRole === 'All' || staff.role === selectedRole;
     return matchesSearch && matchesRole;
   });
 
@@ -39,7 +49,7 @@ export default function StaffListScreen() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const renderStaffCard = ({ item }: { item: typeof mockAllStaff[0] }) => (
+  const renderStaffCard = ({ item }: { item: (typeof mockAllStaff)[0] }) => (
     <TouchableOpacity
       style={styles.staffCard}
       onPress={() => router.push(OWNER_ROUTES.STAFF_DETAILS)}
@@ -47,10 +57,16 @@ export default function StaffListScreen() {
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.staffInfo}>
         <ThemedText style={styles.staffName}>{item.name}</ThemedText>
-        <ThemedText style={styles.staffRole}>{item.role} • {item.department}</ThemedText>
+        <ThemedText style={styles.staffRole}>
+          {item.role} • {item.department}
+        </ThemedText>
         <ThemedText style={styles.employeeId}>{item.employeeId}</ThemedText>
       </View>
-      <Badge label={item.isActive ? 'Active' : 'Inactive'} variant={item.isActive ? 'success' : 'default'} size="small" />
+      <Badge
+        label={item.isActive ? 'Active' : 'Inactive'}
+        variant={item.isActive ? 'success' : 'default'}
+        size="small"
+      />
     </TouchableOpacity>
   );
 
@@ -82,14 +98,18 @@ export default function StaffListScreen() {
             key={role}
             style={[
               styles.filterChip,
-              (selectedRole === role || (role === 'All' && !selectedRole)) && styles.filterChipActive,
+              (selectedRole === role || (role === 'All' && !selectedRole)) &&
+                styles.filterChipActive,
             ]}
             onPress={() => setSelectedRole(role === 'All' ? null : role)}
           >
-            <ThemedText style={[
-              styles.filterText,
-              (selectedRole === role || (role === 'All' && !selectedRole)) && styles.filterTextActive,
-            ]}>
+            <ThemedText
+              style={[
+                styles.filterText,
+                (selectedRole === role || (role === 'All' && !selectedRole)) &&
+                  styles.filterTextActive,
+              ]}
+            >
               {role.charAt(0).toUpperCase() + role.slice(1)}
             </ThemedText>
           </TouchableOpacity>
@@ -102,7 +122,9 @@ export default function StaffListScreen() {
         renderItem={renderStaffCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
 
       {/* FAB */}

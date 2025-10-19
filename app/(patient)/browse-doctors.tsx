@@ -3,29 +3,37 @@
  * Search and filter doctors by specialty
  */
 
-import React, { useState } from 'react';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, SearchBar } from '@/components/ui';
+import { PATIENT_ROUTES } from '@/constants/routes';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  RefreshControl,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { SearchBar, Card, Badge } from '@/components/ui';
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { mockDoctors, mockSpecialties } from '@/utils/mockData';
-import { PATIENT_ROUTES } from '@/constants/routes';
-import { Spacing, FontSizes, FontWeights, NeutralColors } from '@/constants/theme';
-import { StyleSheet } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  FlatList,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function BrowseDoctorsScreen() {
   const primaryColor = useThemeColor({}, 'primary');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(
+    null
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -34,13 +42,15 @@ export default function BrowseDoctorsScreen() {
   };
 
   const filteredDoctors = mockDoctors.filter((doctor) => {
-    const matchesSearch = doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSpecialty = !selectedSpecialty || doctor.specialty === selectedSpecialty;
+    const matchesSpecialty =
+      !selectedSpecialty || doctor.specialty === selectedSpecialty;
     return matchesSearch && matchesSpecialty;
   });
 
-  const renderDoctorCard = ({ item }: { item: typeof mockDoctors[0] }) => (
+  const renderDoctorCard = ({ item }: { item: (typeof mockDoctors)[0] }) => (
     <TouchableOpacity
       style={styles.doctorCard}
       onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
@@ -50,7 +60,11 @@ export default function BrowseDoctorsScreen() {
         <View style={styles.doctorHeader}>
           <ThemedText style={styles.doctorName}>{item.name}</ThemedText>
           <TouchableOpacity style={styles.favoriteButton}>
-            <MaterialIcons name="favorite-border" size={20} color={NeutralColors.gray400} />
+            <MaterialIcons
+              name="favorite-border"
+              size={20}
+              color={NeutralColors.gray400}
+            />
           </TouchableOpacity>
         </View>
         <ThemedText style={styles.specialty}>{item.specialty}</ThemedText>
@@ -61,7 +75,11 @@ export default function BrowseDoctorsScreen() {
               {item.rating} ({item.reviewCount})
             </ThemedText>
           </View>
-          <Badge label={`${item.experience}y exp`} variant="info" size="small" />
+          <Badge
+            label={`${item.experience}y exp`}
+            variant="info"
+            size="small"
+          />
         </View>
         <View style={styles.footer}>
           <ThemedText style={styles.fee}>Rs.{item.consultationFee}</ThemedText>
@@ -106,10 +124,12 @@ export default function BrowseDoctorsScreen() {
           ]}
           onPress={() => setSelectedSpecialty(null)}
         >
-          <ThemedText style={[
-            styles.specialtyText,
-            !selectedSpecialty && styles.specialtyTextActive,
-          ]}>
+          <ThemedText
+            style={[
+              styles.specialtyText,
+              !selectedSpecialty && styles.specialtyTextActive,
+            ]}
+          >
             All
           </ThemedText>
         </TouchableOpacity>
@@ -118,14 +138,18 @@ export default function BrowseDoctorsScreen() {
             key={specialty.id}
             style={[
               styles.specialtyChip,
-              selectedSpecialty === specialty.name && styles.specialtyChipActive,
+              selectedSpecialty === specialty.name &&
+                styles.specialtyChipActive,
             ]}
             onPress={() => setSelectedSpecialty(specialty.name)}
           >
-            <ThemedText style={[
-              styles.specialtyText,
-              selectedSpecialty === specialty.name && styles.specialtyTextActive,
-            ]}>
+            <ThemedText
+              style={[
+                styles.specialtyText,
+                selectedSpecialty === specialty.name &&
+                  styles.specialtyTextActive,
+              ]}
+            >
               {specialty.name}
             </ThemedText>
           </TouchableOpacity>
@@ -138,10 +162,16 @@ export default function BrowseDoctorsScreen() {
         renderItem={renderDoctorCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="search-off" size={64} color={NeutralColors.gray300} />
+            <MaterialIcons
+              name="search-off"
+              size={64}
+              color={NeutralColors.gray300}
+            />
             <ThemedText style={styles.emptyText}>No doctors found</ThemedText>
           </View>
         }

@@ -3,24 +3,38 @@
  * Main screen for staff with check-in status and quick actions
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Badge, Button, Card } from '@/components/ui';
+import { STAFF_ROUTES } from '@/constants/routes';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+  StatusColors,
+} from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  mockCurrentCheckIn,
+  mockLeaveBalance,
+  mockStaffProfile,
+  mockWorkHours,
+} from '@/utils/mockData';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
   Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { Card, Button, Badge } from '@/components/ui';
-import { useAuth } from '@/hooks/useAuth';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { mockStaffProfile, mockCurrentCheckIn, mockWorkHours, mockLeaveBalance } from '@/utils/mockData';
-import { STAFF_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius, StatusColors } from '@/constants/theme';
 
 export default function StaffDashboard() {
   const { user } = useAuth();
@@ -45,33 +59,55 @@ export default function StaffDashboard() {
 
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.userInfo}>
             <Image
-              source={{ uri: staff.avatar || 'https://i.pravatar.cc/150?img=10' }}
+              source={{
+                uri: staff.avatar || 'https://i.pravatar.cc/150?img=10',
+              }}
               style={styles.avatar}
             />
             <View style={styles.userDetails}>
               <ThemedText style={styles.userName}>{staff.name}</ThemedText>
-              <ThemedText style={styles.userRole}>{staff.role} • {staff.employeeId}</ThemedText>
+              <ThemedText style={styles.userRole}>
+                {staff.role} • {staff.employeeId}
+              </ThemedText>
             </View>
           </View>
-          <Badge label={isCheckedIn ? 'Checked In' : 'Checked Out'} variant={isCheckedIn ? 'success' : 'default'} />
+          <Badge
+            label={isCheckedIn ? 'Checked In' : 'Checked Out'}
+            variant={isCheckedIn ? 'success' : 'default'}
+          />
         </View>
 
         {/* Check-in Status Card */}
-        <Card style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}>
+        <Card
+          style={[styles.statusCard, isCheckedIn && styles.statusCardActive]}
+        >
           <View style={styles.statusHeader}>
             <View>
-              <ThemedText style={[styles.statusTitle, isCheckedIn && styles.statusTitleActive]}>
+              <ThemedText
+                style={[
+                  styles.statusTitle,
+                  isCheckedIn && styles.statusTitleActive,
+                ]}
+              >
                 {isCheckedIn ? 'You are checked in' : 'Not checked in'}
               </ThemedText>
               {isCheckedIn && (
                 <ThemedText style={styles.checkInTime}>
-                  Since {new Date(mockCurrentCheckIn?.checkInTime || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  Since{' '}
+                  {new Date(
+                    mockCurrentCheckIn?.checkInTime || ''
+                  ).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </ThemedText>
               )}
             </View>
@@ -94,33 +130,57 @@ export default function StaffDashboard() {
         <View style={styles.statsGrid}>
           <Card style={styles.statCard}>
             <View style={styles.statIcon}>
-              <MaterialIcons name="schedule" size={24} color={BrandColors.primary} />
+              <MaterialIcons
+                name="schedule"
+                size={24}
+                color={BrandColors.primary}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{mockWorkHours.daily}h</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {mockWorkHours.daily}h
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Today's Hours</ThemedText>
           </Card>
 
           <Card style={styles.statCard}>
             <View style={styles.statIcon}>
-              <MaterialIcons name="event-available" size={24} color={StatusColors.success} />
+              <MaterialIcons
+                name="event-available"
+                size={24}
+                color={StatusColors.success}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{mockLeaveBalance.remainingLeaves}</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {mockLeaveBalance.remainingLeaves}
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Leaves Left</ThemedText>
           </Card>
 
           <Card style={styles.statCard}>
             <View style={styles.statIcon}>
-              <MaterialIcons name="calendar-month" size={24} color={StatusColors.info} />
+              <MaterialIcons
+                name="calendar-month"
+                size={24}
+                color={StatusColors.info}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{mockWorkHours.weekly}h</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {mockWorkHours.weekly}h
+            </ThemedText>
             <ThemedText style={styles.statLabel}>This Week</ThemedText>
           </Card>
 
           <Card style={styles.statCard}>
             <View style={styles.statIcon}>
-              <MaterialIcons name="pending-actions" size={24} color={StatusColors.warning} />
+              <MaterialIcons
+                name="pending-actions"
+                size={24}
+                color={StatusColors.warning}
+              />
             </View>
-            <ThemedText style={styles.statValue}>{mockLeaveBalance.pendingLeaves}</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {mockLeaveBalance.pendingLeaves}
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Pending</ThemedText>
           </Card>
         </View>

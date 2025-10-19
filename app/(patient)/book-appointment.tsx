@@ -3,23 +3,31 @@
  * Schedule appointment with doctor
  */
 
-import React, { useState } from 'react';
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
+import { PATIENT_ROUTES } from '@/constants/routes';
+import {
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
+} from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { mockDoctors } from '@/utils/mockData';
-import { PATIENT_ROUTES } from '@/constants/routes';
-import { StyleSheet } from 'react-native';
-import { Spacing, FontSizes, FontWeights, NeutralColors, BrandColors, BorderRadius } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function BookAppointmentScreen() {
   const primaryColor = useThemeColor({}, 'primary');
@@ -37,9 +45,18 @@ export default function BookAppointmentScreen() {
   ];
 
   const timeSlots = [
-    '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM',
-    '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+    '09:00 AM',
+    '09:30 AM',
+    '10:00 AM',
+    '10:30 AM',
+    '11:00 AM',
+    '11:30 AM',
+    '02:00 PM',
+    '02:30 PM',
+    '03:00 PM',
+    '03:30 PM',
+    '04:00 PM',
+    '04:30 PM',
   ];
 
   const handleBooking = () => {
@@ -67,7 +84,9 @@ export default function BookAppointmentScreen() {
             <Image source={{ uri: doctor.avatar }} style={styles.doctorImage} />
             <View style={styles.doctorDetails}>
               <ThemedText style={styles.doctorName}>{doctor.name}</ThemedText>
-              <ThemedText style={styles.specialty}>{doctor.specialty}</ThemedText>
+              <ThemedText style={styles.specialty}>
+                {doctor.specialty}
+              </ThemedText>
               <View style={styles.rating}>
                 <MaterialIcons name="star" size={16} color="#FD9644" />
                 <ThemedText style={styles.ratingText}>
@@ -92,16 +111,20 @@ export default function BookAppointmentScreen() {
                   ]}
                   onPress={() => setSelectedDate(item.full)}
                 >
-                  <ThemedText style={[
-                    styles.dateDay,
-                    selectedDate === item.full && styles.dateTextActive,
-                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.dateDay,
+                      selectedDate === item.full && styles.dateTextActive,
+                    ]}
+                  >
                     {item.day}
                   </ThemedText>
-                  <ThemedText style={[
-                    styles.dateNumber,
-                    selectedDate === item.full && styles.dateTextActive,
-                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.dateNumber,
+                      selectedDate === item.full && styles.dateTextActive,
+                    ]}
+                  >
                     {item.date}
                   </ThemedText>
                 </TouchableOpacity>
@@ -123,10 +146,12 @@ export default function BookAppointmentScreen() {
                 ]}
                 onPress={() => setSelectedTime(time)}
               >
-                <ThemedText style={[
-                  styles.timeText,
-                  selectedTime === time && styles.timeTextActive,
-                ]}>
+                <ThemedText
+                  style={[
+                    styles.timeText,
+                    selectedTime === time && styles.timeTextActive,
+                  ]}
+                >
                   {time}
                 </ThemedText>
               </TouchableOpacity>
@@ -136,7 +161,9 @@ export default function BookAppointmentScreen() {
 
         {/* Summary */}
         <Card style={styles.summaryCard}>
-          <ThemedText style={styles.summaryTitle}>Appointment Summary</ThemedText>
+          <ThemedText style={styles.summaryTitle}>
+            Appointment Summary
+          </ThemedText>
           <View style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>Date:</ThemedText>
             <ThemedText style={styles.summaryValue}>
@@ -150,7 +177,9 @@ export default function BookAppointmentScreen() {
             </ThemedText>
           </View>
           <View style={[styles.summaryRow, styles.summaryTotal]}>
-            <ThemedText style={styles.summaryLabel}>Consultation Fee:</ThemedText>
+            <ThemedText style={styles.summaryLabel}>
+              Consultation Fee:
+            </ThemedText>
             <ThemedText style={styles.totalAmount}>
               Rs.{doctor.consultationFee}
             </ThemedText>
@@ -160,11 +189,7 @@ export default function BookAppointmentScreen() {
 
       {/* Bottom Button */}
       <View style={styles.bottomBar}>
-        <Button
-          title="Continue to Payment"
-          onPress={handleBooking}
-          fullWidth
-        />
+        <Button title="Continue to Payment" onPress={handleBooking} fullWidth />
       </View>
     </ThemedView>
   );

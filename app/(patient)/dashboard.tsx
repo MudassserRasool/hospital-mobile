@@ -3,24 +3,25 @@
  * Main screen for patient module with modern UI
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { SearchBar } from '@/components/ui';
+import { PATIENT_ROUTES } from '@/constants/routes';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/hooks/useAuth';
+import { mockDoctors, mockSpecialties } from '@/utils/mockData';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
   FlatList,
+  Image,
   RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ThemedView, ThemedText } from '@/components';
-import { SearchBar } from '@/components/ui';
-import { useAuth } from '@/hooks/useAuth';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { mockSpecialties, mockDoctors } from '@/utils/mockData';
-import { PATIENT_ROUTES } from '@/constants/routes';
 import { styles } from './styles/dashboard.style';
 
 export default function PatientDashboard() {
@@ -60,8 +61,8 @@ export default function PatientDashboard() {
             <View>
               <Text style={styles.bannerTitle}>Medical Checks!</Text>
               <Text style={styles.bannerDescription}>
-                Check your health condition regularly to minimize the incidence of disease in the
-                future.
+                Check your health condition regularly to minimize the incidence
+                of disease in the future.
               </Text>
             </View>
             <TouchableOpacity style={styles.bannerButton}>
@@ -87,7 +88,9 @@ export default function PatientDashboard() {
               style={styles.bannerButton}
               onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
             >
-              <Text style={[styles.bannerButtonText, { color: '#5F27CD' }]}>Book Now</Text>
+              <Text style={[styles.bannerButtonText, { color: '#5F27CD' }]}>
+                Book Now
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -97,14 +100,21 @@ export default function PatientDashboard() {
         {[0, 1].map((index) => (
           <View
             key={index}
-            style={[styles.dot, activeBannerIndex === index && styles.activeDot]}
+            style={[
+              styles.dot,
+              activeBannerIndex === index && styles.activeDot,
+            ]}
           />
         ))}
       </View>
     </View>
   );
 
-  const renderSpecialtyItem = ({ item }: { item: typeof mockSpecialties[0] }) => (
+  const renderSpecialtyItem = ({
+    item,
+  }: {
+    item: (typeof mockSpecialties)[0];
+  }) => (
     <TouchableOpacity
       style={styles.specialtyCard}
       onPress={() =>
@@ -120,7 +130,7 @@ export default function PatientDashboard() {
     </TouchableOpacity>
   );
 
-  const renderDoctorCard = ({ item }: { item: typeof mockDoctors[0] }) => (
+  const renderDoctorCard = ({ item }: { item: (typeof mockDoctors)[0] }) => (
     <TouchableOpacity
       style={{ marginBottom: 16 }}
       onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
@@ -148,7 +158,9 @@ export default function PatientDashboard() {
           }}
         />
         <View style={{ flex: 1 }}>
-          <ThemedText style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
+          <ThemedText
+            style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}
+          >
             {item.name}
           </ThemedText>
           <ThemedText
@@ -163,9 +175,13 @@ export default function PatientDashboard() {
             </Text>
           </View>
         </View>
-        <View style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <View
+          style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}
+        >
           <MaterialIcons name="favorite-border" size={22} color="#9CA3AF" />
-          <Text style={{ fontSize: 16, fontWeight: '600', color: primaryColor }}>
+          <Text
+            style={{ fontSize: 16, fontWeight: '600', color: primaryColor }}
+          >
             Rs.{item.consultationFee}
           </Text>
         </View>
@@ -180,20 +196,32 @@ export default function PatientDashboard() {
         <View style={styles.headerTop}>
           <View style={styles.userInfo}>
             <Image
-              source={{ uri: user?.avatar || 'https://i.pravatar.cc/150?img=12' }}
+              source={{
+                uri: user?.avatar || 'https://i.pravatar.cc/150?img=12',
+              }}
               style={styles.avatar}
             />
             <View style={styles.greetingContainer}>
               <Text style={styles.greeting}>Good Morning 👋</Text>
-              <ThemedText style={styles.userName}>{user?.name || 'Andrew Ainsley'}</ThemedText>
+              <ThemedText style={styles.userName}>
+                {user?.name || 'Andrew Ainsley'}
+              </ThemedText>
             </View>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="notifications-none" size={24} color={textColor} />
+              <MaterialIcons
+                name="notifications-none"
+                size={24}
+                color={textColor}
+              />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="favorite-border" size={24} color={textColor} />
+              <MaterialIcons
+                name="favorite-border"
+                size={24}
+                color={textColor}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -202,7 +230,9 @@ export default function PatientDashboard() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Search */}
         <View style={styles.searchSection}>

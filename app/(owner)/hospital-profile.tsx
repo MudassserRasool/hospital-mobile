@@ -3,7 +3,7 @@
  * Edit hospital information
  */
 
-import { ThemedView } from '@/components';
+import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { mockHospitalProfile } from '@/utils/mockData';

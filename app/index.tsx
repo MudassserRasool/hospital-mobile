@@ -3,11 +3,16 @@
  * Role-based routing logic
  */
 
-import { useEffect } from 'react';
-import { router } from 'expo-router';
+import { ThemedView } from '@/components/themed-view';
+import {
+  AUTH_ROUTES,
+  OWNER_ROUTES,
+  PATIENT_ROUTES,
+  STAFF_ROUTES,
+} from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { PATIENT_ROUTES, STAFF_ROUTES, OWNER_ROUTES, AUTH_ROUTES } from '@/constants/routes';
-import { ThemedView } from '@/components';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
@@ -39,7 +44,9 @@ export default function Index() {
   }, []);
 
   return (
-    <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <ThemedView
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+    >
       <ActivityIndicator size="large" color="#4B7BEC" />
     </ThemedView>
   );
