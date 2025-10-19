@@ -3,6 +3,7 @@
  * Modern, accessible button with multiple variants
  */
 
+import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import {
@@ -13,6 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { styles } from './Button.style';
+// import { styles } from './Button.style';
 
 export interface ButtonProps extends TouchableOpacityProps {
   title: string;

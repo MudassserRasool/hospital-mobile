@@ -3,9 +3,12 @@
  * Small status indicator badge
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import React from 'react';
-import { TextStyle, View, ViewStyle } from 'react-native';
+import { TextStyle, ViewStyle } from 'react-native';
 import { styles } from './Badge.style';
+// import { styles } from './Badge.style';
 
 export interface BadgeProps {
   label: string;
@@ -83,7 +86,9 @@ export function Badge({
   };
 
   return (
-    <View style={[styles.badge, getVariantStyle(), getSizeStyle(), style]}>
+    <ThemedView
+      style={[styles.badge, getVariantStyle(), getSizeStyle(), style]}
+    >
       <ThemedText
         style={[
           styles.text,
@@ -94,6 +99,6 @@ export function Badge({
       >
         {label}
       </ThemedText>
-    </View>
+    </ThemedView>
   );
 }
