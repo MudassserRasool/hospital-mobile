@@ -1,5 +1,6 @@
-import React from "react";
-import { View, Text } from "react-native";
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import React from 'react';
 
 /**
  * Request leave
@@ -8,8 +9,10 @@ import { View, Text } from "react-native";
 
 export default function RequestLeave() {
   return (
-    <ThemedView style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+    <ThemedView
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+    >
       <ThemedText>RequestLeave</ThemedText>
-    </View>
+    </ThemedView>
   );
 }
