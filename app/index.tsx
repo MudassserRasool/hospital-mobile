@@ -27,7 +27,7 @@ export default function Index() {
         router.replace(AUTH_ROUTES.LOGIN);
         return;
       }
-
+      console.log('role', role);
       // Redirect based on role
       if (role === 'patient') {
         router.replace(PATIENT_ROUTES.DASHBOARD);

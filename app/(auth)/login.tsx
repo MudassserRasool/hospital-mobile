@@ -17,6 +17,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';
+import { ROLES } from '@/constants';
 import { OWNER_ROUTES, PATIENT_ROUTES, STAFF_ROUTES } from '@/constants/routes';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,15 +78,23 @@ export default function LoginScreen() {
         id: '1',
         name: 'Andrew Ainsley',
         email: 'andrew@example.com',
-        role: 'patient' as const,
+        role: 'owner' as const, // patient
         avatar: 'https://i.pravatar.cc/150?img=12',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      } as const;
       const mockToken = 'mock-jwt-token-123';
 
       await login(mockUser, mockToken, mockUser.role);
-      router.replace(PATIENT_ROUTES.DASHBOARD);
+
+      // Navigate based on role
+      if (mockUser.role === ROLES.PATIENT) {
+        router.replace(PATIENT_ROUTES.DASHBOARD);
+      } else if (mockUser.role === ROLES.STAFF) {
+        router.replace(STAFF_ROUTES.DASHBOARD);
+      } else if (mockUser.role === ROLES.OWNER) {
+        router.replace(OWNER_ROUTES.DASHBOARD);
+      }
     } catch (error) {
       Alert.alert('Error', 'Google Sign In failed. Please try again.');
     } finally {
@@ -193,7 +202,7 @@ export default function LoginScreen() {
             {/* Footer */}
             <ThemedView style={styles.footer}>
               <ThemedText style={styles.footerText}>
-                Don't have an account?
+                Don&apos;t have an account?
               </ThemedText>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
                 <ThemedText style={[styles.linkText, { color: primaryColor }]}>
