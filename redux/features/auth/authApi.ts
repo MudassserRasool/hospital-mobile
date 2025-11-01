@@ -3,71 +3,68 @@
  */
 
 import { apiSlice } from '../../apiSlice';
-import { User } from '@/types';
-
-interface LoginRequest {
-  googleToken: string;
-}
-
-interface LoginResponse {
-  user: User;
-  token: string;
-  role: 'patient' | 'staff' | 'owner';
-}
-
-interface RegisterRequest {
-  googleToken: string;
-  role: 'patient' | 'staff' | 'owner';
-  name: string;
-  email: string;
-}
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    googleLogin: builder.mutation<LoginResponse, LoginRequest>({
-      query: (credentials) => ({
-        url: '/auth/google/login',
-        method: 'POST',
-        body: credentials,
-      }),
-      invalidatesTags: ['Auth', 'User'],
-    }),
-    
-    googleRegister: builder.mutation<LoginResponse, RegisterRequest>({
+    // Google OAuth Login
+    loginWithGoogle: builder.mutation({
       query: (data) => ({
-        url: '/auth/google/register',
+        url: '/auth/login/google',
         method: 'POST',
-        body: data,
+        body: data, // { googleId, email, firstName, lastName, role, profilePicture, phone, hospitalId }
       }),
       invalidatesTags: ['Auth', 'User'],
     }),
-    
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
-      }),
-      invalidatesTags: ['Auth'],
-    }),
-    
-    getCurrentUser: builder.query<User, void>({
-      query: () => '/auth/me',
-      providesTags: ['User'],
-    }),
-    
-    refreshToken: builder.mutation<{ token: string }, void>({
-      query: () => ({
+
+    // Refresh Token
+    refreshToken: builder.mutation({
+      query: (refreshToken) => ({
         url: '/auth/refresh',
         method: 'POST',
+        body: { refreshToken },
+      }),
+    }),
+
+    // Logout
+    logout: builder.mutation({
+      query: (refreshToken) => ({
+        url: '/auth/logout',
+        method: 'POST',
+        body: { refreshToken },
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
+
+    // Get Profile
+    getProfile: builder.query({
+      query: () => '/auth/profile',
+      providesTags: ['User'],
+    }),
+
+    // Register Device Token for Push Notifications
+    registerDeviceToken: builder.mutation({
+      query: (deviceToken) => ({
+        url: '/notifications/register-token',
+        method: 'POST',
+        body: { deviceToken },
+      }),
+    }),
+
+    unregisterDeviceToken: builder.mutation({
+      query: (deviceToken) => ({
+        url: '/notifications/unregister-token',
+        method: 'POST',
+        body: { deviceToken },
       }),
     }),
   }),
 });
 
 export const {
-  useGoogleLoginMutation,
-  useGoogleRegisterMutation,
-  useLogoutMutation,
-  useGetCurrentUserQuery,
+  useLoginWithGoogleMutation,
   useRefreshTokenMutation,
+  useLogoutMutation,
+  useGetProfileQuery,
+  useRegisterDeviceTokenMutation,
+  useUnregisterDeviceTokenMutation,
 } = authApi;

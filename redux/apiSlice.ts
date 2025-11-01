@@ -34,6 +34,7 @@ export const apiSlice = createApi({
     'Owner',
     'Hospital',
     'Bonuses',
+    'Notifications',
   ],
 
   endpoints: () => ({}),

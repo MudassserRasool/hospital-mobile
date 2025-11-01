@@ -18,110 +18,139 @@ import {
 
 export const patientApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Patient Profile
+    getMyProfile: builder.query({
+      query: () => '/patients/me',
+      providesTags: ['Patient'],
+    }),
+
+    updateMyProfile: builder.mutation({
+      query: (data) => ({
+        url: '/patients/me',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Patient'],
+    }),
+
     // Doctors
     getDoctors: builder.query<Doctor[], DoctorFilters>({
       query: (filters) => ({
-        url: '/patient/doctors',
+        url: '/doctors',
         params: filters,
       }),
       providesTags: ['Doctors'],
     }),
 
     getDoctorById: builder.query<Doctor, string>({
-      query: (id) => `/patient/doctors/${id}`,
+      query: (id) => `/doctors/${id}`,
       providesTags: (result, error, id) => [{ type: 'Doctors', id }],
     }),
 
-    getSpecialties: builder.query<Specialty[], void>({
-      query: () => '/patient/specialties',
+    // Departments
+    getDepartments: builder.query({
+      query: (hospitalId) => `/departments/${hospitalId}`,
       providesTags: ['Doctors'],
     }),
 
+    // Check doctor availability
+    checkAvailability: builder.query({
+      query: ({ doctorId, date }) => `/schedules/availability/${doctorId}/${date}`,
+    }),
+
     // Appointments
-    getAppointments: builder.query<Appointment[], AppointmentFilters>({
-      query: (filters) => ({
-        url: '/patient/appointments',
-        params: filters,
-      }),
+    getMyAppointments: builder.query({
+      query: () => '/appointments/me',
       providesTags: ['Appointments'],
     }),
 
     getAppointmentById: builder.query<Appointment, string>({
-      query: (id) => `/patient/appointments/${id}`,
+      query: (id) => `/appointments/${id}`,
       providesTags: (result, error, id) => [{ type: 'Appointments', id }],
-    }),
-
-    getAvailableTimeSlots: builder.query<TimeSlot[], { doctorId: string; date: string }>({
-      query: ({ doctorId, date }) => `/patient/doctors/${doctorId}/slots?date=${date}`,
-      providesTags: ['Appointments'],
     }),
 
     bookAppointment: builder.mutation<Appointment, BookAppointmentData>({
       query: (data) => ({
-        url: '/patient/appointments',
+        url: '/appointments',
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['Appointments', 'Doctors'],
     }),
 
-    cancelAppointment: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/patient/appointments/${id}/cancel`,
-        method: 'PUT',
+    cancelAppointment: builder.mutation({
+      query: ({ id, reason }) => ({
+        url: `/appointments/${id}/cancel`,
+        method: 'PATCH',
+        body: { reason },
       }),
       invalidatesTags: ['Appointments', 'Wallet'],
     }),
 
-    rescheduleAppointment: builder.mutation<
-      Appointment,
-      { id: string; date: string; time: string }
-    >({
-      query: ({ id, ...data }) => ({
-        url: `/patient/appointments/${id}/reschedule`,
-        method: 'PUT',
-        body: data,
+    rescheduleAppointment: builder.mutation({
+      query: ({ id, date, timeSlot }) => ({
+        url: `/appointments/${id}/reschedule`,
+        method: 'POST',
+        body: { date, timeSlot },
       }),
       invalidatesTags: ['Appointments'],
     }),
 
-    // Payment & Wallet
+    // Wallet
+    getMyWallet: builder.query<Wallet, void>({
+      query: () => '/wallets/me',
+      providesTags: ['Wallet'],
+    }),
+
+    getMyWalletBalance: builder.query({
+      query: () => '/wallets/me/balance',
+      providesTags: ['Wallet'],
+    }),
+
+    getMyWalletTransactions: builder.query<WalletTransaction[], void>({
+      query: () => '/wallets/me/transactions',
+      providesTags: ['Wallet'],
+    }),
+
+    // Payments
     processPayment: builder.mutation<
       Payment,
-      { appointmentId: string; amount: number; paymentMethod: string; walletAmountUsed?: number }
+      { appointmentId: string; patientId: string; amount: number; walletAmountToUse?: number }
     >({
       query: (data) => ({
-        url: '/patient/payments',
+        url: '/payments/process',
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['Appointments', 'Wallet'],
     }),
 
-    getWallet: builder.query<Wallet, void>({
-      query: () => '/patient/wallet',
-      providesTags: ['Wallet'],
+    getPaymentById: builder.query({
+      query: (id) => `/payments/${id}`,
     }),
 
-    getWalletTransactions: builder.query<WalletTransaction[], void>({
-      query: () => '/patient/wallet/transactions',
-      providesTags: ['Wallet'],
+    getPaymentHistory: builder.query({
+      query: (patientId) => `/payments/patient/${patientId}`,
     }),
   }),
 });
 
 export const {
+  useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
   useGetDoctorsQuery,
   useGetDoctorByIdQuery,
-  useGetSpecialtiesQuery,
-  useGetAppointmentsQuery,
+  useGetDepartmentsQuery,
+  useCheckAvailabilityQuery,
+  useGetMyAppointmentsQuery,
   useGetAppointmentByIdQuery,
-  useGetAvailableTimeSlotsQuery,
   useBookAppointmentMutation,
   useCancelAppointmentMutation,
   useRescheduleAppointmentMutation,
+  useGetMyWalletQuery,
+  useGetMyWalletBalanceQuery,
+  useGetMyWalletTransactionsQuery,
   useProcessPaymentMutation,
-  useGetWalletQuery,
-  useGetWalletTransactionsQuery,
+  useGetPaymentByIdQuery,
+  useGetPaymentHistoryQuery,
 } = patientApi;
-

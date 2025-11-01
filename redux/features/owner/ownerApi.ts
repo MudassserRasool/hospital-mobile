@@ -3,162 +3,163 @@
  */
 
 import { apiSlice } from '../../apiSlice';
-import {
-  HospitalProfile,
-  DashboardStats,
-  StaffProfile,
-  StaffDetails,
-  CreateStaffData,
-  Bonus,
-  CreateBonusData,
-  LeaveRequest,
-  Appointment,
-  StaffFilters,
-  DoctorAppointmentFilters,
-  RevenueReport,
-} from '@/types';
 
 export const ownerApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Dashboard
-    getDashboardStats: builder.query<DashboardStats, void>({
-      query: () => '/owner/dashboard/stats',
-      providesTags: ['Owner'],
+    // Profile
+    getMyProfile: builder.query({
+      query: () => '/owners/me',
+      providesTags: ['User'],
     }),
 
-    getRevenueReport: builder.query<RevenueReport, { period: string }>({
-      query: (params) => ({
-        url: '/owner/dashboard/revenue',
-        params,
-      }),
-      providesTags: ['Owner'],
-    }),
-
-    // Hospital Profile
-    getHospitalProfile: builder.query<HospitalProfile, void>({
-      query: () => '/owner/hospital/profile',
+    // Hospital Management
+    getHospitalProfile: builder.query({
+      query: () => '/owners/hospital',
       providesTags: ['Hospital'],
     }),
 
-    updateHospitalProfile: builder.mutation<HospitalProfile, Partial<HospitalProfile>>({
+    updateHospitalProfile: builder.mutation({
       query: (data) => ({
-        url: '/owner/hospital/profile',
+        url: '/owners/hospital',
         method: 'PUT',
         body: data,
       }),
       invalidatesTags: ['Hospital'],
     }),
 
+    getHospitalStats: builder.query({
+      query: () => '/owners/stats',
+      providesTags: ['Hospital'],
+    }),
+
     // Staff Management
-    getAllStaff: builder.query<StaffProfile[], StaffFilters>({
-      query: (filters) => ({
-        url: '/owner/staff',
-        params: filters,
+    getStaffList: builder.query({
+      query: (params) => ({
+        url: '/owners/staff',
+        params, // role, isActive, limit, skip
       }),
       providesTags: ['Staff'],
     }),
 
-    getStaffById: builder.query<StaffDetails, string>({
-      query: (id) => `/owner/staff/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Staff', id }],
+    getStaffDetails: builder.query({
+      query: (staffId) => `/owners/staff/${staffId}`,
+      providesTags: (result, error, staffId) => [{ type: 'Staff', id: staffId }],
     }),
 
-    createStaff: builder.mutation<StaffProfile, CreateStaffData>({
-      query: (data) => ({
-        url: '/owner/staff',
-        method: 'POST',
-        body: data,
+    blockStaff: builder.mutation({
+      query: ({ staffId, reason }) => ({
+        url: `/owners/staff/${staffId}/block`,
+        method: 'PATCH',
+        body: { reason },
       }),
       invalidatesTags: ['Staff'],
     }),
 
-    updateStaff: builder.mutation<StaffProfile, { id: string; data: Partial<CreateStaffData> }>({
-      query: ({ id, data }) => ({
-        url: `/owner/staff/${id}`,
-        method: 'PUT',
-        body: data,
+    unblockStaff: builder.mutation({
+      query: (staffId) => ({
+        url: `/owners/staff/${staffId}/unblock`,
+        method: 'PATCH',
       }),
       invalidatesTags: ['Staff'],
     }),
 
-    deactivateStaff: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/owner/staff/${id}/deactivate`,
-        method: 'PUT',
+    activateStaff: builder.mutation({
+      query: (staffId) => ({
+        url: `/owners/staff/${staffId}/activate`,
+        method: 'PATCH',
       }),
       invalidatesTags: ['Staff'],
     }),
 
-    activateStaff: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/owner/staff/${id}/activate`,
-        method: 'PUT',
+    deactivateStaff: builder.mutation({
+      query: (staffId) => ({
+        url: `/owners/staff/${staffId}/deactivate`,
+        method: 'PATCH',
       }),
       invalidatesTags: ['Staff'],
     }),
 
     // Leave Management
-    getPendingLeaves: builder.query<LeaveRequest[], void>({
-      query: () => '/owner/leaves/pending',
-      providesTags: ['Leaves'],
-    }),
-
-    getAllLeaves: builder.query<LeaveRequest[], { status?: string; staffId?: string }>({
+    getPendingLeaves: builder.query({
       query: (params) => ({
-        url: '/owner/leaves',
-        params,
+        url: '/leaves/pending',
+        params, // limit, skip
       }),
       providesTags: ['Leaves'],
     }),
 
-    approveLeave: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/owner/leaves/${id}/approve`,
-        method: 'PUT',
+    getHospitalLeaves: builder.query({
+      query: ({ hospitalId, ...params }) => ({
+        url: `/leaves/hospital/${hospitalId}`,
+        params, // status, leaveType, staffId, limit, skip
+      }),
+      providesTags: ['Leaves'],
+    }),
+
+    approveLeave: builder.mutation({
+      query: ({ id, reviewerNotes }) => ({
+        url: `/leaves/${id}/approve`,
+        method: 'PATCH',
+        body: { reviewerNotes },
       }),
       invalidatesTags: ['Leaves'],
     }),
 
-    rejectLeave: builder.mutation<void, { id: string; reason: string }>({
-      query: ({ id, reason }) => ({
-        url: `/owner/leaves/${id}/reject`,
-        method: 'PUT',
-        body: { reason },
+    rejectLeave: builder.mutation({
+      query: ({ id, reason, reviewerNotes }) => ({
+        url: `/leaves/${id}/reject`,
+        method: 'PATCH',
+        body: { reason, reviewerNotes },
       }),
       invalidatesTags: ['Leaves'],
     }),
 
-    // Doctor Appointments
-    getDoctorAppointments: builder.query<Appointment[], DoctorAppointmentFilters>({
-      query: (filters) => ({
-        url: '/owner/appointments',
-        params: filters,
+    // Attendance Management
+    getHospitalAttendance: builder.query({
+      query: ({ hospitalId, ...params }) => ({
+        url: `/attendance/hospital/${hospitalId}`,
+        params, // date, status, limit, skip
+      }),
+      providesTags: ['Attendance'],
+    }),
+
+    getStaffAttendance: builder.query({
+      query: ({ staffId, ...params }) => ({
+        url: `/attendance/staff/${staffId}`,
+        params, // startDate, endDate, limit, skip
+      }),
+      providesTags: ['Attendance'],
+    }),
+
+    markAttendance: builder.mutation({
+      query: (data) => ({
+        url: '/attendance/mark',
+        method: 'POST',
+        body: data, // { staffId, hospitalId, date, status, checkInTime, checkOutTime }
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
+    // Doctor Appointments (for monitoring)
+    getDoctorAppointments: builder.query({
+      query: ({ doctorId, ...params }) => ({
+        url: '/appointments',
+        params: { doctorId, ...params },
       }),
       providesTags: ['Appointments'],
     }),
 
     // Bonuses
-    getBonuses: builder.query<Bonus[], { staffId?: string }>({
-      query: (params) => ({
-        url: '/owner/bonuses',
-        params,
-      }),
+    getStaffBonuses: builder.query({
+      query: (staffId) => `/bonuses/staff/${staffId}`,
       providesTags: ['Bonuses'],
     }),
 
-    createBonus: builder.mutation<Bonus, CreateBonusData>({
+    createBonus: builder.mutation({
       query: (data) => ({
-        url: '/owner/bonuses',
+        url: '/bonuses',
         method: 'POST',
         body: data,
-      }),
-      invalidatesTags: ['Bonuses', 'Staff'],
-    }),
-
-    deleteBonus: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/owner/bonuses/${id}`,
-        method: 'DELETE',
       }),
       invalidatesTags: ['Bonuses'],
     }),
@@ -166,23 +167,24 @@ export const ownerApi = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetDashboardStatsQuery,
-  useGetRevenueReportQuery,
+  useGetMyProfileQuery,
   useGetHospitalProfileQuery,
   useUpdateHospitalProfileMutation,
-  useGetAllStaffQuery,
-  useGetStaffByIdQuery,
-  useCreateStaffMutation,
-  useUpdateStaffMutation,
-  useDeactivateStaffMutation,
+  useGetHospitalStatsQuery,
+  useGetStaffListQuery,
+  useGetStaffDetailsQuery,
+  useBlockStaffMutation,
+  useUnblockStaffMutation,
   useActivateStaffMutation,
+  useDeactivateStaffMutation,
   useGetPendingLeavesQuery,
-  useGetAllLeavesQuery,
+  useGetHospitalLeavesQuery,
   useApproveLeaveMutation,
   useRejectLeaveMutation,
+  useGetHospitalAttendanceQuery,
+  useGetStaffAttendanceQuery,
+  useMarkAttendanceMutation,
   useGetDoctorAppointmentsQuery,
-  useGetBonusesQuery,
+  useGetStaffBonusesQuery,
   useCreateBonusMutation,
-  useDeleteBonusMutation,
 } = ownerApi;
-

@@ -3,139 +3,129 @@
  */
 
 import { apiSlice } from '../../apiSlice';
-import {
-  StaffProfile,
-  CheckInRecord,
-  AttendanceRecord,
-  AttendanceSummary,
-  LeaveRequest,
-  LeaveBalance,
-  WorkHoursSummary,
-  CheckInVerification,
-  CreateLeaveRequestData,
-  Location,
-} from '@/types';
 
 export const staffApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Profile
-    getStaffProfile: builder.query<StaffProfile, void>({
-      query: () => '/staff/profile',
-      providesTags: ['Staff'],
-    }),
-
-    updateStaffProfile: builder.mutation<StaffProfile, Partial<StaffProfile>>({
-      query: (data) => ({
-        url: '/staff/profile',
-        method: 'PUT',
-        body: data,
-      }),
-      invalidatesTags: ['Staff'],
-    }),
-
-    // Check-in/Check-out
-    verifyCheckIn: builder.query<CheckInVerification, Location>({
-      query: (location) => ({
-        url: '/staff/checkin/verify',
-        params: location,
-      }),
-    }),
-
-    checkIn: builder.mutation<CheckInRecord, Location>({
-      query: (location) => ({
-        url: '/staff/checkin',
-        method: 'POST',
-        body: location,
-      }),
-      invalidatesTags: ['Attendance'],
-    }),
-
-    checkOut: builder.mutation<CheckInRecord, Location>({
-      query: (location) => ({
-        url: '/staff/checkout',
-        method: 'POST',
-        body: location,
-      }),
-      invalidatesTags: ['Attendance'],
-    }),
-
-    getCurrentCheckIn: builder.query<CheckInRecord | null, void>({
-      query: () => '/staff/checkin/current',
-      providesTags: ['Attendance'],
-    }),
-
     // Attendance
-    getAttendanceHistory: builder.query<
-      AttendanceRecord[],
-      { startDate?: string; endDate?: string }
-    >({
-      query: (params) => ({
-        url: '/staff/attendance',
-        params,
-      }),
-      providesTags: ['Attendance'],
-    }),
-
-    getAttendanceSummary: builder.query<AttendanceSummary, { month: string; year: string }>({
-      query: (params) => ({
-        url: '/staff/attendance/summary',
-        params,
-      }),
-      providesTags: ['Attendance'],
-    }),
-
-    // Work Hours
-    getWorkHours: builder.query<WorkHoursSummary, void>({
-      query: () => '/staff/work-hours',
-      providesTags: ['Attendance'],
-    }),
-
-    // Leave Management
-    getLeaveRequests: builder.query<LeaveRequest[], { status?: string }>({
-      query: (params) => ({
-        url: '/staff/leaves',
-        params,
-      }),
-      providesTags: ['Leaves'],
-    }),
-
-    getLeaveBalance: builder.query<LeaveBalance, void>({
-      query: () => '/staff/leaves/balance',
-      providesTags: ['Leaves'],
-    }),
-
-    createLeaveRequest: builder.mutation<LeaveRequest, CreateLeaveRequestData>({
+    checkIn: builder.mutation({
       query: (data) => ({
-        url: '/staff/leaves',
+        url: '/attendance/checkin',
         method: 'POST',
-        body: data,
+        body: data, // { wifiSSID, gpsCoordinates }
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
+    checkOut: builder.mutation({
+      query: () => ({
+        url: '/attendance/checkout',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
+    getTodayAttendance: builder.query({
+      query: () => '/attendance/today',
+      providesTags: ['Attendance'],
+    }),
+
+    getMyAttendance: builder.query({
+      query: (params) => ({
+        url: '/attendance/me',
+        params, // startDate, endDate, limit, skip
+      }),
+      providesTags: ['Attendance'],
+    }),
+
+    getWorkHoursSummary: builder.query({
+      query: ({ staffId, startDate, endDate }) => 
+        `/attendance/work-hours/${staffId}?startDate=${startDate}&endDate=${endDate}`,
+    }),
+
+    // Leaves
+    requestLeave: builder.mutation({
+      query: (data) => ({
+        url: '/leaves',
+        method: 'POST',
+        body: data, // { startDate, endDate, reason, leaveType, attachments }
       }),
       invalidatesTags: ['Leaves'],
     }),
 
-    cancelLeaveRequest: builder.mutation<void, string>({
+    getMyLeaves: builder.query({
+      query: (params) => ({
+        url: '/leaves/me',
+        params, // status, limit, skip
+      }),
+      providesTags: ['Leaves'],
+    }),
+
+    getMyLeaveBalance: builder.query({
+      query: (year) => `/leaves/me/balance${year ? `?year=${year}` : ''}`,
+      providesTags: ['Leaves'],
+    }),
+
+    cancelLeaveRequest: builder.mutation({
       query: (id) => ({
-        url: `/staff/leaves/${id}/cancel`,
-        method: 'PUT',
+        url: `/leaves/${id}/cancel`,
+        method: 'DELETE',
       }),
       invalidatesTags: ['Leaves'],
+    }),
+
+    // Profile
+    getMyProfile: builder.query({
+      query: () => '/auth/profile',
+      providesTags: ['User'],
+    }),
+
+    // Schedule (for doctors/nurses)
+    getMySchedule: builder.query({
+      query: (date) => `/schedules/me?date=${date}`,
+    }),
+
+    // Appointments (for doctors/nurses)
+    getMyPatientAppointments: builder.query({
+      query: (params) => ({
+        url: '/appointments',
+        params, // Will be filtered by backend based on role
+      }),
+      providesTags: ['Appointments'],
+    }),
+
+    checkInPatient: builder.mutation({
+      query: ({ id, vitals }) => ({
+        url: `/appointments/${id}/checkin`,
+        method: 'PATCH',
+        body: { vitals },
+      }),
+      invalidatesTags: ['Appointments'],
+    }),
+
+    completeAppointment: builder.mutation({
+      query: ({ id, ...completionData }) => ({
+        url: `/appointments/${id}/complete`,
+        method: 'PATCH',
+        body: completionData, // { checkupNotes, diagnosis, prescriptions }
+      }),
+      invalidatesTags: ['Appointments'],
     }),
   }),
 });
 
 export const {
-  useGetStaffProfileQuery,
-  useUpdateStaffProfileMutation,
-  useVerifyCheckInQuery,
   useCheckInMutation,
   useCheckOutMutation,
-  useGetCurrentCheckInQuery,
-  useGetAttendanceHistoryQuery,
-  useGetAttendanceSummaryQuery,
-  useGetWorkHoursQuery,
-  useGetLeaveRequestsQuery,
-  useGetLeaveBalanceQuery,
-  useCreateLeaveRequestMutation,
+  useGetTodayAttendanceQuery,
+  useGetMyAttendanceQuery,
+  useGetWorkHoursSummaryQuery,
+  useRequestLeaveMutation,
+  useGetMyLeavesQuery,
+  useGetMyLeaveBalanceQuery,
   useCancelLeaveRequestMutation,
+  useGetMyProfileQuery,
+  useGetMyScheduleQuery,
+  useGetMyPatientAppointmentsQuery,
+  useCheckInPatientMutation,
+  useCompleteAppointmentMutation,
 } = staffApi;
-
