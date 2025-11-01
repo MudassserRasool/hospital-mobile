@@ -18,35 +18,44 @@ import {
 } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  mockCurrentCheckIn,
-  mockLeaveBalance,
-  mockStaffProfile,
-  mockWorkHours,
-} from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
+import { 
+  useGetTodayAttendanceQuery, 
+  useGetMyLeaveBalanceQuery,
+  useGetMyProfileQuery,
+} from '@/redux/features/staff/staffApi';
 
 export default function StaffDashboard() {
   const { user } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
-  const [refreshing, setRefreshing] = useState(false);
 
-  const staff = mockStaffProfile;
-  const isCheckedIn = !!mockCurrentCheckIn;
+  // Fetch data from APIs
+  const { data: profile, isLoading: loadingProfile, refetch: refetchProfile } = useGetMyProfileQuery();
+  const { data: todayAttendance, isLoading: loadingAttendance, refetch: refetchAttendance } = useGetTodayAttendanceQuery();
+  const { data: leaveBalance, isLoading: loadingLeaves, refetch: refetchLeaves } = useGetMyLeaveBalanceQuery(new Date().getFullYear());
+
+  const isCheckedIn = todayAttendance && !todayAttendance.checkOutTime;
+  const workHoursToday = todayAttendance?.workHours || 0;
+
+  // Calculate total remaining leaves
+  const totalRemainingLeaves = leaveBalance ? 
+    Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.remaining || 0), 0) : 0;
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await Promise.all([refetchProfile(), refetchAttendance(), refetchLeaves()]);
   };
+
+  const refreshing = loadingProfile || loadingAttendance || loadingLeaves;
 
   return (
     <ThemedView style={styles.container}>
@@ -65,18 +74,26 @@ export default function StaffDashboard() {
         {/* Header */}
         <ThemedView style={styles.header}>
           <ThemedView style={styles.userInfo}>
-            <Image
-              source={{
-                uri: staff.avatar || 'https://i.pravatar.cc/150?img=10',
-              }}
-              style={styles.avatar}
-            />
-            <ThemedView style={styles.userDetails}>
-              <ThemedText style={styles.userName}>{staff.name}</ThemedText>
-              <ThemedText style={styles.userRole}>
-                {staff.role} • {staff.employeeId}
-              </ThemedText>
-            </ThemedView>
+            {loadingProfile ? (
+              <ActivityIndicator size="small" color={primaryColor} />
+            ) : (
+              <>
+                <Image
+                  source={{
+                    uri: profile?.profilePicture || `https://i.pravatar.cc/150?u=${profile?._id}`,
+                  }}
+                  style={styles.avatar}
+                />
+                <ThemedView style={styles.userDetails}>
+                  <ThemedText style={styles.userName}>
+                    {profile?.firstName} {profile?.lastName}
+                  </ThemedText>
+                  <ThemedText style={styles.userRole}>
+                    {profile?.role || 'Staff'} • {profile?.email}
+                  </ThemedText>
+                </ThemedView>
+              </>
+            )}
           </ThemedView>
           <Badge
             label={isCheckedIn ? 'Checked In' : 'Checked Out'}
@@ -98,12 +115,10 @@ export default function StaffDashboard() {
               >
                 {isCheckedIn ? 'You are checked in' : 'Not checked in'}
               </ThemedText>
-              {isCheckedIn && (
+              {isCheckedIn && todayAttendance && (
                 <ThemedText style={styles.checkInTime}>
                   Since{' '}
-                  {new Date(
-                    mockCurrentCheckIn?.checkInTime || ''
-                  ).toLocaleTimeString('en-US', {
+                  {new Date(todayAttendance.checkInTime).toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -136,7 +151,7 @@ export default function StaffDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {mockWorkHours.daily}h
+              {workHoursToday.toFixed(1)}h
             </ThemedText>
             <ThemedText style={styles.statLabel}>Today's Hours</ThemedText>
           </Card>
@@ -150,7 +165,7 @@ export default function StaffDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {mockLeaveBalance.remainingLeaves}
+              {totalRemainingLeaves}
             </ThemedText>
             <ThemedText style={styles.statLabel}>Leaves Left</ThemedText>
           </Card>
@@ -164,7 +179,7 @@ export default function StaffDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {mockWorkHours.weekly}h
+              {loadingAttendance ? '-' : '0'}h
             </ThemedText>
             <ThemedText style={styles.statLabel}>This Week</ThemedText>
           </Card>
@@ -178,7 +193,7 @@ export default function StaffDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {mockLeaveBalance.pendingLeaves}
+              {loadingLeaves ? '-' : '0'}
             </ThemedText>
             <ThemedText style={styles.statLabel}>Pending</ThemedText>
           </Card>

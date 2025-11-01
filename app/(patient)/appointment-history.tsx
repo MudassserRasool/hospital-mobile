@@ -14,7 +14,6 @@ import {
   NeutralColors,
   Spacing,
 } from '@/constants/theme';
-import { mockAppointments } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
@@ -24,17 +23,24 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useGetMyAppointmentsQuery, useCancelAppointmentMutation } from '@/redux/features/patient/patientApi';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function AppointmentHistoryScreen() {
+  const primaryColor = useThemeColor({}, 'primary');
   const [selectedTab, setSelectedTab] = useState<
     'upcoming' | 'completed' | 'cancelled'
   >('upcoming');
-  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch appointments from API
+  const { data: appointments = [], isLoading, refetch } = useGetMyAppointmentsQuery();
+  const [cancelAppointment, { isLoading: cancelling }] = useCancelAppointmentMutation();
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await refetch();
   };
 
   const getStatusVariant = (status: string) => {
@@ -52,70 +58,125 @@ export default function AppointmentHistoryScreen() {
     }
   };
 
-  const filteredAppointments = mockAppointments.filter((apt) => {
+  const filteredAppointments = appointments.filter((apt: any) => {
     if (selectedTab === 'upcoming')
-      return apt.status === 'confirmed' || apt.status === 'pending';
+      return apt.status === 'confirmed' || apt.status === 'pending' || apt.status === 'checked_in';
     if (selectedTab === 'completed') return apt.status === 'completed';
     if (selectedTab === 'cancelled') return apt.status === 'cancelled';
     return true;
   });
 
-  const renderAppointmentCard = ({
-    item,
-  }: {
-    item: (typeof mockAppointments)[0];
-  }) => (
-    <TouchableOpacity
-      style={styles.appointmentCard}
-      onPress={() => router.push(PATIENT_ROUTES.APPOINTMENT_DETAILS)}
-    >
-      <ThemedView style={styles.appointmentHeader}>
-        <Image
-          source={{ uri: item.doctor.avatar }}
-          style={styles.doctorImage}
-        />
-        <ThemedView style={styles.appointmentInfo}>
-          <ThemedView style={styles.infoHeader}>
-            <ThemedText style={styles.doctorName}>
-              {item.doctor.name}
+  const handleCancelAppointment = async (appointmentId: string) => {
+    Alert.alert(
+      'Cancel Appointment',
+      'Are you sure you want to cancel this appointment? You will receive a 90% refund and 10% wallet credit.',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await cancelAppointment({ id: appointmentId, reason: 'Patient requested cancellation' }).unwrap();
+              Alert.alert('Success', 'Appointment cancelled successfully');
+              refetch();
+            } catch (error: any) {
+              Alert.alert('Error', error.data?.message || 'Failed to cancel appointment');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const renderAppointmentCard = ({ item }: { item: any }) => {
+    const doctor = item.doctorId;
+    const canCancel = item.status === 'pending' || item.status === 'confirmed';
+
+    return (
+      <TouchableOpacity
+        style={styles.appointmentCard}
+        onPress={() => router.push(`${PATIENT_ROUTES.APPOINTMENT_DETAILS}?id=${item._id}`)}
+      >
+        <ThemedView style={styles.appointmentHeader}>
+          <Image
+            source={{ uri: doctor?.profilePicture || `https://i.pravatar.cc/150?u=${doctor?._id}` }}
+            style={styles.doctorImage}
+          />
+          <ThemedView style={styles.appointmentInfo}>
+            <ThemedView style={styles.infoHeader}>
+              <ThemedText style={styles.doctorName}>
+                Dr. {doctor?.firstName} {doctor?.lastName}
+              </ThemedText>
+              <Badge
+                label={item.status}
+                variant={getStatusVariant(item.status)}
+                size="small"
+              />
+            </ThemedView>
+            <ThemedText style={styles.specialty}>
+              {doctor?.specialty || doctor?.department?.name || 'General Physician'}
             </ThemedText>
-            <Badge
-              label={item.status}
-              variant={getStatusVariant(item.status)}
-              size="small"
-            />
-          </ThemedView>
-          <ThemedText style={styles.specialty}>
-            {item.doctor.specialty}
-          </ThemedText>
-          <ThemedView style={styles.dateTimeRow}>
-            <ThemedView style={styles.dateTime}>
-              <MaterialIcons
-                name="calendar-today"
-                size={14}
-                color={NeutralColors.gray500}
-              />
-              <ThemedText style={styles.dateTimeText}>{item.date}</ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.dateTime}>
-              <MaterialIcons
-                name="access-time"
-                size={14}
-                color={NeutralColors.gray500}
-              />
-              <ThemedText style={styles.dateTimeText}>{item.time}</ThemedText>
+            <ThemedView style={styles.dateTimeRow}>
+              <ThemedView style={styles.dateTime}>
+                <MaterialIcons
+                  name="calendar-today"
+                  size={14}
+                  color={NeutralColors.gray500}
+                />
+                <ThemedText style={styles.dateTimeText}>
+                  {formatDate(item.date)}
+                </ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.dateTime}>
+                <MaterialIcons
+                  name="access-time"
+                  size={14}
+                  color={NeutralColors.gray500}
+                />
+                <ThemedText style={styles.dateTimeText}>
+                  {formatTime(item.timeSlot.start)}
+                </ThemedText>
+              </ThemedView>
             </ThemedView>
           </ThemedView>
         </ThemedView>
-      </ThemedView>
-      {item.reason && (
-        <ThemedView style={styles.reasonContainer}>
-          <ThemedText style={styles.reasonLabel}>Reason: </ThemedText>
-          <ThemedText style={styles.reasonText}>{item.reason}</ThemedText>
-        </ThemedView>
-      )}
-    </TouchableOpacity>
-  );
+        {item.chiefComplaint && (
+          <ThemedView style={styles.reasonContainer}>
+            <ThemedText style={styles.reasonLabel}>Reason: </ThemedText>
+            <ThemedText style={styles.reasonText}>{item.chiefComplaint}</ThemedText>
+          </ThemedView>
+        )}
+        {canCancel && (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => handleCancelAppointment(item._id)}
+            disabled={cancelling}
+          >
+            <MaterialIcons name="cancel" size={16} color="#EF4444" />
+            <ThemedText style={styles.cancelButtonText}>Cancel Appointment</ThemedText>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -151,22 +212,29 @@ export default function AppointmentHistoryScreen() {
       <FlatList
         data={filteredAppointments}
         renderItem={renderAppointmentCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <ThemedView style={styles.emptyContainer}>
-            <MaterialIcons
-              name="event-busy"
-              size={64}
-              color={NeutralColors.gray300}
-            />
-            <ThemedText style={styles.emptyText}>
-              No appointments found
-            </ThemedText>
-          </ThemedView>
+          isLoading ? (
+            <ThemedView style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color={primaryColor} />
+              <ThemedText style={styles.emptyText}>Loading appointments...</ThemedText>
+            </ThemedView>
+          ) : (
+            <ThemedView style={styles.emptyContainer}>
+              <MaterialIcons
+                name="event-busy"
+                size={64}
+                color={NeutralColors.gray300}
+              />
+              <ThemedText style={styles.emptyText}>
+                No {selectedTab} appointments
+              </ThemedText>
+            </ThemedView>
+          )
         }
       />
     </ThemedView>
@@ -280,5 +348,23 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: NeutralColors.gray500,
     marginTop: Spacing.md,
+  },
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    backgroundColor: '#FEF2F2',
+  },
+  cancelButtonText: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+    color: '#EF4444',
   },
 });

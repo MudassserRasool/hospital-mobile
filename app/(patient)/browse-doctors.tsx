@@ -14,7 +14,7 @@ import {
   Spacing,
 } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { mockDoctors, mockSpecialties } from '@/utils/mockData';
+import { mockSpecialties } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
@@ -25,39 +25,41 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
+import { useGetDoctorsQuery } from '@/redux/features/patient/patientApi';
 
 export default function BrowseDoctorsScreen() {
   const primaryColor = useThemeColor({}, 'primary');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(
-    null
-  );
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  };
-
-  const filteredDoctors = mockDoctors.filter((doctor) => {
-    const matchesSearch =
-      doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSpecialty =
-      !selectedSpecialty || doctor.specialty === selectedSpecialty;
-    return matchesSearch && matchesSpecialty;
+  // Fetch doctors with filters
+  const { data: doctors = [], isLoading, refetch } = useGetDoctorsQuery({
+    search: searchQuery,
+    specialty: selectedSpecialty || undefined,
   });
 
-  const renderDoctorCard = ({ item }: { item: (typeof mockDoctors)[0] }) => (
+  const onRefresh = async () => {
+    await refetch();
+  };
+
+  const filteredDoctors = doctors;
+
+  const renderDoctorCard = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.doctorCard}
-      onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
+      onPress={() => router.push(`${PATIENT_ROUTES.BOOK_APPOINTMENT}?doctorId=${item._id || item.id}`)}
     >
-      <Image source={{ uri: item.avatar }} style={styles.doctorImage} />
+      <Image 
+        source={{ uri: item.profilePicture || `https://i.pravatar.cc/150?u=${item._id}` }} 
+        style={styles.doctorImage} 
+      />
       <ThemedView style={styles.doctorInfo}>
         <ThemedView style={styles.doctorHeader}>
-          <ThemedText style={styles.doctorName}>{item.name}</ThemedText>
+          <ThemedText style={styles.doctorName}>
+            Dr. {item.firstName} {item.lastName}
+          </ThemedText>
           <TouchableOpacity style={styles.favoriteButton}>
             <MaterialIcons
               name="favorite-border"
@@ -66,22 +68,24 @@ export default function BrowseDoctorsScreen() {
             />
           </TouchableOpacity>
         </ThemedView>
-        <ThemedText style={styles.specialty}>{item.specialty}</ThemedText>
+        <ThemedText style={styles.specialty}>
+          {item.specialty || item.department?.name || 'General Physician'}
+        </ThemedText>
         <ThemedView style={styles.doctorMeta}>
           <ThemedView style={styles.rating}>
             <MaterialIcons name="star" size={16} color="#FD9644" />
             <ThemedText style={styles.ratingText}>
-              {item.rating} ({item.reviewCount})
+              {item.rating || '4.8'} ({item.reviewCount || '100'})
             </ThemedText>
           </ThemedView>
           <Badge
-            label={`${item.experience}y exp`}
+            label={`${item.experience || '5'}y exp`}
             variant="info"
             size="small"
           />
         </ThemedView>
         <ThemedView style={styles.footer}>
-          <ThemedText style={styles.fee}>Rs.{item.consultationFee}</ThemedText>
+          <ThemedText style={styles.fee}>Rs.{item.consultationFee || '1500'}</ThemedText>
           <ThemedText style={styles.perConsultation}>/ consultation</ThemedText>
         </ThemedView>
       </ThemedView>
@@ -159,20 +163,27 @@ export default function BrowseDoctorsScreen() {
       <FlatList
         data={filteredDoctors}
         renderItem={renderDoctorCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <ThemedView style={styles.emptyContainer}>
-            <MaterialIcons
-              name="search-off"
-              size={64}
-              color={NeutralColors.gray300}
-            />
-            <ThemedText style={styles.emptyText}>No doctors found</ThemedText>
-          </ThemedView>
+          isLoading ? (
+            <ThemedView style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color={primaryColor} />
+              <ThemedText style={styles.emptyText}>Loading doctors...</ThemedText>
+            </ThemedView>
+          ) : (
+            <ThemedView style={styles.emptyContainer}>
+              <MaterialIcons
+                name="search-off"
+                size={64}
+                color={NeutralColors.gray300}
+              />
+              <ThemedText style={styles.emptyText}>No doctors found</ThemedText>
+            </ThemedView>
+          )
         }
       />
     </ThemedView>

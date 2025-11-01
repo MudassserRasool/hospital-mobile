@@ -15,7 +15,6 @@ import {
   NeutralColors,
   Spacing,
 } from '@/constants/theme';
-import { mockAllStaff } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
@@ -25,41 +24,53 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
+import { useGetStaffListQuery } from '@/redux/features/owner/ownerApi';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function StaffListScreen() {
+  const primaryColor = useThemeColor({}, 'primary');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   const roles = ['All', 'doctor', 'nurse', 'receptionist'];
 
-  const filteredStaff = mockAllStaff.filter((staff) => {
+  // Fetch staff with filters
+  const { data: staffData, isLoading, refetch } = useGetStaffListQuery({
+    role: selectedRole && selectedRole !== 'All' ? selectedRole : undefined,
+    isActive: true,
+  });
+
+  const filteredStaff = (staffData?.staff || []).filter((staff: any) => {
     const matchesSearch =
-      staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole =
-      !selectedRole || selectedRole === 'All' || staff.role === selectedRole;
-    return matchesSearch && matchesRole;
+      staff.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staff.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staff.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await refetch();
   };
 
-  const renderStaffCard = ({ item }: { item: (typeof mockAllStaff)[0] }) => (
+  const renderStaffCard = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.staffCard}
-      onPress={() => router.push(OWNER_ROUTES.STAFF_DETAILS)}
+      onPress={() => router.push(`${OWNER_ROUTES.STAFF_DETAILS}?id=${item._id}`)}
     >
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      <Image 
+        source={{ uri: item.profilePicture || `https://i.pravatar.cc/150?u=${item._id}` }} 
+        style={styles.avatar} 
+      />
       <ThemedView style={styles.staffInfo}>
-        <ThemedText style={styles.staffName}>{item.name}</ThemedText>
-        <ThemedText style={styles.staffRole}>
-          {item.role} • {item.department}
+        <ThemedText style={styles.staffName}>
+          {item.firstName} {item.lastName}
         </ThemedText>
-        <ThemedText style={styles.employeeId}>{item.employeeId}</ThemedText>
+        <ThemedText style={styles.staffRole}>
+          {item.role} • {item.hospitalId?.name || 'Hospital'}
+        </ThemedText>
+        <ThemedText style={styles.employeeId}>{item.email}</ThemedText>
       </ThemedView>
       <Badge
         label={item.isActive ? 'Active' : 'Inactive'}
@@ -122,7 +133,17 @@ export default function StaffListScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={primaryColor} />
+              <ThemedText style={{ marginTop: 16, color: NeutralColors.gray500 }}>
+                Loading staff...
+              </ThemedText>
+            </ThemedView>
+          ) : null
         }
       />
 

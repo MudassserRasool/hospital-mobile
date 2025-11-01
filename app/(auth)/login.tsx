@@ -3,9 +3,23 @@
  * Authentication entry point with Google OAuth
  */
 
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Button, Input } from '@/components/ui';
+import { OWNER_ROUTES, PATIENT_ROUTES, STAFF_ROUTES } from '@/constants/routes';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useLoginWithGoogleMutation,
+  useRegisterDeviceTokenMutation,
+} from '@/redux/features/auth/authApi';
+import { registerForPushNotifications } from '@/utils/notificationService';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Google from 'expo-auth-session/providers/google';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -13,15 +27,9 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-// import { ThemedText } from '@/components/themed-text';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Button, Input } from '@/components/ui';
-import { ROLES } from '@/constants';
-import { OWNER_ROUTES, PATIENT_ROUTES, STAFF_ROUTES } from '@/constants/routes';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { useAuth } from '@/hooks/useAuth';
 import { styles } from './login.style';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -30,8 +38,25 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // API hooks
+  const [loginWithGoogle, { isLoading }] = useLoginWithGoogleMutation();
+  const [registerDevice] = useRegisterDeviceTokenMutation();
+
+  // Google OAuth configuration
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: 'YOUR_EXPO_CLIENT_ID',
+    iosClientId: 'YOUR_IOS_CLIENT_ID',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+    webClientId: 'YOUR_WEB_CLIENT_ID',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      handleGoogleAuthResponse(response.authentication);
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -39,66 +64,77 @@ export default function LoginScreen() {
       return;
     }
 
-    setLoading(true);
-    try {
-      // Mock login - Replace with actual API call
-      const mockUser = {
-        id: '1',
-        name: 'Andrew Ainsley',
-        email: email,
-        role: 'patient' as const,
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      const mockToken = 'mock-jwt-token-123';
+    // Email/password login not implemented for mobile
+    // Mobile users must use Google OAuth
+    Alert.alert('Info', 'Please use Google Sign In for mobile app');
+  };
 
-      await login(mockUser, mockToken, mockUser.role);
+  const handleGoogleAuthResponse = async (authentication: any) => {
+    try {
+      // Get user info from Google
+      const userInfoResponse = await fetch(
+        'https://www.googleapis.com/userinfo/v2/me',
+        {
+          headers: { Authorization: `Bearer ${authentication.accessToken}` },
+        }
+      );
+      const userInfo = await userInfoResponse.json();
+
+      // Login to backend
+      const result = await loginWithGoogle({
+        googleId: userInfo.id,
+        email: userInfo.email,
+        firstName: userInfo.given_name || 'User',
+        lastName: userInfo.family_name || '',
+        profilePicture: userInfo.picture,
+        role: 'patient', // Default role for mobile
+      }).unwrap();
+
+      // Save tokens
+      await AsyncStorage.setItem('accessToken', result.accessToken);
+      await AsyncStorage.setItem('refreshToken', result.refreshToken);
+
+      // Login to local auth context
+      await login(result.user, result.accessToken, result.user.role);
+
+      // Register device for push notifications
+      const pushToken = await registerForPushNotifications();
+      if (pushToken) {
+        try {
+          await registerDevice(pushToken).unwrap();
+        } catch (error) {
+          console.error('Failed to register push token:', error);
+        }
+      }
 
       // Navigate based on role
-      if (mockUser.role === 'patient') {
+      const userRole = result.user.role;
+      if (userRole === 'patient') {
         router.replace(PATIENT_ROUTES.DASHBOARD);
-      } else if (mockUser.role === 'staff') {
+      } else if (
+        userRole === 'doctor' ||
+        userRole === 'nurse' ||
+        userRole === 'staff' ||
+        userRole === 'receptionist'
+      ) {
         router.replace(STAFF_ROUTES.DASHBOARD);
-      } else if (mockUser.role === 'owner') {
+      } else if (userRole === 'owner') {
         router.replace(OWNER_ROUTES.DASHBOARD);
       }
-    } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      Alert.alert(
+        'Login Failed',
+        error.data?.message || 'Unable to login with Google'
+      );
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
     try {
-      // Mock Google Sign In - Replace with actual Google OAuth
-      const mockUser = {
-        id: '1',
-        name: 'Andrew Ainsley',
-        email: 'andrew@example.com',
-        role: 'owner' as const, // patient
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as const;
-      const mockToken = 'mock-jwt-token-123';
-
-      await login(mockUser, mockToken, mockUser.role);
-
-      // Navigate based on role
-      if (mockUser.role === ROLES.PATIENT) {
-        router.replace(PATIENT_ROUTES.DASHBOARD);
-      } else if (mockUser.role === ROLES.STAFF) {
-        router.replace(STAFF_ROUTES.DASHBOARD);
-      } else if (mockUser.role === ROLES.OWNER) {
-        router.replace(OWNER_ROUTES.DASHBOARD);
-      }
+      await promptAsync();
     } catch (error) {
       Alert.alert('Error', 'Google Sign In failed. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -185,7 +221,7 @@ export default function LoginScreen() {
               style={styles.googleButton}
               onPress={handleGoogleSignIn}
               activeOpacity={0.7}
-              disabled={loading}
+              disabled={!request || isLoading}
             >
               <MaterialIcons
                 name="g-translate"
@@ -195,7 +231,7 @@ export default function LoginScreen() {
               <ThemedText
                 style={[styles.googleButtonText, { color: textColor }]}
               >
-                Sign in with Google
+                {isLoading ? 'Signing in...' : 'Sign in with Google'}
               </ThemedText>
             </TouchableOpacity>
 

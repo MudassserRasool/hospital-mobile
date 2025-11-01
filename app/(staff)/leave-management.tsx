@@ -16,23 +16,53 @@ import {
   Spacing,
   StatusColors,
 } from '@/constants/theme';
-import { mockLeaveBalance, mockLeaveRequests } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   FlatList,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useGetMyLeavesQuery, useGetMyLeaveBalanceQuery, useCancelLeaveRequestMutation } from '@/redux/features/staff/staffApi';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function LeaveManagementScreen() {
-  const [refreshing, setRefreshing] = useState(false);
+  const primaryColor = useThemeColor({}, 'primary');
+
+  // Fetch leaves and balance from API
+  const { data: leavesData, isLoading: loadingLeaves, refetch } = useGetMyLeavesQuery({});
+  const { data: leaveBalance, isLoading: loadingBalance } = useGetMyLeaveBalanceQuery(new Date().getFullYear());
+  const [cancelLeave] = useCancelLeaveRequestMutation();
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await refetch();
+  };
+
+  const handleCancelLeave = async (leaveId: string) => {
+    Alert.alert(
+      'Cancel Leave Request',
+      'Are you sure you want to cancel this leave request?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await cancelLeave(leaveId).unwrap();
+              Alert.alert('Success', 'Leave request cancelled');
+              refetch();
+            } catch (error: any) {
+              Alert.alert('Error', error.data?.message || 'Failed to cancel leave request');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getStatusVariant = (status: string) => {
@@ -48,27 +78,30 @@ export default function LeaveManagementScreen() {
     }
   };
 
-  const renderLeaveCard = ({
-    item,
-  }: {
-    item: (typeof mockLeaveRequests)[0];
-  }) => (
+  const renderLeaveCard = ({ item }: { item: any }) => {
+    const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    });
+
+    return (
     <Card style={styles.leaveCard}>
       <ThemedView style={styles.leaveHeader}>
         <ThemedView style={styles.leaveType}>
           <MaterialIcons
             name={
-              item.type === 'sick'
+              item.leaveType === 'sick'
                 ? 'local-hospital'
-                : item.type === 'vacation'
+                : item.leaveType === 'annual'
                 ? 'beach-access'
-                : 'emergency'
+                : item.leaveType === 'emergency'
+                ? 'emergency'
+                : 'person'
             }
             size={20}
             color={BrandColors.primary}
           />
           <ThemedText style={styles.leaveTypeText}>
-            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} Leave
+            {item.leaveType.charAt(0).toUpperCase() + item.leaveType.slice(1)} Leave
           </ThemedText>
         </ThemedView>
         <Badge
@@ -81,7 +114,7 @@ export default function LeaveManagementScreen() {
       <ThemedView style={styles.leaveDates}>
         <ThemedView style={styles.dateItem}>
           <ThemedText style={styles.dateLabel}>From</ThemedText>
-          <ThemedText style={styles.dateValue}>{item.startDate}</ThemedText>
+          <ThemedText style={styles.dateValue}>{formatDate(item.startDate)}</ThemedText>
         </ThemedView>
         <MaterialIcons
           name="arrow-forward"
@@ -90,7 +123,7 @@ export default function LeaveManagementScreen() {
         />
         <ThemedView style={styles.dateItem}>
           <ThemedText style={styles.dateLabel}>To</ThemedText>
-          <ThemedText style={styles.dateValue}>{item.endDate}</ThemedText>
+          <ThemedText style={styles.dateValue}>{formatDate(item.endDate)}</ThemedText>
         </ThemedView>
       </ThemedView>
 
@@ -125,12 +158,12 @@ export default function LeaveManagementScreen() {
       />
 
       <FlatList
-        data={mockLeaveRequests}
+        data={leavesData?.leaves || []}
         renderItem={renderLeaveCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={loadingLeaves} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
           <ThemedView>
@@ -151,42 +184,48 @@ export default function LeaveManagementScreen() {
                 </TouchableOpacity>
               </ThemedView>
               <ThemedView style={styles.balanceGrid}>
-                <ThemedView style={styles.balanceItem}>
-                  <ThemedText style={styles.balanceValue}>
-                    {mockLeaveBalance.totalLeaves}
-                  </ThemedText>
-                  <ThemedText style={styles.balanceLabel}>Total</ThemedText>
-                </ThemedView>
-                <ThemedView style={styles.balanceItem}>
-                  <ThemedText
-                    style={[styles.balanceValue, { color: StatusColors.error }]}
-                  >
-                    {mockLeaveBalance.usedLeaves}
-                  </ThemedText>
-                  <ThemedText style={styles.balanceLabel}>Used</ThemedText>
-                </ThemedView>
-                <ThemedView style={styles.balanceItem}>
-                  <ThemedText
-                    style={[
-                      styles.balanceValue,
-                      { color: StatusColors.warning },
-                    ]}
-                  >
-                    {mockLeaveBalance.pendingLeaves}
-                  </ThemedText>
-                  <ThemedText style={styles.balanceLabel}>Pending</ThemedText>
-                </ThemedView>
-                <ThemedView style={styles.balanceItem}>
-                  <ThemedText
-                    style={[
-                      styles.balanceValue,
-                      { color: StatusColors.success },
-                    ]}
-                  >
-                    {mockLeaveBalance.remainingLeaves}
-                  </ThemedText>
-                  <ThemedText style={styles.balanceLabel}>Available</ThemedText>
-                </ThemedView>
+                {loadingBalance ? (
+                  <ActivityIndicator size="small" color={primaryColor} />
+                ) : leaveBalance ? (
+                  <>
+                    <ThemedView style={styles.balanceItem}>
+                      <ThemedText style={styles.balanceValue}>
+                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.allowed || 0), 0)}
+                      </ThemedText>
+                      <ThemedText style={styles.balanceLabel}>Total</ThemedText>
+                    </ThemedView>
+                    <ThemedView style={styles.balanceItem}>
+                      <ThemedText
+                        style={[styles.balanceValue, { color: StatusColors.error }]}
+                      >
+                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.taken || 0), 0)}
+                      </ThemedText>
+                      <ThemedText style={styles.balanceLabel}>Used</ThemedText>
+                    </ThemedView>
+                    <ThemedView style={styles.balanceItem}>
+                      <ThemedText
+                        style={[
+                          styles.balanceValue,
+                          { color: StatusColors.warning },
+                        ]}
+                      >
+                        {leavesData?.leaves?.filter((l: any) => l.status === 'pending').length || 0}
+                      </ThemedText>
+                      <ThemedText style={styles.balanceLabel}>Pending</ThemedText>
+                    </ThemedView>
+                    <ThemedView style={styles.balanceItem}>
+                      <ThemedText
+                        style={[
+                          styles.balanceValue,
+                          { color: StatusColors.success },
+                        ]}
+                      >
+                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.remaining || 0), 0)}
+                      </ThemedText>
+                      <ThemedText style={styles.balanceLabel}>Available</ThemedText>
+                    </ThemedView>
+                  </>
+                ) : null}
               </ThemedView>
             </Card>
 

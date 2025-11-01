@@ -14,33 +14,126 @@ import {
   NeutralColors,
   Spacing,
 } from '@/constants/theme';
-import { mockAppointments } from '@/utils/mockData';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import {
+  useCancelAppointmentMutation,
+  useGetAppointmentByIdQuery,
+  useRescheduleAppointmentMutation,
+} from '@/redux/features/patient/patientApi';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 
 export default function AppointmentDetailsScreen() {
-  const appointment = mockAppointments[1]; // Mock completed appointment with details
+  const { id } = useLocalSearchParams();
+  const primaryColor = useThemeColor({}, 'primary');
+
+  // Fetch appointment details
+  const {
+    data: appointment,
+    isLoading,
+    refetch,
+  } = useGetAppointmentByIdQuery(id as string);
+  const [cancelAppointment, { isLoading: cancelling }] =
+    useCancelAppointmentMutation();
+  const [rescheduleAppointment, { isLoading: rescheduling }] =
+    useRescheduleAppointmentMutation();
 
   const handleReschedule = () => {
     Alert.alert('Reschedule', 'Reschedule functionality coming soon');
+    // TODO: Navigate to reschedule screen with appointment data
   };
 
   const handleCancel = () => {
     Alert.alert(
       'Cancel Appointment',
-      'Are you sure you want to cancel this appointment? 10% of the fee will be credited to your wallet.',
+      'Are you sure you want to cancel this appointment? You will receive a 90% refund and 10% wallet credit.',
       [
         { text: 'No', style: 'cancel' },
         {
           text: 'Yes, Cancel',
           style: 'destructive',
-          onPress: () => router.back(),
+          onPress: async () => {
+            try {
+              await cancelAppointment({
+                id: id as string,
+                reason: 'Patient requested cancellation',
+              }).unwrap();
+              Alert.alert('Success', 'Appointment cancelled successfully');
+              router.back();
+            } catch (error: any) {
+              Alert.alert(
+                'Error',
+                error.data?.message || 'Failed to cancel appointment'
+              );
+            }
+          },
         },
       ]
     );
   };
+
+  if (isLoading) {
+    return (
+      <ThemedView style={styles.container}>
+        <Stack.Screen
+          options={{ headerShown: true, title: 'Appointment Details' }}
+        />
+        <ThemedView
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color={primaryColor} />
+          <ThemedText style={{ marginTop: 16 }}>
+            Loading appointment...
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    );
+  }
+
+  if (!appointment) {
+    return (
+      <ThemedView style={styles.container}>
+        <Stack.Screen
+          options={{ headerShown: true, title: 'Appointment Details' }}
+        />
+        <ThemedView
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <MaterialIcons
+            name="error-outline"
+            size={64}
+            color={NeutralColors.gray400}
+          />
+          <ThemedText style={{ marginTop: 16 }}>
+            Appointment not found
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    );
+  }
+
+  const doctor = appointment.doctorId;
+  const canCancel =
+    appointment.status === 'pending' || appointment.status === 'confirmed';
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  const formatTime = (date: string) =>
+    new Date(date).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
 
   return (
     <ThemedView style={styles.container}>
@@ -57,20 +150,26 @@ export default function AppointmentDetailsScreen() {
         <Card style={styles.section}>
           <ThemedView style={styles.doctorInfo}>
             <Image
-              source={{ uri: appointment.doctor.avatar }}
+              source={{
+                uri:
+                  doctor?.profilePicture ||
+                  `https://i.pravatar.cc/150?u=${doctor?._id}`,
+              }}
               style={styles.doctorImage}
             />
             <ThemedView style={styles.doctorDetails}>
               <ThemedText style={styles.doctorName}>
-                {appointment.doctor.name}
+                Dr. {doctor?.firstName} {doctor?.lastName}
               </ThemedText>
               <ThemedText style={styles.specialty}>
-                {appointment.doctor.specialty}
+                {doctor?.specialty ||
+                  doctor?.department?.name ||
+                  'General Physician'}
               </ThemedText>
               <ThemedView style={styles.rating}>
                 <MaterialIcons name="star" size={16} color="#FD9644" />
                 <ThemedText style={styles.ratingText}>
-                  {appointment.doctor.rating} ({appointment.doctor.reviewCount}{' '}
+                  {doctor?.rating || '4.8'} ({doctor?.reviewCount || '100'}{' '}
                   reviews)
                 </ThemedText>
               </ThemedView>
@@ -93,7 +192,7 @@ export default function AppointmentDetailsScreen() {
               <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Date</ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {appointment.date}
+                  {formatDate(appointment.date)}
                 </ThemedText>
               </ThemedView>
             </ThemedView>
@@ -106,7 +205,7 @@ export default function AppointmentDetailsScreen() {
               <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Time</ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {appointment.time}
+                  {formatTime(appointment.timeSlot.start)}
                 </ThemedText>
               </ThemedView>
             </ThemedView>
@@ -122,7 +221,15 @@ export default function AppointmentDetailsScreen() {
                 <ThemedText style={styles.infoLabel}>Status</ThemedText>
                 <Badge
                   label={appointment.status}
-                  variant="success"
+                  variant={
+                    appointment.status === 'completed'
+                      ? 'success'
+                      : appointment.status === 'confirmed'
+                      ? 'info'
+                      : appointment.status === 'pending'
+                      ? 'warning'
+                      : 'error'
+                  }
                   size="small"
                 />
               </ThemedView>
@@ -136,7 +243,7 @@ export default function AppointmentDetailsScreen() {
               <ThemedView style={styles.infoText}>
                 <ThemedText style={styles.infoLabel}>Fee</ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  Rs.{appointment.doctor.consultationFee}
+                  Rs.{appointment.paymentAmount}
                 </ThemedText>
               </ThemedView>
             </ThemedView>
@@ -153,7 +260,8 @@ export default function AppointmentDetailsScreen() {
                   Blood Pressure
                 </ThemedText>
                 <ThemedText style={styles.vitalValue}>
-                  {appointment.vitals.bloodPressure}
+                  {appointment.vitals.bloodPressure.systolic}/
+                  {appointment.vitals.bloodPressure.diastolic}
                 </ThemedText>
               </ThemedView>
               <ThemedView style={styles.vitalItem}>
@@ -205,34 +313,35 @@ export default function AppointmentDetailsScreen() {
         )}
 
         {/* Notes */}
-        {appointment.notes && (
+        {appointment.checkupNotes && (
           <Card style={styles.section}>
-            <ThemedText style={styles.cardTitle}>Notes</ThemedText>
+            <ThemedText style={styles.cardTitle}>Doctor's Notes</ThemedText>
             <ThemedText style={styles.notesText}>
-              {appointment.notes}
+              {appointment.checkupNotes}
             </ThemedText>
           </Card>
         )}
       </ScrollView>
 
       {/* Action Buttons */}
-      {appointment.status !== 'completed' &&
-        appointment.status !== 'cancelled' && (
-          <ThemedView style={styles.bottomBar}>
-            <Button
-              title="Reschedule"
-              variant="outline"
-              onPress={handleReschedule}
-              style={{ flex: 1 }}
-            />
-            <Button
-              title="Cancel"
-              variant="danger"
-              onPress={handleCancel}
-              style={{ flex: 1 }}
-            />
-          </ThemedView>
-        )}
+      {canCancel && (
+        <ThemedView style={styles.bottomBar}>
+          <Button
+            title="Reschedule"
+            variant="outline"
+            onPress={handleReschedule}
+            loading={rescheduling}
+            style={{ flex: 1 }}
+          />
+          <Button
+            title={cancelling ? 'Cancelling...' : 'Cancel'}
+            variant="danger"
+            onPress={handleCancel}
+            loading={cancelling}
+            style={{ flex: 1 }}
+          />
+        </ThemedView>
+      )}
     </ThemedView>
   );
 }

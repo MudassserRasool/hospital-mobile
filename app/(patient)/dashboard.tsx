@@ -9,7 +9,7 @@ import { SearchBar } from '@/components/ui';
 import { PATIENT_ROUTES } from '@/constants/routes';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
-import { mockDoctors, mockSpecialties } from '@/utils/mockData';
+import { mockSpecialties } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -19,8 +19,10 @@ import {
   RefreshControl,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { styles } from './styles/dashboard.style';
+import { useGetDoctorsQuery, useGetMyAppointmentsQuery } from '@/redux/features/patient/patientApi';
 
 export default function PatientDashboard() {
   const { user } = useAuth();
@@ -29,16 +31,21 @@ export default function PatientDashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
-  const [refreshing, setRefreshing] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+
+  // Fetch doctors from API
+  const { data: doctors = [], isLoading: loadingDoctors, refetch: refetchDoctors } = useGetDoctorsQuery({});
+  
+  // Fetch appointments for quick access
+  const { data: appointments = [], isLoading: loadingAppointments, refetch: refetchAppointments } = useGetMyAppointmentsQuery();
 
   const filters = ['All', 'General', 'Dentist', 'Nutritionist'];
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => setRefreshing(false), 1000);
+    await Promise.all([refetchDoctors(), refetchAppointments()]);
   };
+
+  const refreshing = loadingDoctors || loadingAppointments;
 
   const renderBanner = () => (
     <ThemedView>
@@ -134,10 +141,10 @@ export default function PatientDashboard() {
     </TouchableOpacity>
   );
 
-  const renderDoctorCard = ({ item }: { item: (typeof mockDoctors)[0] }) => (
+  const renderDoctorCard = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={{ marginBottom: 16 }}
-      onPress={() => router.push(PATIENT_ROUTES.BOOK_APPOINTMENT)}
+      onPress={() => router.push(`${PATIENT_ROUTES.BOOK_APPOINTMENT}?doctorId=${item._id || item.id}`)}
     >
       <ThemedView
         style={{
@@ -153,7 +160,7 @@ export default function PatientDashboard() {
         }}
       >
         <Image
-          source={{ uri: item.avatar }}
+          source={{ uri: item.profilePicture || `https://i.pravatar.cc/150?u=${item._id}` }}
           style={{
             width: 80,
             height: 80,
@@ -165,19 +172,19 @@ export default function PatientDashboard() {
           <ThemedText
             style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}
           >
-            {item.name}
+            Dr. {item.firstName} {item.lastName}
           </ThemedText>
           <ThemedText
             style={{ fontSize: 14, color: '#6B7280', marginBottom: 8 }}
           >
-            {item.specialty}
+            {item.specialty || item.department?.name || 'General Physician'}
           </ThemedText>
           <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialIcons name="star" size={16} color="#FD9644" />
             <ThemedText
               style={{ fontSize: 14, marginLeft: 4, color: '#6B7280' }}
             >
-              {item.rating} ({item.reviewCount})
+              {item.rating || '4.8'} ({item.reviewCount || '100'})
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -188,7 +195,7 @@ export default function PatientDashboard() {
           <ThemedText
             style={{ fontSize: 16, fontWeight: '600', color: primaryColor }}
           >
-            Rs.{item.consultationFee}
+            Rs.{item.consultationFee || '1500'}
           </ThemedText>
         </ThemedView>
       </ThemedView>
@@ -316,11 +323,27 @@ export default function PatientDashboard() {
 
         {/* Doctors List */}
         <ThemedView style={styles.doctorsList}>
-          {mockDoctors.map((doctor) => (
-            <ThemedView key={doctor.id}>
-              {renderDoctorCard({ item: doctor })}
+          {loadingDoctors ? (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={primaryColor} />
+              <ThemedText style={{ marginTop: 16, color: '#6B7280' }}>
+                Loading doctors...
+              </ThemedText>
             </ThemedView>
-          ))}
+          ) : doctors.length === 0 ? (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <MaterialIcons name="medical-services" size={64} color="#D1D5DB" />
+              <ThemedText style={{ marginTop: 16, color: '#6B7280' }}>
+                No doctors available
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            doctors.slice(0, 5).map((doctor: any) => (
+              <ThemedView key={doctor._id || doctor.id}>
+                {renderDoctorCard({ item: doctor })}
+              </ThemedView>
+            ))
+          )}
         </ThemedView>
       </ScrollView>
     </ThemedView>

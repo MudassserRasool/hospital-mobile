@@ -15,20 +15,22 @@ import {
   Spacing,
   StatusColors,
 } from '@/constants/theme';
-import { mockWallet } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet } from 'react-native';
+import React from 'react';
+import { FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
+import { useGetMyWalletQuery, useGetMyWalletTransactionsQuery } from '@/redux/features/patient/patientApi';
 
 export default function WalletScreen() {
-  const [refreshing, setRefreshing] = useState(false);
-  const wallet = mockWallet;
+  // Fetch wallet data from API
+  const { data: wallet, isLoading: loadingWallet, refetch: refetchWallet } = useGetMyWalletQuery();
+  const { data: transactions = [], isLoading: loadingTransactions, refetch: refetchTransactions } = useGetMyWalletTransactionsQuery();
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await Promise.all([refetchWallet(), refetchTransactions()]);
   };
+
+  const refreshing = loadingWallet || loadingTransactions;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -50,7 +52,7 @@ export default function WalletScreen() {
   const renderTransaction = ({
     item,
   }: {
-    item: (typeof wallet.transactions)[0];
+    item: any;
   }) => (
     <ThemedView style={styles.transactionCard}>
       <ThemedView
@@ -73,10 +75,10 @@ export default function WalletScreen() {
         </ThemedText>
         <ThemedView style={styles.transactionMeta}>
           <ThemedText style={styles.transactionDate}>
-            {formatDate(item.createdAt)}
+            {formatDate(item.date || item.createdAt)}
           </ThemedText>
           <ThemedText style={styles.transactionTime}>
-            {formatTime(item.createdAt)}
+            {formatTime(item.date || item.createdAt)}
           </ThemedText>
         </ThemedView>
       </ThemedView>
@@ -109,14 +111,19 @@ export default function WalletScreen() {
       />
 
       <FlatList
-        data={wallet.transactions}
+        data={transactions}
         renderItem={renderTransaction}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item._id || item.id || index.toString()}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
+          loadingWallet ? (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={BrandColors.primary} />
+            </ThemedView>
+          ) : wallet ? (
           <ThemedView>
             {/* Balance Card */}
             <Card style={styles.balanceCard}>
@@ -152,7 +159,7 @@ export default function WalletScreen() {
                 />
                 <ThemedText style={styles.statValue}>
                   Rs.
-                  {wallet.transactions
+                  {transactions
                     .filter((t) => t.type === 'credit')
                     .reduce((sum, t) => sum + t.amount, 0)}
                 </ThemedText>
@@ -166,7 +173,7 @@ export default function WalletScreen() {
                 />
                 <ThemedText style={styles.statValue}>
                   Rs.
-                  {wallet.transactions
+                  {transactions
                     .filter((t) => t.type === 'debit')
                     .reduce((sum, t) => sum + t.amount, 0)}
                 </ThemedText>
@@ -179,6 +186,7 @@ export default function WalletScreen() {
               Transaction History
             </ThemedText>
           </ThemedView>
+          ) : null
         }
         ListEmptyComponent={
           <ThemedView style={styles.emptyContainer}>

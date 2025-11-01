@@ -17,25 +17,29 @@ import {
   StatusColors,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import { mockDashboardStats, mockLeaveRequests } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
+import { useGetHospitalStatsQuery, useGetPendingLeavesQuery } from '@/redux/features/owner/ownerApi';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
-  const [refreshing, setRefreshing] = useState(false);
-  const stats = mockDashboardStats;
+  const primaryColor = useThemeColor({}, 'primary');
+
+  // Fetch data from APIs
+  const { data: stats, isLoading: loadingStats, refetch: refetchStats } = useGetHospitalStatsQuery();
+  const { data: pendingLeavesData, refetch: refetchLeaves } = useGetPendingLeavesQuery({});
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await Promise.all([refetchStats(), refetchLeaves()]);
   };
 
   const quickActions = [
@@ -52,7 +56,7 @@ export default function OwnerDashboard() {
       icon: 'event-available',
       route: OWNER_ROUTES.LEAVE_APPROVALS,
       color: '#5F27CD',
-      badge: stats.pendingLeaves,
+      badge: pendingLeavesData?.total || 0,
     },
     {
       id: 'appointments',
@@ -91,9 +95,14 @@ export default function OwnerDashboard() {
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={loadingStats} onRefresh={onRefresh} />
         }
       >
+        {loadingStats && (
+          <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={primaryColor} />
+          </ThemedView>
+        )}
         {/* Header */}
         <ThemedView style={styles.header}>
           <ThemedView>
@@ -119,10 +128,10 @@ export default function OwnerDashboard() {
                 color={NeutralColors.white}
               />
             </ThemedView>
-            <ThemedText style={styles.statValue}>{stats.totalStaff}</ThemedText>
+            <ThemedText style={styles.statValue}>{stats?.staff?.total || 0}</ThemedText>
             <ThemedText style={styles.statLabel}>Total Staff</ThemedText>
             <ThemedText style={styles.statSubtext}>
-              {stats.activeStaff} active
+              {stats?.staff?.active || 0} active
             </ThemedText>
           </Card>
 

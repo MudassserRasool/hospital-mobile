@@ -12,70 +12,99 @@ import {
   NeutralColors,
   Spacing,
 } from '@/constants/theme';
-import { mockLeaveRequests } from '@/utils/mockData';
 import { Stack } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import React from 'react';
+import { Alert, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
+import { useGetPendingLeavesQuery, useApproveLeaveMutation, useRejectLeaveMutation } from '@/redux/features/owner/ownerApi';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function LeaveApprovalsScreen() {
-  const [refreshing, setRefreshing] = useState(false);
-  const pendingLeaves = mockLeaveRequests.filter((l) => l.status === 'pending');
+  const primaryColor = useThemeColor({}, 'primary');
 
-  const handleApprove = (id: string) => {
-    Alert.alert('Approve Leave', 'Approve this leave request?', [
+  // Fetch pending leaves
+  const { data: leavesData, isLoading, refetch } = useGetPendingLeavesQuery({});
+  const [approveLeave, { isLoading: approving }] = useApproveLeaveMutation();
+  const [rejectLeave, { isLoading: rejecting }] = useRejectLeaveMutation();
+
+  const handleApprove = async (id: string, staffName: string) => {
+    Alert.alert('Approve Leave', `Approve leave request for ${staffName}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Approve',
-        onPress: () => Alert.alert('Success', 'Leave approved'),
+        onPress: async () => {
+          try {
+            await approveLeave({ id, reviewerNotes: 'Approved' }).unwrap();
+            Alert.alert('Success', 'Leave approved successfully');
+            refetch();
+          } catch (error: any) {
+            Alert.alert('Error', error.data?.message || 'Failed to approve leave');
+          }
+        },
       },
     ]);
   };
 
-  const handleReject = (id: string) => {
-    Alert.alert(
+  const handleReject = async (id: string, staffName: string) => {
+    Alert.prompt(
       'Reject Leave',
-      'Are you sure you want to reject this request?',
+      `Provide reason for rejecting ${staffName}'s leave request:`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Reject',
           style: 'destructive',
-          onPress: () => Alert.alert('Rejected', 'Leave request rejected'),
+          onPress: async (reason) => {
+            try {
+              await rejectLeave({ id, reason: reason || 'Not specified', reviewerNotes: '' }).unwrap();
+              Alert.alert('Rejected', 'Leave request rejected');
+              refetch();
+            } catch (error: any) {
+              Alert.alert('Error', error.data?.message || 'Failed to reject leave');
+            }
+          },
         },
-      ]
+      ],
+      'plain-text'
     );
   };
 
-  const renderLeaveCard = ({
-    item,
-  }: {
-    item: (typeof mockLeaveRequests)[0];
-  }) => (
-    <Card style={styles.leaveCard}>
-      <ThemedView style={styles.leaveHeader}>
-        <ThemedText style={styles.staffName}>Staff Member</ThemedText>
-        <Badge label={item.type} variant="info" size="small" />
-      </ThemedView>
-      <ThemedText style={styles.dates}>
-        {item.startDate} - {item.endDate} ({item.totalDays} days)
-      </ThemedText>
-      <ThemedText style={styles.reason}>{item.reason}</ThemedText>
-      <ThemedView style={styles.actions}>
-        <Button
-          title="Reject"
-          variant="outline"
-          style={{ flex: 1 }}
-          onPress={() => handleReject(item.id)}
-        />
-        <Button
-          title="Approve"
-          variant="primary"
-          style={{ flex: 1 }}
-          onPress={() => handleApprove(item.id)}
-        />
-      </ThemedView>
-    </Card>
-  );
+  const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+
+  const renderLeaveCard = ({ item }: { item: any }) => {
+    const staff = item.staffId;
+    const staffName = `${staff?.firstName} ${staff?.lastName}`;
+
+    return (
+      <Card style={styles.leaveCard}>
+        <ThemedView style={styles.leaveHeader}>
+          <ThemedText style={styles.staffName}>{staffName}</ThemedText>
+          <Badge label={item.leaveType} variant="info" size="small" />
+        </ThemedView>
+        <ThemedText style={styles.dates}>
+          {formatDate(item.startDate)} - {formatDate(item.endDate)} ({item.totalDays} days)
+        </ThemedText>
+        <ThemedText style={styles.reason}>{item.reason}</ThemedText>
+        <ThemedView style={styles.actions}>
+          <Button
+            title="Reject"
+            variant="outline"
+            style={{ flex: 1 }}
+            loading={rejecting}
+            onPress={() => handleReject(item._id, staffName)}
+          />
+          <Button
+            title="Approve"
+            variant="primary"
+            style={{ flex: 1 }}
+            loading={approving}
+            onPress={() => handleApprove(item._id, staffName)}
+          />
+        </ThemedView>
+      </Card>
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -88,12 +117,25 @@ export default function LeaveApprovalsScreen() {
       />
 
       <FlatList
-        data={pendingLeaves}
+        data={leavesData?.leaves || []}
         renderItem={renderLeaveCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => {}} />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={primaryColor} />
+              <ThemedText style={{ marginTop: 16 }}>Loading leave requests...</ThemedText>
+            </ThemedView>
+          ) : (
+            <ThemedView style={{ padding: 32, alignItems: 'center' }}>
+              <ThemedText>No pending leave requests</ThemedText>
+            </ThemedView>
+          )
+        }
         }
       />
     </ThemedView>

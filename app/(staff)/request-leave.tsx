@@ -18,19 +18,21 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRequestLeaveMutation } from '@/redux/features/staff/staffApi';
 
 export default function RequestLeaveScreen() {
   const [leaveType, setLeaveType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const [requestLeave, { isLoading }] = useRequestLeaveMutation();
 
   const leaveTypes = [
     { id: 'sick', name: 'Sick Leave', icon: 'local-hospital' },
-    { id: 'vacation', name: 'Vacation', icon: 'beach-access' },
+    { id: 'casual', name: 'Casual Leave', icon: 'beach-access' },
     { id: 'emergency', name: 'Emergency', icon: 'emergency' },
-    { id: 'personal', name: 'Personal', icon: 'person' },
+    { id: 'annual', name: 'Annual Leave', icon: 'person' },
   ];
 
   const handleSubmit = async () => {
@@ -39,10 +41,14 @@ export default function RequestLeaveScreen() {
       return;
     }
 
-    setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await requestLeave({
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        leaveType,
+        reason,
+        attachments: [],
+      }).unwrap();
 
       Alert.alert(
         'Success!',
@@ -54,10 +60,8 @@ export default function RequestLeaveScreen() {
           },
         ]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to submit leave request. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error: any) {
+      Alert.alert('Error', error.data?.message || 'Failed to submit leave request. Please try again.');
     }
   };
 
@@ -194,9 +198,10 @@ export default function RequestLeaveScreen() {
       {/* Submit Button */}
       <ThemedView style={styles.bottomBar}>
         <Button
-          title="Submit Request"
+          title={isLoading ? "Submitting..." : "Submit Request"}
           onPress={handleSubmit}
-          loading={loading}
+          loading={isLoading}
+          disabled={!leaveType || !startDate || !endDate || !reason}
           fullWidth
         />
       </ThemedView>

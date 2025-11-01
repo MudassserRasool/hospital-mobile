@@ -17,23 +17,28 @@ import {
   StatusColors,
 } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { mockDoctors, mockWallet } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { useGetMyWalletBalanceQuery, useProcessPaymentMutation } from '@/redux/features/patient/patientApi';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function PaymentScreen() {
   const primaryColor = useThemeColor({}, 'primary');
-  const doctor = mockDoctors[0];
-  const consultationFee = doctor.consultationFee;
+  const { appointmentId, amount } = useLocalSearchParams();
+  const { user } = useAuth();
+  
+  const consultationFee = parseInt(amount as string) || 1500;
 
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<string>('easypaisa');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('easypaisa');
   const [useWallet, setUseWallet] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const walletBalance = mockWallet.balance;
+  // Fetch wallet balance
+  const { data: walletData, isLoading: loadingWallet } = useGetMyWalletBalanceQuery();
+  const [processPayment, { isLoading: processing }] = useProcessPaymentMutation();
+
+  const walletBalance = walletData?.balance || 0;
   const walletAmount = useWallet ? Math.min(walletBalance, consultationFee) : 0;
   const totalPayable = consultationFee - walletAmount;
 
@@ -44,25 +49,51 @@ export default function PaymentScreen() {
   ];
 
   const handlePayment = async () => {
-    setLoading(true);
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const result = await processPayment({
+        appointmentId: appointmentId as string,
+        patientId: user?.patientId || '',
+        amount: consultationFee,
+        walletAmountToUse: walletAmount,
+      }).unwrap();
 
-      Alert.alert(
-        'Success!',
-        'Your appointment has been booked successfully.',
-        [
-          {
-            text: 'View Appointments',
-            onPress: () => router.replace(PATIENT_ROUTES.APPOINTMENT_HISTORY),
-          },
-        ]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
+      if (result.requiresEasyPaisaAction && result.easyPaisaCheckoutUrl) {
+        // Open EasyPaisa checkout
+        Alert.alert(
+          'Complete Payment',
+          'You will be redirected to EasyPaisa to complete payment',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Continue',
+              onPress: () => {
+                Linking.openURL(result.easyPaisaCheckoutUrl);
+                // Navigate to success screen
+                setTimeout(() => {
+                  router.replace(PATIENT_ROUTES.APPOINTMENT_HISTORY);
+                }, 1000);
+              },
+            },
+          ]
+        );
+      } else {
+        // Payment completed (wallet only)
+        Alert.alert(
+          'Success!',
+          'Your appointment has been booked and paid successfully.',
+          [
+            {
+              text: 'View Appointments',
+              onPress: () => router.replace(PATIENT_ROUTES.APPOINTMENT_HISTORY),
+            },
+          ]
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.data?.message || 'Payment failed. Please try again.');
     }
   };
 
@@ -82,13 +113,18 @@ export default function PaymentScreen() {
           <ThemedView style={styles.walletHeader}>
             <ThemedView>
               <ThemedText style={styles.walletLabel}>Wallet Balance</ThemedText>
-              <ThemedText style={styles.walletBalance}>
-                Rs.{walletBalance}
-              </ThemedText>
+              {loadingWallet ? (
+                <ActivityIndicator size="small" color={BrandColors.primary} />
+              ) : (
+                <ThemedText style={styles.walletBalance}>
+                  Rs.{walletBalance}
+                </ThemedText>
+              )}
             </ThemedView>
             <TouchableOpacity
               style={[styles.checkbox, useWallet && styles.checkboxActive]}
               onPress={() => setUseWallet(!useWallet)}
+              disabled={walletBalance === 0}
             >
               {useWallet && (
                 <MaterialIcons
@@ -190,9 +226,9 @@ export default function PaymentScreen() {
           <ThemedText style={styles.bottomAmount}>Rs.{totalPayable}</ThemedText>
         </ThemedView>
         <Button
-          title="Confirm & Pay"
+          title={processing ? "Processing..." : "Confirm & Pay"}
           onPress={handlePayment}
-          loading={loading}
+          loading={processing}
           fullWidth
         />
       </ThemedView>

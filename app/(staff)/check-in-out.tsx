@@ -6,7 +6,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,39 +19,71 @@ import {
   Spacing,
   StatusColors,
 } from '@/constants/theme';
-import { mockCurrentCheckIn } from '@/utils/mockData';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useCheckInMutation, useCheckOutMutation, useGetTodayAttendanceQuery } from '@/redux/features/staff/staffApi';
+import { getCheckInLocationData } from '@/utils/locationService';
 
 export default function CheckInOutScreen() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCheckedIn, setIsCheckedIn] = useState(!!mockCurrentCheckIn);
-  const [locationVerified, setLocationVerified] = useState(true);
-  const [wifiVerified, setWifiVerified] = useState(true);
+  const primaryColor = useThemeColor({}, 'primary');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [verifying, setVerifying] = useState(false);
+  const [locationData, setLocationData] = useState<any>(null);
+
+  // Fetch today's attendance
+  const { data: todayAttendance, isLoading: loadingAttendance, refetch } = useGetTodayAttendanceQuery();
+  const [checkIn, { isLoading: checkingIn }] = useCheckInMutation();
+  const [checkOut, { isLoading: checkingOut }] = useCheckOutMutation();
+
+  const isCheckedIn = todayAttendance && !todayAttendance.checkOutTime;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Verify location on mount
+  useEffect(() => {
+    verifyLocation();
+  }, []);
+
+  const verifyLocation = async () => {
+    setVerifying(true);
+    try {
+      const data = await getCheckInLocationData();
+      setLocationData(data);
+    } catch (error) {
+      console.error('Location verification error:', error);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const handleCheckIn = async () => {
-    if (!locationVerified || !wifiVerified) {
+    if (!locationData) {
       Alert.alert(
-        'Verification Failed',
-        'Please ensure you are at the hospital premises with hospital WiFi'
+        'Location Required',
+        'Please enable location services and connect to hospital WiFi',
+        [
+          { text: 'Cancel' },
+          { text: 'Retry', onPress: verifyLocation },
+        ]
       );
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsCheckedIn(true);
+      await checkIn(locationData).unwrap();
       Alert.alert('Success', 'Successfully checked in!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to check in. Please try again.');
-    } finally {
-      setIsLoading(false);
+      refetch();
+    } catch (error: any) {
+      Alert.alert(
+        'Check-in Failed', 
+        error.data?.message || 'Location verification failed. Please ensure you are at hospital premises.',
+        [
+          { text: 'Cancel' },
+          { text: 'Retry', onPress: verifyLocation },
+        ]
+      );
     }
   };
 
@@ -61,22 +93,28 @@ export default function CheckInOutScreen() {
       {
         text: 'Check Out',
         onPress: async () => {
-          setIsLoading(true);
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            setIsCheckedIn(false);
-            Alert.alert('Success', 'Successfully checked out!', [
-              { text: 'OK', onPress: () => router.back() },
-            ]);
-          } catch (error) {
-            Alert.alert('Error', 'Failed to check out. Please try again.');
-          } finally {
-            setIsLoading(false);
+            await checkOut().unwrap();
+            Alert.alert('Success', 'Successfully checked out!');
+            refetch();
+          } catch (error: any) {
+            Alert.alert('Error', error.data?.message || 'Failed to check out. Please try again.');
           }
         },
       },
     ]);
   };
+
+  const calculateWorkHours = () => {
+    if (!todayAttendance?.checkInTime) return '0.0';
+    const start = new Date(todayAttendance.checkInTime).getTime();
+    const end = todayAttendance.checkOutTime ? new Date(todayAttendance.checkOutTime).getTime() : Date.now();
+    const hours = (end - start) / (1000 * 60 * 60);
+    return hours.toFixed(1);
+  };
+
+  const locationVerified = !!locationData?.gpsCoordinates;
+  const wifiVerified = locationData?.wifiSSID && locationData.wifiSSID !== 'Unknown_WiFi';
 
   return (
     <ThemedView style={styles.container}>
@@ -126,12 +164,10 @@ export default function CheckInOutScreen() {
             <ThemedText style={styles.statusTitle}>
               {isCheckedIn ? 'Checked In' : 'Not Checked In'}
             </ThemedText>
-            {isCheckedIn && mockCurrentCheckIn && (
+            {isCheckedIn && todayAttendance && (
               <ThemedText style={styles.statusTime}>
                 Since{' '}
-                {new Date(
-                  mockCurrentCheckIn.checkInTime || ''
-                ).toLocaleTimeString('en-US', {
+                {new Date(todayAttendance.checkInTime).toLocaleTimeString('en-US', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
@@ -142,9 +178,12 @@ export default function CheckInOutScreen() {
 
         {/* Verification Status */}
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>
-            Verification Status
-          </ThemedText>
+          <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md }}>
+            <ThemedText style={styles.sectionTitle}>
+              Verification Status
+            </ThemedText>
+            {verifying && <ActivityIndicator size="small" color={primaryColor} />}
+          </ThemedView>
           <Card style={styles.verificationCard}>
             <ThemedView style={styles.verificationItem}>
               <MaterialIcons
@@ -156,12 +195,12 @@ export default function CheckInOutScreen() {
               />
               <ThemedView style={styles.verificationText}>
                 <ThemedText style={styles.verificationLabel}>
-                  Location
+                  GPS Location
                 </ThemedText>
                 <ThemedText style={styles.verificationStatus}>
                   {locationVerified
                     ? 'Within hospital premises'
-                    : 'Outside hospital'}
+                    : 'Verifying location...'}
                 </ThemedText>
               </ThemedView>
             </ThemedView>
@@ -177,16 +216,19 @@ export default function CheckInOutScreen() {
                 </ThemedText>
                 <ThemedText style={styles.verificationStatus}>
                   {wifiVerified
-                    ? 'Connected to hospital WiFi'
-                    : 'Not connected'}
+                    ? `Connected: ${locationData?.wifiSSID}`
+                    : 'Not connected to hospital WiFi'}
                 </ThemedText>
               </ThemedView>
+              <TouchableOpacity onPress={verifyLocation} style={{ padding: 4 }}>
+                <MaterialIcons name="refresh" size={20} color={NeutralColors.gray600} />
+              </TouchableOpacity>
             </ThemedView>
           </Card>
         </ThemedView>
 
         {/* Today's Summary */}
-        {isCheckedIn && (
+        {isCheckedIn && todayAttendance && (
           <ThemedView style={styles.section}>
             <ThemedText style={styles.sectionTitle}>
               Today&apos;s Summary
@@ -196,11 +238,16 @@ export default function CheckInOutScreen() {
                 <ThemedText style={styles.summaryLabel}>
                   Hours Worked
                 </ThemedText>
-                <ThemedText style={styles.summaryValue}>7.5h</ThemedText>
+                <ThemedText style={styles.summaryValue}>
+                  {calculateWorkHours()}h
+                </ThemedText>
               </Card>
               <Card style={styles.summaryCard}>
                 <ThemedText style={styles.summaryLabel}>Status</ThemedText>
-                <Badge label="On Time" variant="success" />
+                <Badge 
+                  label={todayAttendance.locationVerified ? "Verified" : "Manual"} 
+                  variant={todayAttendance.locationVerified ? "success" : "warning"} 
+                />
               </Card>
             </ThemedView>
           </ThemedView>
@@ -209,13 +256,18 @@ export default function CheckInOutScreen() {
 
       {/* Action Button */}
       <ThemedView style={styles.bottomBar}>
-        <Button
-          title={isCheckedIn ? 'Check Out' : 'Check In'}
-          onPress={isCheckedIn ? handleCheckOut : handleCheckIn}
-          loading={isLoading}
-          variant={isCheckedIn ? 'danger' : 'primary'}
-          fullWidth
-        />
+        {loadingAttendance ? (
+          <ActivityIndicator size="large" color={primaryColor} />
+        ) : (
+          <Button
+            title={isCheckedIn ? 'Check Out' : 'Check In'}
+            onPress={isCheckedIn ? handleCheckOut : handleCheckIn}
+            loading={checkingIn || checkingOut}
+            variant={isCheckedIn ? 'danger' : 'primary'}
+            disabled={!locationVerified || !wifiVerified}
+            fullWidth
+          />
+        )}
       </ThemedView>
     </ThemedView>
   );
