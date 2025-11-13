@@ -5,6 +5,7 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 ## 📱 Features
 
 ### Patient Module
+
 - ✨ Beautiful dashboard with doctor specialties
 - 🔍 Browse and search doctors with filters
 - 📅 Book appointments with date/time selection
@@ -13,6 +14,7 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 - 💰 Digital wallet with transaction history
 
 ### Staff Module
+
 - 📍 Check-in/Check-out with location & WiFi verification
 - 📆 Attendance history and tracking
 - 🏖️ Leave management system
@@ -21,6 +23,7 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 - 📊 Performance dashboards
 
 ### Owner Module
+
 - 📊 Comprehensive hospital dashboard
 - 👥 Staff management (add, edit, view)
 - ✅ Leave request approvals
@@ -42,6 +45,7 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 ## 🎨 Design System
 
 ### Theme Colors
+
 - **Primary**: `#4B7BEC` (Vibrant Blue)
 - **Secondary**: `#5F27CD` (Purple)
 - **Success**: `#26DE81`
@@ -49,10 +53,12 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 - **Error**: `#FC5C65`
 
 ### Typography
+
 - Font sizes: xs (12px) to 5xl (40px)
 - Weights: regular, medium, semibold, bold, extrabold
 
 ### Components
+
 - Modern Button component with variants
 - Card component with elevation/outlined styles
 - Input component with icons and validation
@@ -61,7 +67,7 @@ A comprehensive Hospital Management System built with **React Native (Expo)** fe
 
 ## 📁 Project Structure
 
-```
+````
 hospital-mobile/
 ├── app/                          # Screens (Expo Router)
 │   ├── (auth)/                  # Authentication screens
@@ -104,14 +110,16 @@ hospital-mobile/
 ```bash
 git clone <repository-url>
 cd hospital-mobile
-```
+````
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Create `.env` file in the root directory
+
 ```env
 EXPO_PUBLIC_API_BASE_URL=https://api.yourhospital.com
 EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID=your-client-id
@@ -122,11 +130,13 @@ EXPO_PUBLIC_HOSPITAL_LONGITUDE=74.2728
 ```
 
 4. Start the development server
+
 ```bash
 npm start
 ```
 
 5. Run on your device
+
 - Install Expo Go app on your mobile device
 - Scan the QR code from the terminal
 - Or press `a` for Android emulator, `i` for iOS simulator
@@ -136,26 +146,31 @@ npm start
 ### Mock Login Credentials
 
 **Patient:**
+
 - Any email with mock authentication
 - Navigates to Patient Dashboard
 
 **Staff:**
+
 - Change role in login.tsx to 'staff'
 - Navigates to Staff Dashboard
 
 **Owner:**
+
 - Change role in login.tsx to 'owner'
 - Navigates to Owner Dashboard
 
 ## 🎯 Key Features Implemented
 
 ### Authentication
+
 - ✅ Login with Google OAuth support
 - ✅ Registration screen
 - ✅ Role-based routing
 - ✅ Persistent authentication with AsyncStorage
 
 ### UI/UX
+
 - ✅ Modern, clean interface
 - ✅ Smooth animations
 - ✅ Pull-to-refresh functionality
@@ -165,6 +180,7 @@ npm start
 - ✅ Search and filter functionality
 
 ### Data Management
+
 - ✅ Complete Redux Toolkit setup
 - ✅ RTK Query for API calls
 - ✅ Mock data for development
@@ -193,3 +209,5 @@ Developed with ❤️ for modern healthcare management.
 ---
 
 **Note**: This app uses mock data for development. Replace with real API endpoints for production use.
+
+<!-- Genrate apk -->
