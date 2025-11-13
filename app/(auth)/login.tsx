@@ -203,7 +203,7 @@ export default function LoginScreen() {
               <Button
                 title="Sign In"
                 onPress={handleLogin}
-                loading={loading}
+                loading={isLoading}
                 style={styles.loginButton}
                 fullWidth
               />

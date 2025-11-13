@@ -5,6 +5,7 @@
 import { apiSlice } from '../../apiSlice';
 
 export const staffApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Attendance
     checkIn: builder.mutation({

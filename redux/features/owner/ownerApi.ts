@@ -5,6 +5,7 @@
 import { apiSlice } from '../../apiSlice';
 
 export const ownerApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Profile
     getMyProfile: builder.query({

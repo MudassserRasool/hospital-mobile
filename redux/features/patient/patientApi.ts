@@ -17,6 +17,7 @@ import {
 } from '@/types';
 
 export const patientApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Patient Profile
     getMyProfile: builder.query({
