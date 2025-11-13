@@ -12,11 +12,21 @@ import {
   NeutralColors,
   Spacing,
 } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import {
+  useApproveLeaveMutation,
+  useGetPendingLeavesQuery,
+  useRejectLeaveMutation,
+} from '@/redux/features/owner/ownerApi';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { Alert, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
-import { useGetPendingLeavesQuery, useApproveLeaveMutation, useRejectLeaveMutation } from '@/redux/features/owner/ownerApi';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+} from 'react-native';
 
 export default function LeaveApprovalsScreen() {
   const primaryColor = useThemeColor({}, 'primary');
@@ -37,7 +47,10 @@ export default function LeaveApprovalsScreen() {
             Alert.alert('Success', 'Leave approved successfully');
             refetch();
           } catch (error: any) {
-            Alert.alert('Error', error.data?.message || 'Failed to approve leave');
+            Alert.alert(
+              'Error',
+              error.data?.message || 'Failed to approve leave'
+            );
           }
         },
       },
@@ -55,11 +68,18 @@ export default function LeaveApprovalsScreen() {
           style: 'destructive',
           onPress: async (reason) => {
             try {
-              await rejectLeave({ id, reason: reason || 'Not specified', reviewerNotes: '' }).unwrap();
+              await rejectLeave({
+                id,
+                reason: reason || 'Not specified',
+                reviewerNotes: '',
+              }).unwrap();
               Alert.alert('Rejected', 'Leave request rejected');
               refetch();
             } catch (error: any) {
-              Alert.alert('Error', error.data?.message || 'Failed to reject leave');
+              Alert.alert(
+                'Error',
+                error.data?.message || 'Failed to reject leave'
+              );
             }
           },
         },
@@ -68,9 +88,12 @@ export default function LeaveApprovalsScreen() {
     );
   };
 
-  const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric'
-  });
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
 
   const renderLeaveCard = ({ item }: { item: any }) => {
     const staff = item.staffId;
@@ -83,7 +106,8 @@ export default function LeaveApprovalsScreen() {
           <Badge label={item.leaveType} variant="info" size="small" />
         </ThemedView>
         <ThemedText style={styles.dates}>
-          {formatDate(item.startDate)} - {formatDate(item.endDate)} ({item.totalDays} days)
+          {formatDate(item.startDate)} - {formatDate(item.endDate)} (
+          {item.totalDays} days)
         </ThemedText>
         <ThemedText style={styles.reason}>{item.reason}</ThemedText>
         <ThemedView style={styles.actions}>
@@ -128,14 +152,15 @@ export default function LeaveApprovalsScreen() {
           isLoading ? (
             <ThemedView style={{ padding: 32, alignItems: 'center' }}>
               <ActivityIndicator size="large" color={primaryColor} />
-              <ThemedText style={{ marginTop: 16 }}>Loading leave requests...</ThemedText>
+              <ThemedText style={{ marginTop: 16 }}>
+                Loading leave requests...
+              </ThemedText>
             </ThemedView>
           ) : (
             <ThemedView style={{ padding: 32, alignItems: 'center' }}>
               <ThemedText>No pending leave requests</ThemedText>
             </ThemedView>
           )
-        }
         }
       />
     </ThemedView>

@@ -6,6 +6,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';
+import { ENV } from '@/constants';
 import { OWNER_ROUTES, PATIENT_ROUTES, STAFF_ROUTES } from '@/constants/routes';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,15 +42,16 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   // API hooks
-  const [loginWithGoogle, { isLoading }] = useLoginWithGoogleMutation();
+  const [loginWithGoogle, { isLoading, isSuccess }] =
+    useLoginWithGoogleMutation();
   const [registerDevice] = useRegisterDeviceTokenMutation();
 
   // Google OAuth configuration
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: 'YOUR_EXPO_CLIENT_ID',
-    iosClientId: 'YOUR_IOS_CLIENT_ID',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
-    webClientId: 'YOUR_WEB_CLIENT_ID',
+    clientId: ENV.GOOGLE_OAUTH_CLIENT_ID,
+    iosClientId: ENV.GOOGLE_OAUTH_IOS_CLIENT_ID,
+    androidClientId: ENV.GOOGLE_OAUTH_ANDROID_CLIENT_ID,
+    webClientId: ENV.GOOGLE_OAUTH_WEB_CLIENT_ID,
   });
 
   useEffect(() => {

@@ -16,26 +16,35 @@ import {
   Spacing,
   StatusColors,
 } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import {
+  useCancelLeaveRequestMutation,
+  useGetMyLeaveBalanceQuery,
+  useGetMyLeavesQuery,
+} from '@/redux/features/staff/staffApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { useGetMyLeavesQuery, useGetMyLeaveBalanceQuery, useCancelLeaveRequestMutation } from '@/redux/features/staff/staffApi';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
-export default function LeaveManagementScreen() {
+const LeaveManagementScreen = () => {
   const primaryColor = useThemeColor({}, 'primary');
 
   // Fetch leaves and balance from API
-  const { data: leavesData, isLoading: loadingLeaves, refetch } = useGetMyLeavesQuery({});
-  const { data: leaveBalance, isLoading: loadingBalance } = useGetMyLeaveBalanceQuery(new Date().getFullYear());
+  const {
+    data: leavesData,
+    isLoading: loadingLeaves,
+    refetch,
+  } = useGetMyLeavesQuery({});
+  const { data: leaveBalance, isLoading: loadingBalance } =
+    useGetMyLeaveBalanceQuery(new Date().getFullYear());
   const [cancelLeave] = useCancelLeaveRequestMutation();
 
   const onRefresh = async () => {
@@ -57,7 +66,10 @@ export default function LeaveManagementScreen() {
               Alert.alert('Success', 'Leave request cancelled');
               refetch();
             } catch (error: any) {
-              Alert.alert('Error', error.data?.message || 'Failed to cancel leave request');
+              Alert.alert(
+                'Error',
+                error.data?.message || 'Failed to cancel leave request'
+              );
             }
           },
         },
@@ -79,73 +91,84 @@ export default function LeaveManagementScreen() {
   };
 
   const renderLeaveCard = ({ item }: { item: any }) => {
-    const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
+    const formatDate = (date: string) =>
+      new Date(date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
 
     return (
-    <Card style={styles.leaveCard}>
-      <ThemedView style={styles.leaveHeader}>
-        <ThemedView style={styles.leaveType}>
-          <MaterialIcons
-            name={
-              item.leaveType === 'sick'
-                ? 'local-hospital'
-                : item.leaveType === 'annual'
-                ? 'beach-access'
-                : item.leaveType === 'emergency'
-                ? 'emergency'
-                : 'person'
-            }
-            size={20}
-            color={BrandColors.primary}
+      <Card style={styles.leaveCard}>
+        <ThemedView style={styles.leaveHeader}>
+          <ThemedView style={styles.leaveType}>
+            <MaterialIcons
+              name={
+                item.leaveType === 'sick'
+                  ? 'local-hospital'
+                  : item.leaveType === 'annual'
+                  ? 'beach-access'
+                  : item.leaveType === 'emergency'
+                  ? 'emergency'
+                  : 'person'
+              }
+              size={20}
+              color={BrandColors.primary}
+            />
+            <ThemedText style={styles.leaveTypeText}>
+              {item.leaveType.charAt(0).toUpperCase() + item.leaveType.slice(1)}{' '}
+              Leave
+            </ThemedText>
+          </ThemedView>
+          <Badge
+            label={item.status}
+            variant={getStatusVariant(item.status)}
+            size="small"
           />
-          <ThemedText style={styles.leaveTypeText}>
-            {item.leaveType.charAt(0).toUpperCase() + item.leaveType.slice(1)} Leave
-          </ThemedText>
         </ThemedView>
-        <Badge
-          label={item.status}
-          variant={getStatusVariant(item.status)}
-          size="small"
-        />
-      </ThemedView>
 
-      <ThemedView style={styles.leaveDates}>
-        <ThemedView style={styles.dateItem}>
-          <ThemedText style={styles.dateLabel}>From</ThemedText>
-          <ThemedText style={styles.dateValue}>{formatDate(item.startDate)}</ThemedText>
+        <ThemedView style={styles.leaveDates}>
+          <ThemedView style={styles.dateItem}>
+            <ThemedText style={styles.dateLabel}>From</ThemedText>
+            <ThemedText style={styles.dateValue}>
+              {formatDate(item.startDate)}
+            </ThemedText>
+          </ThemedView>
+          <MaterialIcons
+            name="arrow-forward"
+            size={16}
+            color={NeutralColors.gray400}
+          />
+          <ThemedView style={styles.dateItem}>
+            <ThemedText style={styles.dateLabel}>To</ThemedText>
+            <ThemedText style={styles.dateValue}>
+              {formatDate(item.endDate)}
+            </ThemedText>
+          </ThemedView>
         </ThemedView>
-        <MaterialIcons
-          name="arrow-forward"
-          size={16}
-          color={NeutralColors.gray400}
-        />
-        <ThemedView style={styles.dateItem}>
-          <ThemedText style={styles.dateLabel}>To</ThemedText>
-          <ThemedText style={styles.dateValue}>{formatDate(item.endDate)}</ThemedText>
-        </ThemedView>
-      </ThemedView>
 
-      <ThemedView style={styles.leaveInfo}>
-        <ThemedText style={styles.daysText}>{item.totalDays} day(s)</ThemedText>
-        {item.reason && (
-          <ThemedText style={styles.reasonText} numberOfLines={2}>
-            {item.reason}
+        <ThemedView style={styles.leaveInfo}>
+          <ThemedText style={styles.daysText}>
+            {item.totalDays} day(s)
           </ThemedText>
+          {item.reason && (
+            <ThemedText style={styles.reasonText} numberOfLines={2}>
+              {item.reason}
+            </ThemedText>
+          )}
+        </ThemedView>
+
+        {item.approver && (
+          <ThemedView style={styles.approverSection}>
+            <ThemedText style={styles.approverText}>
+              {item.status === 'approved' ? 'Approved by' : 'Reviewed by'}{' '}
+              {item.approver.name}
+            </ThemedText>
+          </ThemedView>
         )}
-      </ThemedView>
-
-      {item.approver && (
-        <ThemedView style={styles.approverSection}>
-          <ThemedText style={styles.approverText}>
-            {item.status === 'approved' ? 'Approved by' : 'Reviewed by'}{' '}
-            {item.approver.name}
-          </ThemedText>
-        </ThemedView>
-      )}
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -190,15 +213,25 @@ export default function LeaveManagementScreen() {
                   <>
                     <ThemedView style={styles.balanceItem}>
                       <ThemedText style={styles.balanceValue}>
-                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.allowed || 0), 0)}
+                        {Object.values(leaveBalance).reduce(
+                          (sum: number, leave: any) =>
+                            sum + (leave.allowed || 0),
+                          0
+                        )}
                       </ThemedText>
                       <ThemedText style={styles.balanceLabel}>Total</ThemedText>
                     </ThemedView>
                     <ThemedView style={styles.balanceItem}>
                       <ThemedText
-                        style={[styles.balanceValue, { color: StatusColors.error }]}
+                        style={[
+                          styles.balanceValue,
+                          { color: StatusColors.error },
+                        ]}
                       >
-                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.taken || 0), 0)}
+                        {Object.values(leaveBalance).reduce(
+                          (sum: number, leave: any) => sum + (leave.taken || 0),
+                          0
+                        )}
                       </ThemedText>
                       <ThemedText style={styles.balanceLabel}>Used</ThemedText>
                     </ThemedView>
@@ -209,9 +242,13 @@ export default function LeaveManagementScreen() {
                           { color: StatusColors.warning },
                         ]}
                       >
-                        {leavesData?.leaves?.filter((l: any) => l.status === 'pending').length || 0}
+                        {leavesData?.leaves?.filter(
+                          (l: any) => l.status === 'pending'
+                        ).length || 0}
                       </ThemedText>
-                      <ThemedText style={styles.balanceLabel}>Pending</ThemedText>
+                      <ThemedText style={styles.balanceLabel}>
+                        Pending
+                      </ThemedText>
                     </ThemedView>
                     <ThemedView style={styles.balanceItem}>
                       <ThemedText
@@ -220,9 +257,15 @@ export default function LeaveManagementScreen() {
                           { color: StatusColors.success },
                         ]}
                       >
-                        {Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.remaining || 0), 0)}
+                        {Object.values(leaveBalance).reduce(
+                          (sum: number, leave: any) =>
+                            sum + (leave.remaining || 0),
+                          0
+                        )}
                       </ThemedText>
-                      <ThemedText style={styles.balanceLabel}>Available</ThemedText>
+                      <ThemedText style={styles.balanceLabel}>
+                        Available
+                      </ThemedText>
                     </ThemedView>
                   </>
                 ) : null}
@@ -259,7 +302,9 @@ export default function LeaveManagementScreen() {
       </TouchableOpacity>
     </ThemedView>
   );
-}
+};
+
+export default LeaveManagementScreen;
 
 const styles = StyleSheet.create({
   container: {
