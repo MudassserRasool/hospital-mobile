@@ -55,6 +55,7 @@ export default function LoginScreen() {
   });
 
   useEffect(() => {
+    Alert.alert(JSON.stringify(response));
     if (response?.type === 'success') {
       handleGoogleAuthResponse(response.authentication);
     }

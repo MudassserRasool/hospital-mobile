@@ -1,29 +1,66 @@
 /**
  * Push Notification Service
  * Handles Expo push notifications
+ * Uses dynamic imports to avoid errors in Expo Go
  */
 
-import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 
 /**
- * Configure how notifications are handled when app is in foreground
+ * Check if running in Expo Go
  */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+const isExpoGo = Constants.executionEnvironment === 'storeClient';
+
+/**
+ * Lazy load expo-notifications only when needed (not in Expo Go)
+ */
+let Notifications: typeof import('expo-notifications') | null = null;
+
+const loadNotifications = async () => {
+  if (isExpoGo) {
+    return null;
+  }
+  if (!Notifications) {
+    try {
+      Notifications = await import('expo-notifications');
+      // Configure notification handler
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to load expo-notifications:', error);
+      return null;
+    }
+  }
+  return Notifications;
+};
 
 /**
  * Register for push notifications and get Expo push token
  */
-export const registerForPushNotifications = async (): Promise<string | null> => {
+export const registerForPushNotifications = async (): Promise<
+  string | null
+> => {
   try {
+    // Push notifications are not supported in Expo Go
+    if (isExpoGo) {
+      console.warn(
+        'Push notifications are not supported in Expo Go. Use a development build instead.'
+      );
+      return null;
+    }
+
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return null;
+    }
+
     // Check if running on physical device
     if (!Device.isDevice) {
       console.warn('Push notifications only work on physical devices');
@@ -31,11 +68,12 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     }
 
     // Request permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await NotificationsModule.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await NotificationsModule.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -45,16 +83,17 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     }
 
     // Get Expo push token
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId || 'your-project-id';
-    const token = await Notifications.getExpoPushTokenAsync({
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId || 'your-project-id';
+    const token = await NotificationsModule.getExpoPushTokenAsync({
       projectId,
     });
 
     // Android-specific configuration
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
+      await NotificationsModule.setNotificationChannelAsync('default', {
         name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
+        importance: NotificationsModule.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
@@ -70,19 +109,47 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
 /**
  * Add notification received listener (app in foreground)
  */
-export const addNotificationReceivedListener = (
-  callback: (notification: Notifications.Notification) => void
+export const addNotificationReceivedListener = async (
+  callback: (notification: any) => void
 ) => {
-  return Notifications.addNotificationReceivedListener(callback);
+  if (isExpoGo) {
+    console.warn('Notification listeners are not supported in Expo Go');
+    return { remove: () => {} };
+  }
+  try {
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return { remove: () => {} };
+    }
+    return NotificationsModule.addNotificationReceivedListener(callback);
+  } catch (error) {
+    console.warn('Failed to add notification received listener:', error);
+    return { remove: () => {} };
+  }
 };
 
 /**
  * Add notification response listener (user taps notification)
  */
-export const addNotificationResponseListener = (
-  callback: (response: Notifications.NotificationResponse) => void
+export const addNotificationResponseListener = async (
+  callback: (response: any) => void
 ) => {
-  return Notifications.addNotificationResponseReceivedListener(callback);
+  if (isExpoGo) {
+    console.warn('Notification listeners are not supported in Expo Go');
+    return { remove: () => {} };
+  }
+  try {
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return { remove: () => {} };
+    }
+    return NotificationsModule.addNotificationResponseReceivedListener(
+      callback
+    );
+  } catch (error) {
+    console.warn('Failed to add notification response listener:', error);
+    return { remove: () => {} };
+  }
 };
 
 /**
@@ -92,10 +159,18 @@ export const scheduleLocalNotification = async (
   title: string,
   body: string,
   data?: any,
-  trigger?: Notifications.NotificationTriggerInput
+  trigger?: any
 ) => {
+  if (isExpoGo) {
+    console.warn('Local notifications are not fully supported in Expo Go');
+    return;
+  }
   try {
-    await Notifications.scheduleNotificationAsync({
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return;
+    }
+    await NotificationsModule.scheduleNotificationAsync({
       content: {
         title,
         body,
@@ -113,8 +188,15 @@ export const scheduleLocalNotification = async (
  * Cancel all scheduled notifications
  */
 export const cancelAllNotifications = async () => {
+  if (isExpoGo) {
+    return;
+  }
   try {
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return;
+    }
+    await NotificationsModule.cancelAllScheduledNotificationsAsync();
   } catch (error) {
     console.error('Error cancelling notifications:', error);
   }
@@ -124,8 +206,15 @@ export const cancelAllNotifications = async () => {
  * Get notification badge count
  */
 export const getBadgeCount = async (): Promise<number> => {
+  if (isExpoGo) {
+    return 0;
+  }
   try {
-    return await Notifications.getBadgeCountAsync();
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return 0;
+    }
+    return await NotificationsModule.getBadgeCountAsync();
   } catch (error) {
     console.error('Error getting badge count:', error);
     return 0;
@@ -136,8 +225,15 @@ export const getBadgeCount = async (): Promise<number> => {
  * Set notification badge count
  */
 export const setBadgeCount = async (count: number) => {
+  if (isExpoGo) {
+    return;
+  }
   try {
-    await Notifications.setBadgeCountAsync(count);
+    const NotificationsModule = await loadNotifications();
+    if (!NotificationsModule) {
+      return;
+    }
+    await NotificationsModule.setBadgeCountAsync(count);
   } catch (error) {
     console.error('Error setting badge count:', error);
   }
@@ -147,13 +243,14 @@ export const setBadgeCount = async (count: number) => {
  * Handle notification navigation based on notification type
  */
 export const handleNotificationNavigation = (
-  notification: Notifications.Notification | Notifications.NotificationResponse,
+  notification: any,
   navigation: any
 ) => {
   try {
-    const data = 'notification' in notification 
-      ? notification.notification.request.content.data 
-      : notification.request.content.data;
+    const data =
+      'notification' in notification
+        ? notification.notification.request.content.data
+        : notification.request.content.data;
 
     const type = data?.type;
     const appointmentId = data?.appointmentId;
@@ -189,4 +286,3 @@ export const handleNotificationNavigation = (
     console.error('Error handling notification navigation:', error);
   }
 };
-

@@ -214,4 +214,6 @@ Developed with ❤️ for modern healthcare management.
 
 ```bash
 eas build --profile preview --platform android
+npx eas build --platform android --profile development
+eas build -p android --profile preview
 ```
