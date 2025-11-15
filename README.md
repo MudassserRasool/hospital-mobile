@@ -211,3 +211,7 @@ Developed with ❤️ for modern healthcare management.
 **Note**: This app uses mock data for development. Replace with real API endpoints for production use.
 
 <!-- Genrate apk -->
+
+```bash
+eas build --profile preview --platform android
+```
