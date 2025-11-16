@@ -4,6 +4,7 @@
  */
 
 import { ThemedView } from '@/components/themed-view';
+import { ROLES } from '@/constants/roles';
 import {
   AUTH_ROUTES,
   OWNER_ROUTES,
@@ -29,11 +30,11 @@ export default function Index() {
       }
       console.log('role', role);
       // Redirect based on role
-      if (role === 'patient') {
+      if (role === ROLES.PATIENT) {
         router.replace(PATIENT_ROUTES.DASHBOARD);
-      } else if (role === 'staff') {
+      } else if (role === ROLES.STAFF) {
         router.replace(STAFF_ROUTES.DASHBOARD);
-      } else if (role === 'owner') {
+      } else if (role === ROLES.OWNER) {
         router.replace(OWNER_ROUTES.DASHBOARD);
       } else {
         router.replace(AUTH_ROUTES.LOGIN);

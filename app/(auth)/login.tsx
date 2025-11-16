@@ -22,15 +22,16 @@ import { styles } from './login.style';
 
 import { ROLES } from '@/constants';
 import { packageName } from '@/constants/expoConstants';
+import { PATIENT_ROUTES } from '@/constants/routes';
+import { useAuth } from '@/hooks/useAuth';
 import { useGenerateGuestTokenMutation } from '@/redux/features/auth/authApi';
-import { setCredentials } from '@/redux/features/auth/authSlice';
-import { useDispatch } from 'react-redux';
+import { router } from 'expo-router';
 // Get package name
 // or
 
 export default function LoginScreen() {
   const primaryColor = useThemeColor({}, 'primary');
-  const dispatch = useDispatch();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,25 +61,29 @@ export default function LoginScreen() {
 
   const handleGestLogin = async () => {
     try {
-      Alert.alert('Generating Guest Token...');
-      const response = await generateGuestToken().unwrap();
-      Alert.alert('Guest Token Generated');
-      if (response?.data?.guestToken) {
-        console.log('response---GUEST TOKEN---->', response.data.guestToken);
-        // dispatch for login
-        dispatch(
-          setCredentials({
-            token: response.data.guestToken,
-            user: response.data.gestUser,
-            role: ROLES.PATIENT,
-          })
-        );
+      const response = await generateGuestToken(undefined).unwrap();
+
+      if (response?.data?.guestToken && response?.data?.gestUser) {
+        console.log('response---GUEST TOKEN---->', response.data);
+
+        // Sanitize user object (remove password and other sensitive fields)
+        const { password, refreshTokens, ...sanitizedUser } =
+          response.data.gestUser;
+
+        // Save credentials to AsyncStorage and Redux using useAuth hook
+        await login(sanitizedUser, response.data.guestToken, ROLES.PATIENT);
+
+        // Navigate to patient dashboard
+        router.replace(PATIENT_ROUTES.DASHBOARD);
       } else {
-        Alert.alert('Error', 'Guest token not found in response');
+        Alert.alert('Error', 'Guest token or user not found in response');
         console.log('response---GUEST TOKEN---->', response);
       }
     } catch (error: any) {
-      Alert.alert('Unable to login as guest');
+      console.error('Guest login error:', error);
+      const errorMessage =
+        error?.data?.message || error?.message || 'Unable to login as guest';
+      Alert.alert('Error', errorMessage);
     }
   };
 
