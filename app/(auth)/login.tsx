@@ -6,21 +6,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';
-import { ENV } from '@/constants';
-import { OWNER_ROUTES, PATIENT_ROUTES, STAFF_ROUTES } from '@/constants/routes';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  useLoginWithGoogleMutation,
-  useRegisterDeviceTokenMutation,
-} from '@/redux/features/auth/authApi';
-import { registerForPushNotifications } from '@/utils/notificationService';
 import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Google from 'expo-auth-session/providers/google';
-import { router } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -31,52 +19,16 @@ import {
 import { styles } from './login.style';
 
 export default function LoginScreen() {
-  const { login } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
-  const textColor = useThemeColor({}, 'text');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginMode, setLoginMode] = useState<'email' | 'phone'>('phone');
 
   // API hooks
-  const [loginWithGoogle, { isLoading, isSuccess }] =
-    useLoginWithGoogleMutation();
-  const [registerDevice] = useRegisterDeviceTokenMutation();
-
-  useEffect(() => {
-    WebBrowser.maybeCompleteAuthSession();
-  }, []);
-
-  const redirectUri = 'https://auth.expo.io/@mudasser2023/medical-clinic';
-
-  console.log('redirectUri', redirectUri);
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    // clientId: ENV.GOOGLE_OAUTH_EXPO_CLIENT_ID, // ← Using the EXPO one?
-    androidClientId: ENV.GOOGLE_OAUTH_ANDROID_CLIENT_ID,
-    iosClientId: ENV.GOOGLE_OAUTH_IOS_CLIENT_ID,
-    webClientId: ENV.GOOGLE_OAUTH_WEB_CLIENT_ID,
-    // redirectUri: redirectUri,
-    // useProxy: true,
-  });
-
-  useEffect(() => {
-    console.log('Auth Response Type:', response?.type);
-
-    if (response?.type === 'success') {
-      console.log('✅ Authentication successful, processing...');
-      handleGoogleAuthResponse(response.authentication);
-    } else if (response?.type === 'error') {
-      console.error('❌ Auth Error:', response.error);
-      Alert.alert(
-        'Authentication Failed',
-        'Unable to sign in with Google. Please try again.'
-      );
-    } else if (response?.type === 'cancel') {
-      console.log('⚠️ User cancelled authentication');
-    }
-  }, [response]);
+  // const [registerDevice] = useRegisterDeviceTokenMutation();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -88,68 +40,18 @@ export default function LoginScreen() {
     // Mobile users must use Google OAuth
   };
 
-  const handleGoogleAuthResponse = async (authentication: any) => {
+  const handleGestLogin = async () => {
     try {
-      // Get user info from Google
-      const userInfoResponse = await fetch(
-        'https://www.googleapis.com/userinfo/v2/me',
-        {
-          headers: { Authorization: `Bearer ${authentication.accessToken}` },
-        }
-      );
-      const userInfo = await userInfoResponse.json();
-
-      // Login to backend
-      const result = await loginWithGoogle({
-        googleId: userInfo.id,
-        email: userInfo.email,
-        firstName: userInfo.given_name || 'User',
-        lastName: userInfo.family_name || '',
-        profilePicture: userInfo.picture,
-        role: 'patient', // Default role for mobile
-      }).unwrap();
-
-      // Save tokens
-      await AsyncStorage.setItem('accessToken', result.accessToken);
-      await AsyncStorage.setItem('refreshToken', result.refreshToken);
-
-      // Login to local auth context
-      await login(result.user, result.accessToken, result.user.role);
-
-      // Register device for push notifications
-      const pushToken = await registerForPushNotifications();
-      if (pushToken) {
-        try {
-          await registerDevice(pushToken).unwrap();
-        } catch (error) {
-          console.error('Failed to register push token:', error);
-        }
-      }
-
-      // Navigate based on role
-      const userRole = result.user.role;
-      if (userRole === 'patient') {
-        router.replace(PATIENT_ROUTES.DASHBOARD);
-      } else if (
-        userRole === 'doctor' ||
-        userRole === 'nurse' ||
-        userRole === 'staff' ||
-        userRole === 'receptionist'
-      ) {
-        router.replace(STAFF_ROUTES.DASHBOARD);
-      } else if (userRole === 'owner') {
-        router.replace(OWNER_ROUTES.DASHBOARD);
-      }
-    } catch (error: any) {
-      console.error('Google login error:', error);
+      // Guest login implementation
+    } catch {
+      Alert.alert('Error', 'Guest login failed. Please try again.');
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await promptAsync();
-    } catch (error) {
-      Alert.alert('Error', 'Google Sign In failed. Please try again.');
+  const handelLoginWithPhoneNumberAndPassword = async () => {
+    if (!phoneNumber || !password) {
+      Alert.alert('Error', 'Please enter phone number and password');
+      return;
     }
   };
 
@@ -177,49 +79,146 @@ export default function LoginScreen() {
               </ThemedText>
             </ThemedView>
 
+            {/* Login Mode Toggle */}
+            {/* <ThemedView style={styles.modeToggle}>
+              <TouchableOpacity
+                style={[
+                  styles.modeButton,
+                  loginMode === 'email' && styles.modeButtonActive,
+                ]}
+                onPress={() => setLoginMode('email')}
+              >
+                <ThemedText
+                  style={[
+                    styles.modeButtonText,
+                    loginMode === 'email' && styles.modeButtonTextActive,
+                  ]}
+                >
+                  Email
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modeButton,
+                  loginMode === 'phone' && styles.modeButtonActive,
+                ]}
+                onPress={() => setLoginMode('phone')}
+              >
+                <ThemedText
+                  style={[
+                    styles.modeButtonText,
+                    loginMode === 'phone' && styles.modeButtonTextActive,
+                  ]}
+                >
+                  Phone
+                </ThemedText>
+              </TouchableOpacity>
+            </ThemedView> */}
+
             {/* Login Form */}
             <ThemedView style={styles.form}>
-              <Input
-                label="Email"
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                leftIcon={
-                  <MaterialIcons name="email" size={20} color="#9CA3AF" />
-                }
-              />
+              {loginMode === 'email' ? (
+                <>
+                  <Input
+                    label="Email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    leftIcon={
+                      <MaterialIcons name="email" size={20} color="#9CA3AF" />
+                    }
+                  />
 
-              <Input
-                label="Password"
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                leftIcon={
-                  <MaterialIcons name="lock" size={20} color="#9CA3AF" />
-                }
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <MaterialIcons
-                      name={showPassword ? 'visibility' : 'visibility-off'}
-                      size={20}
-                      color="#9CA3AF"
-                    />
-                  </TouchableOpacity>
-                }
-              />
+                  <Input
+                    label="Password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    leftIcon={
+                      <MaterialIcons name="lock" size={20} color="#9CA3AF" />
+                    }
+                    rightIcon={
+                      <TouchableOpacity
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        <MaterialIcons
+                          name={showPassword ? 'visibility' : 'visibility-off'}
+                          size={20}
+                          color="#9CA3AF"
+                        />
+                      </TouchableOpacity>
+                    }
+                  />
 
-              <Button
-                title="Sign In"
-                onPress={handleLogin}
-                loading={isLoading}
-                style={styles.loginButton}
-                fullWidth
-              />
+                  <Button
+                    title="Sign In"
+                    onPress={handleLogin}
+                    fullWidth
+                    style={styles.loginButton}
+                    leftIcon={
+                      <MaterialIcons
+                        name="login"
+                        size={20}
+                        color="#FFFFFF"
+                        style={{ marginRight: 8 }}
+                      />
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <Input
+                    label="Phone Number"
+                    placeholder="Enter your phone number"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="phone-pad"
+                    leftIcon={
+                      <MaterialIcons name="phone" size={20} color="#9CA3AF" />
+                    }
+                  />
+
+                  <Input
+                    label="Password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    leftIcon={
+                      <MaterialIcons name="lock" size={20} color="#9CA3AF" />
+                    }
+                    rightIcon={
+                      <TouchableOpacity
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        <MaterialIcons
+                          name={showPassword ? 'visibility' : 'visibility-off'}
+                          size={20}
+                          color="#9CA3AF"
+                        />
+                      </TouchableOpacity>
+                    }
+                  />
+
+                  <Button
+                    title="Sign In with Phone"
+                    onPress={handelLoginWithPhoneNumberAndPassword}
+                    fullWidth
+                    style={styles.loginButton}
+                    leftIcon={
+                      <MaterialIcons
+                        name="phone"
+                        size={20}
+                        color="#FFFFFF"
+                        style={{ marginRight: 8 }}
+                      />
+                    }
+                  />
+                </>
+              )}
             </ThemedView>
 
             {/* Divider */}
@@ -231,36 +230,22 @@ export default function LoginScreen() {
               <ThemedView style={styles.dividerLine} />
             </ThemedView>
 
-            {/* Google Sign In */}
-            <TouchableOpacity
-              style={styles.googleButton}
-              onPress={handleGoogleSignIn}
-              activeOpacity={0.7}
-              disabled={!request || isLoading}
-            >
-              <MaterialIcons
-                name="g-translate"
-                size={24}
-                color={primaryColor}
-              />
-              <ThemedText
-                style={[styles.googleButtonText, { color: textColor }]}
-              >
-                {isLoading ? 'Signing in...' : 'Sign in with Google'}
-              </ThemedText>
-            </TouchableOpacity>
-
-            {/* Footer */}
-            <ThemedView style={styles.footer}>
-              <ThemedText style={styles.footerText}>
-                Don&apos;t have an account?
-              </ThemedText>
-              <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-                <ThemedText style={[styles.linkText, { color: primaryColor }]}>
-                  Sign Up
-                </ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
+            {/* Guest Login */}
+            <Button
+              title="Continue as Guest"
+              onPress={handleGestLogin}
+              variant="outline"
+              fullWidth
+              style={styles.guestButton}
+              leftIcon={
+                <MaterialIcons
+                  name="person-outline"
+                  size={20}
+                  color={primaryColor}
+                  style={{ marginRight: 8 }}
+                />
+              }
+            />
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>

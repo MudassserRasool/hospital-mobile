@@ -96,6 +96,44 @@ export const styles = StyleSheet.create({
     fontWeight: FontWeights.semibold,
     marginLeft: Spacing.xs,
   },
+  modeToggle: {
+    flexDirection: 'row',
+    backgroundColor: NeutralColors.gray100,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: Spacing.lg,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeButtonActive: {
+    backgroundColor: NeutralColors.white,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modeButtonText: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.medium,
+    color: NeutralColors.gray600,
+  },
+  modeButtonTextActive: {
+    fontWeight: FontWeights.semibold,
+    color: NeutralColors.gray900,
+  },
+  guestButton: {
+    marginTop: Spacing.md,
+  },
 });
 
 // Default export prevents expo-router from treating this as a route
