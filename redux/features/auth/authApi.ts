@@ -2,6 +2,7 @@
  * Authentication API endpoints
  */
 
+import { packageName } from '@/constants/expoConstants';
 import { apiSlice } from '../../apiSlice';
 
 export const authApi = apiSlice.injectEndpoints({
@@ -57,6 +58,15 @@ export const authApi = apiSlice.injectEndpoints({
         body: { deviceToken },
       }),
     }),
+
+    // genrate gest token using POST api /auth/generate-guest-token
+    generateGuestToken: builder.mutation({
+      query: () => ({
+        url: '/auth/generate-guest-token',
+        method: 'POST',
+        body: { mobilePackageId: packageName },
+      }),
+    }),
   }),
 });
 
@@ -67,4 +77,5 @@ export const {
   useGetProfileQuery,
   useRegisterDeviceTokenMutation,
   useUnregisterDeviceTokenMutation,
+  useGenerateGuestTokenMutation,
 } = authApi;

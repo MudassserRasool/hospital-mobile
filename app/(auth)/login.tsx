@@ -7,7 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Input } from '@/components/ui';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useGetHospitalByPackageIdQuery } from '@/redux/features/hospital/hospitalApi';
 import { MaterialIcons } from '@expo/vector-icons';
+// import { Application } from 'expo';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -18,16 +20,32 @@ import {
 } from 'react-native';
 import { styles } from './login.style';
 
+import { ROLES } from '@/constants';
+import { packageName } from '@/constants/expoConstants';
+import { useGenerateGuestTokenMutation } from '@/redux/features/auth/authApi';
+import { setCredentials } from '@/redux/features/auth/authSlice';
+import { useDispatch } from 'react-redux';
+// Get package name
+// or
+
 export default function LoginScreen() {
   const primaryColor = useThemeColor({}, 'primary');
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginMode, setLoginMode] = useState<'email' | 'phone'>('phone');
+  const { data, isLoading, error } = useGetHospitalByPackageIdQuery(
+    packageName || '',
+    { skip: !packageName }
+  );
+  const [
+    generateGuestToken,
+    { isLoading: isGeneratingGuestToken, error: generateGuestTokenError },
+  ] = useGenerateGuestTokenMutation();
 
-  // API hooks
   // const [registerDevice] = useRegisterDeviceTokenMutation();
 
   const handleLogin = async () => {
@@ -42,9 +60,25 @@ export default function LoginScreen() {
 
   const handleGestLogin = async () => {
     try {
-      // Guest login implementation
-    } catch {
-      Alert.alert('Error', 'Guest login failed. Please try again.');
+      Alert.alert('Generating Guest Token...');
+      const response = await generateGuestToken().unwrap();
+      Alert.alert('Guest Token Generated');
+      if (response?.data?.guestToken) {
+        console.log('response---GUEST TOKEN---->', response.data.guestToken);
+        // dispatch for login
+        dispatch(
+          setCredentials({
+            token: response.data.guestToken,
+            user: response.data.gestUser,
+            role: ROLES.PATIENT,
+          })
+        );
+      } else {
+        Alert.alert('Error', 'Guest token not found in response');
+        console.log('response---GUEST TOKEN---->', response);
+      }
+    } catch (error: any) {
+      Alert.alert('Unable to login as guest');
     }
   };
 
@@ -114,6 +148,8 @@ export default function LoginScreen() {
                 </ThemedText>
               </TouchableOpacity>
             </ThemedView> */}
+
+            {/* <DebugView data={data} title="Hospital Data" /> */}
 
             {/* Login Form */}
             <ThemedView style={styles.form}>
