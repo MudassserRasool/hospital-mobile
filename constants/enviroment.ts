@@ -8,7 +8,7 @@ export const ENV = {
   API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
 
   // OAuth Configuration
-  GOOGLE_OAUTH_CLIENT_ID: process.env.EXPO_PUBLIC_CLIENT_ID || '',
+  GOOGLE_OAUTH_EXPO_CLIENT_ID: process.env.EXPO_PUBLIC_EXPO_CLIENT_ID || '', // ← Add this
   GOOGLE_OAUTH_ANDROID_CLIENT_ID:
     process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID || '',
   GOOGLE_OAUTH_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_IOS_CLIENT_ID || '',

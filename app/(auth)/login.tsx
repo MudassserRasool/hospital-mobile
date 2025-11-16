@@ -30,8 +30,6 @@ import {
 } from 'react-native';
 import { styles } from './login.style';
 
-WebBrowser.maybeCompleteAuthSession();
-
 export default function LoginScreen() {
   const { login } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
@@ -46,18 +44,37 @@ export default function LoginScreen() {
     useLoginWithGoogleMutation();
   const [registerDevice] = useRegisterDeviceTokenMutation();
 
-  // Google OAuth configuration
+  useEffect(() => {
+    WebBrowser.maybeCompleteAuthSession();
+  }, []);
+
+  const redirectUri = 'https://auth.expo.io/@mudasser2023/medical-clinic';
+
+  console.log('redirectUri', redirectUri);
+
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: ENV.GOOGLE_OAUTH_CLIENT_ID,
-    iosClientId: ENV.GOOGLE_OAUTH_IOS_CLIENT_ID,
+    // clientId: ENV.GOOGLE_OAUTH_EXPO_CLIENT_ID, // ← Using the EXPO one?
     androidClientId: ENV.GOOGLE_OAUTH_ANDROID_CLIENT_ID,
+    iosClientId: ENV.GOOGLE_OAUTH_IOS_CLIENT_ID,
     webClientId: ENV.GOOGLE_OAUTH_WEB_CLIENT_ID,
+    // redirectUri: redirectUri,
+    // useProxy: true,
   });
 
   useEffect(() => {
-    Alert.alert(JSON.stringify(response));
+    console.log('Auth Response Type:', response?.type);
+
     if (response?.type === 'success') {
+      console.log('✅ Authentication successful, processing...');
       handleGoogleAuthResponse(response.authentication);
+    } else if (response?.type === 'error') {
+      console.error('❌ Auth Error:', response.error);
+      Alert.alert(
+        'Authentication Failed',
+        'Unable to sign in with Google. Please try again.'
+      );
+    } else if (response?.type === 'cancel') {
+      console.log('⚠️ User cancelled authentication');
     }
   }, [response]);
 
@@ -69,7 +86,6 @@ export default function LoginScreen() {
 
     // Email/password login not implemented for mobile
     // Mobile users must use Google OAuth
-    Alert.alert('Info', 'Please use Google Sign In for mobile app');
   };
 
   const handleGoogleAuthResponse = async (authentication: any) => {
@@ -126,10 +142,6 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       console.error('Google login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.data?.message || 'Unable to login with Google'
-      );
     }
   };
 
