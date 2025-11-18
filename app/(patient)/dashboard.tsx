@@ -3,26 +3,32 @@
  * Main screen for patient module with modern UI
  */
 
+import Banner from '@/components/role-specific/PatientComponents/dashboard/Banner';
+import DoctorCard from '@/components/role-specific/PatientComponents/dashboard/DoctorCard';
+import SpecialtyItem from '@/components/role-specific/PatientComponents/dashboard/SpecialtyItem';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SearchBar } from '@/components/ui';
 import { PATIENT_ROUTES } from '@/constants/routes';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useGetDoctorsQuery,
+  useGetMyAppointmentsQuery,
+} from '@/redux/features/patient/patientApi';
 import { mockSpecialties } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { styles } from './styles/dashboard.style';
-import { useGetDoctorsQuery, useGetMyAppointmentsQuery } from '@/redux/features/patient/patientApi';
 
 export default function PatientDashboard() {
   const { user } = useAuth();
@@ -34,10 +40,18 @@ export default function PatientDashboard() {
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 
   // Fetch doctors from API
-  const { data: doctors = [], isLoading: loadingDoctors, refetch: refetchDoctors } = useGetDoctorsQuery({});
-  
+  const {
+    data: doctors = [],
+    isLoading: loadingDoctors,
+    refetch: refetchDoctors,
+  } = useGetDoctorsQuery({});
+
   // Fetch appointments for quick access
-  const { data: appointments = [], isLoading: loadingAppointments, refetch: refetchAppointments } = useGetMyAppointmentsQuery();
+  const {
+    data: appointments = [],
+    isLoading: loadingAppointments,
+    refetch: refetchAppointments,
+  } = useGetMyAppointmentsQuery();
 
   const filters = ['All', 'General', 'Dentist', 'Nutritionist'];
 
@@ -47,160 +61,9 @@ export default function PatientDashboard() {
 
   const refreshing = loadingDoctors || loadingAppointments;
 
-  const renderBanner = () => (
-    <ThemedView>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        snapToInterval={340 + 16} // width + margin
-        decelerationRate="fast"
-        onScroll={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / 356);
-          setActiveBannerIndex(index);
-        }}
-        scrollEventThrottle={16}
-      >
-        <ThemedView style={styles.banner}>
-          <ThemedView style={styles.bannerContent}>
-            <ThemedView>
-              <ThemedText style={styles.bannerTitle}>
-                Medical Checks!
-              </ThemedText>
-              <ThemedText style={styles.bannerDescription}>
-                Check your health condition regularly to minimize the incidence
-                of disease in the future.
-              </ThemedText>
-            </ThemedView>
-            <TouchableOpacity style={styles.bannerButton}>
-              <ThemedText style={styles.bannerButtonText}>Check Now</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-          <Image
-            source={{ uri: 'https://i.pravatar.cc/300?img=doctor' }}
-            style={styles.bannerImage}
-            resizeMode="contain"
-          />
-        </ThemedView>
+  // const renderBanner = () => (
 
-        <ThemedView style={[styles.banner, { backgroundColor: '#5F27CD' }]}>
-          <ThemedView style={styles.bannerContent}>
-            <ThemedView>
-              <ThemedText style={styles.bannerTitle}>
-                Book Appointment
-              </ThemedText>
-              <ThemedText style={styles.bannerDescription}>
-                Schedule appointments with top doctors at your convenience.
-              </ThemedText>
-            </ThemedView>
-            <TouchableOpacity
-              style={styles.bannerButton}
-              onPress={() => router.push(PATIENT_ROUTES.BROWSE_DOCTORS)}
-            >
-              <ThemedText
-                style={[styles.bannerButtonText, { color: '#5F27CD' }]}
-              >
-                Book Now
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </ScrollView>
-
-      <ThemedView style={styles.bannerDots}>
-        {[0, 1].map((index) => (
-          <ThemedView
-            key={index}
-            style={[
-              styles.dot,
-              activeBannerIndex === index && styles.activeDot,
-            ]}
-          />
-        ))}
-      </ThemedView>
-    </ThemedView>
-  );
-
-  const renderSpecialtyItem = ({
-    item,
-  }: {
-    item: (typeof mockSpecialties)[0];
-  }) => (
-    <TouchableOpacity
-      style={styles.specialtyCard}
-      onPress={() =>
-        item.name !== 'More' && router.push(PATIENT_ROUTES.BROWSE_DOCTORS)
-      }
-    >
-      <ThemedView style={styles.specialtyIcon}>
-        <MaterialIcons name={item.icon as any} size={28} color={primaryColor} />
-      </ThemedView>
-      <ThemedText style={styles.specialtyName} numberOfLines={1}>
-        {item.name}
-      </ThemedText>
-    </TouchableOpacity>
-  );
-
-  const renderDoctorCard = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={{ marginBottom: 16 }}
-      onPress={() => router.push(`${PATIENT_ROUTES.BOOK_APPOINTMENT}?doctorId=${item._id || item.id}`)}
-    >
-      <ThemedView
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: 16,
-          padding: 16,
-          flexDirection: 'row',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          elevation: 2,
-        }}
-      >
-        <Image
-          source={{ uri: item.profilePicture || `https://i.pravatar.cc/150?u=${item._id}` }}
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: 12,
-            marginRight: 12,
-          }}
-        />
-        <ThemedView style={{ flex: 1 }}>
-          <ThemedText
-            style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}
-          >
-            Dr. {item.firstName} {item.lastName}
-          </ThemedText>
-          <ThemedText
-            style={{ fontSize: 14, color: '#6B7280', marginBottom: 8 }}
-          >
-            {item.specialty || item.department?.name || 'General Physician'}
-          </ThemedText>
-          <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <MaterialIcons name="star" size={16} color="#FD9644" />
-            <ThemedText
-              style={{ fontSize: 14, marginLeft: 4, color: '#6B7280' }}
-            >
-              {item.rating || '4.8'} ({item.reviewCount || '100'})
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
-        <ThemedView
-          style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}
-        >
-          <MaterialIcons name="favorite-border" size={22} color="#9CA3AF" />
-          <ThemedText
-            style={{ fontSize: 16, fontWeight: '600', color: primaryColor }}
-          >
-            Rs.{item.consultationFee || '1500'}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </TouchableOpacity>
-  );
+  // );
 
   return (
     <ThemedView style={styles.container}>
@@ -260,7 +123,11 @@ export default function PatientDashboard() {
         </ThemedView>
 
         {/* Banner */}
-        <ThemedView style={styles.bannerSection}>{renderBanner()}</ThemedView>
+
+        <Banner
+          activeBannerIndex={activeBannerIndex}
+          setActiveBannerIndex={setActiveBannerIndex}
+        />
 
         {/* Doctor Specialty */}
         <ThemedView style={styles.sectionHeader}>
@@ -275,7 +142,7 @@ export default function PatientDashboard() {
 
         <FlatList
           data={mockSpecialties}
-          renderItem={renderSpecialtyItem}
+          renderItem={({ item }) => <SpecialtyItem item={item} />}
           keyExtractor={(item) => item.id}
           numColumns={4}
           columnWrapperStyle={styles.specialtyRow}
@@ -332,7 +199,11 @@ export default function PatientDashboard() {
             </ThemedView>
           ) : doctors.length === 0 ? (
             <ThemedView style={{ padding: 32, alignItems: 'center' }}>
-              <MaterialIcons name="medical-services" size={64} color="#D1D5DB" />
+              <MaterialIcons
+                name="medical-services"
+                size={64}
+                color="#D1D5DB"
+              />
               <ThemedText style={{ marginTop: 16, color: '#6B7280' }}>
                 No doctors available
               </ThemedText>
@@ -340,7 +211,8 @@ export default function PatientDashboard() {
           ) : (
             doctors.slice(0, 5).map((doctor: any) => (
               <ThemedView key={doctor._id || doctor.id}>
-                {renderDoctorCard({ item: doctor })}
+                {/* {renderDoctorCard({ item: doctor })} */}
+                <DoctorCard item={doctor} />
               </ThemedView>
             ))
           )}
