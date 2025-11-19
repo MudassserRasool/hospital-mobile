@@ -5,7 +5,6 @@
 import { apiSlice } from '../../apiSlice';
 
 export const ownerApi = apiSlice.injectEndpoints({
-  overrideExisting: true,
   endpoints: (builder) => ({
     // Profile
     getMyProfile: builder.query({
@@ -44,7 +43,9 @@ export const ownerApi = apiSlice.injectEndpoints({
 
     getStaffDetails: builder.query({
       query: (staffId) => `/owners/staff/${staffId}`,
-      providesTags: (result, error, staffId) => [{ type: 'Staff', id: staffId }],
+      providesTags: (result, error, staffId) => [
+        { type: 'Staff', id: staffId },
+      ],
     }),
 
     blockStaff: builder.mutation({

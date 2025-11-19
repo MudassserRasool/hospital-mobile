@@ -15,6 +15,7 @@ export const PATIENT_ROUTES = {
   APPOINTMENT_HISTORY: '/(patient)/appointment-history',
   APPOINTMENT_DETAILS: '/(patient)/appointment-details',
   WALLET: '/(patient)/wallet',
+  PROFILE: '/(patient)/profile',
 } as const;
 
 export const STAFF_ROUTES = {
@@ -24,6 +25,7 @@ export const STAFF_ROUTES = {
   LEAVE_MANAGEMENT: '/(staff)/leave-management',
   REQUEST_LEAVE: '/(staff)/request-leave',
   WORK_HOURS: '/(staff)/work-hours',
+  PROFILE: '/(staff)/profile',
 } as const;
 
 export const OWNER_ROUTES = {
@@ -35,6 +37,7 @@ export const OWNER_ROUTES = {
   DOCTOR_APPOINTMENTS: '/(owner)/doctor-appointments',
   HOSPITAL_PROFILE: '/(owner)/hospital-profile',
   BONUSES: '/(owner)/bonuses',
+  PROFILE: '/(owner)/profile',
 } as const;
 
 export const ALL_ROUTES = {

@@ -18,38 +18,56 @@ import {
 } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useGetMyLeaveBalanceQuery,
+  useGetMyProfileQuery,
+  useGetTodayAttendanceQuery,
+} from '@/redux/features/staff/staffApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React from 'react';
 import {
+  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
-import { 
-  useGetTodayAttendanceQuery, 
-  useGetMyLeaveBalanceQuery,
-  useGetMyProfileQuery,
-} from '@/redux/features/staff/staffApi';
 
 export default function StaffDashboard() {
   const { user } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
 
   // Fetch data from APIs
-  const { data: profile, isLoading: loadingProfile, refetch: refetchProfile } = useGetMyProfileQuery();
-  const { data: todayAttendance, isLoading: loadingAttendance, refetch: refetchAttendance } = useGetTodayAttendanceQuery();
-  const { data: leaveBalance, isLoading: loadingLeaves, refetch: refetchLeaves } = useGetMyLeaveBalanceQuery(new Date().getFullYear());
+  // @ts-ignore - RTK Query hooks that don't take parameters
+  const {
+    data: profile,
+    isLoading: loadingProfile,
+    refetch: refetchProfile,
+  } = useGetMyProfileQuery();
+  // @ts-ignore - RTK Query hooks that don't take parameters
+  const {
+    data: todayAttendance,
+    isLoading: loadingAttendance,
+    refetch: refetchAttendance,
+  } = useGetTodayAttendanceQuery();
+  const {
+    data: leaveBalance,
+    isLoading: loadingLeaves,
+    refetch: refetchLeaves,
+  } = useGetMyLeaveBalanceQuery(new Date().getFullYear());
 
   const isCheckedIn = todayAttendance && !todayAttendance.checkOutTime;
   const workHoursToday = todayAttendance?.workHours || 0;
 
   // Calculate total remaining leaves
-  const totalRemainingLeaves = leaveBalance ? 
-    Object.values(leaveBalance).reduce((sum: number, leave: any) => sum + (leave.remaining || 0), 0) : 0;
+  const totalRemainingLeaves = leaveBalance
+    ? Object.values(leaveBalance).reduce(
+        (sum: number, leave: any) => sum + (leave.remaining || 0),
+        0
+      )
+    : 0;
 
   const onRefresh = async () => {
     await Promise.all([refetchProfile(), refetchAttendance(), refetchLeaves()]);
@@ -73,14 +91,20 @@ export default function StaffDashboard() {
       >
         {/* Header */}
         <ThemedView style={styles.header}>
-          <ThemedView style={styles.userInfo}>
+          <TouchableOpacity
+            style={styles.userInfo}
+            onPress={() => router.push(STAFF_ROUTES.PROFILE)}
+            activeOpacity={0.7}
+          >
             {loadingProfile ? (
               <ActivityIndicator size="small" color={primaryColor} />
             ) : (
               <>
                 <Image
                   source={{
-                    uri: profile?.profilePicture || `https://i.pravatar.cc/150?u=${profile?._id}`,
+                    uri:
+                      profile?.profilePicture ||
+                      `https://i.pravatar.cc/150?u=${profile?._id}`,
                   }}
                   style={styles.avatar}
                 />
@@ -94,7 +118,7 @@ export default function StaffDashboard() {
                 </ThemedView>
               </>
             )}
-          </ThemedView>
+          </TouchableOpacity>
           <Badge
             label={isCheckedIn ? 'Checked In' : 'Checked Out'}
             variant={isCheckedIn ? 'success' : 'default'}
@@ -118,10 +142,13 @@ export default function StaffDashboard() {
               {isCheckedIn && todayAttendance && (
                 <ThemedText style={styles.checkInTime}>
                   Since{' '}
-                  {new Date(todayAttendance.checkInTime).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {new Date(todayAttendance.checkInTime).toLocaleTimeString(
+                    'en-US',
+                    {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }
+                  )}
                 </ThemedText>
               )}
             </ThemedView>
@@ -249,6 +276,22 @@ export default function StaffDashboard() {
                 <MaterialIcons name="add-circle" size={28} color="#F57C00" />
               </ThemedView>
               <ThemedText style={styles.actionText}>Request Leave</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push(STAFF_ROUTES.PROFILE)}
+            >
+              <ThemedView
+                style={[styles.actionIcon, { backgroundColor: '#EFF3FF' }]}
+              >
+                <MaterialIcons
+                  name="person"
+                  size={28}
+                  color={BrandColors.primary}
+                />
+              </ThemedView>
+              <ThemedText style={styles.actionText}>Profile</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>

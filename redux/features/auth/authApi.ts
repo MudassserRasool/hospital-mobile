@@ -42,6 +42,16 @@ export const authApi = apiSlice.injectEndpoints({
       providesTags: ['User'],
     }),
 
+    // Update Profile
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: '/auth/profile',
+        method: 'PATCH',
+        body: data, // { firstName, lastName, phone, profilePicture }
+      }),
+      invalidatesTags: ['User'],
+    }),
+
     // Register Device Token for Push Notifications
     registerDeviceToken: builder.mutation({
       query: (deviceToken) => ({
@@ -75,6 +85,7 @@ export const {
   useRefreshTokenMutation,
   useLogoutMutation,
   useGetProfileQuery,
+  useUpdateProfileMutation,
   useRegisterDeviceTokenMutation,
   useUnregisterDeviceTokenMutation,
   useGenerateGuestTokenMutation,

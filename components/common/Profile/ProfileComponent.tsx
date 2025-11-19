@@ -4,7 +4,28 @@ import ViewProfile from './ViewProfile';
 
 const ProfileComponent = () => {
   const [isEditProfile, setIsEditProfile] = useState(false);
-  return <>{isEditProfile ? <EditProfile /> : <ViewProfile />}</>;
+
+  const handleEditPress = () => {
+    setIsEditProfile(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditProfile(false);
+  };
+
+  const handleSave = () => {
+    setIsEditProfile(false);
+  };
+
+  return (
+    <>
+      {isEditProfile ? (
+        <EditProfile onCancel={handleCancel} onSave={handleSave} />
+      ) : (
+        <ViewProfile onEditPress={handleEditPress} />
+      )}
+    </>
+  );
 };
 
 export default ProfileComponent;

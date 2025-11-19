@@ -16,27 +16,36 @@ import {
   Spacing,
   StatusColors,
 } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useGetHospitalStatsQuery,
+  useGetPendingLeavesQuery,
+} from '@/redux/features/owner/ownerApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import React from 'react';
 import {
+  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
-import { useGetHospitalStatsQuery, useGetPendingLeavesQuery } from '@/redux/features/owner/ownerApi';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
 
   // Fetch data from APIs
-  const { data: stats, isLoading: loadingStats, refetch: refetchStats } = useGetHospitalStatsQuery();
-  const { data: pendingLeavesData, refetch: refetchLeaves } = useGetPendingLeavesQuery({});
+  // @ts-ignore - RTK Query hooks that don't take parameters
+  const {
+    data: stats,
+    isLoading: loadingStats,
+    refetch: refetchStats,
+  } = useGetHospitalStatsQuery();
+  const { data: pendingLeavesData, refetch: refetchLeaves } =
+    useGetPendingLeavesQuery({ limit: 2 });
 
   const onRefresh = async () => {
     await Promise.all([refetchStats(), refetchLeaves()]);
@@ -86,6 +95,13 @@ export default function OwnerDashboard() {
       route: OWNER_ROUTES.BONUSES,
       color: '#45AAF2',
     },
+    {
+      id: 'profile',
+      title: 'My Profile',
+      icon: 'person',
+      route: OWNER_ROUTES.PROFILE,
+      color: '#00D2D3',
+    },
   ];
 
   return (
@@ -105,12 +121,22 @@ export default function OwnerDashboard() {
         )}
         {/* Header */}
         <ThemedView style={styles.header}>
-          <ThemedView>
+          <TouchableOpacity
+            onPress={() => router.push(OWNER_ROUTES.PROFILE)}
+            activeOpacity={0.7}
+          >
             <ThemedText style={styles.greeting}>Welcome Back 👋</ThemedText>
-            <ThemedText style={styles.userName}>
-              {user?.name || 'Admin'}
-            </ThemedText>
-          </ThemedView>
+            <ThemedView style={styles.headerUserInfo}>
+              <ThemedText style={styles.userName}>
+                {user?.name || 'Admin'}
+              </ThemedText>
+              <MaterialIcons
+                name="chevron-right"
+                size={20}
+                color={NeutralColors.gray500}
+              />
+            </ThemedView>
+          </TouchableOpacity>
         </ThemedView>
 
         {/* Stats Grid */}
@@ -128,7 +154,9 @@ export default function OwnerDashboard() {
                 color={NeutralColors.white}
               />
             </ThemedView>
-            <ThemedText style={styles.statValue}>{stats?.staff?.total || 0}</ThemedText>
+            <ThemedText style={styles.statValue}>
+              {stats?.staff?.total || 0}
+            </ThemedText>
             <ThemedText style={styles.statLabel}>Total Staff</ThemedText>
             <ThemedText style={styles.statSubtext}>
               {stats?.staff?.active || 0} active
@@ -171,7 +199,7 @@ export default function OwnerDashboard() {
             <ThemedText style={styles.statValue}>
               {stats.todayAppointments}
             </ThemedText>
-            <ThemedText style={styles.statLabel}>Today's Appts</ThemedText>
+            <ThemedText style={styles.statLabel}>Today&apos;s Appts</ThemedText>
             <ThemedText style={styles.statSubtext}>
               {stats.monthlyAppointments} this month
             </ThemedText>
@@ -199,45 +227,46 @@ export default function OwnerDashboard() {
         </ThemedView>
 
         {/* Pending Leaves */}
-        {stats.pendingLeaves > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedView style={styles.sectionHeader}>
-              <ThemedText style={styles.sectionTitle}>
-                Pending Leave Requests
-              </ThemedText>
-              <TouchableOpacity
-                onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
-              >
-                <ThemedText style={styles.seeAll}>See All</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-            {mockLeaveRequests
-              .filter((l) => l.status === 'pending')
-              .slice(0, 2)
-              .map((leave) => (
+        {stats.pendingLeaves > 0 &&
+          pendingLeavesData?.leaves &&
+          pendingLeavesData.leaves.length > 0 && (
+            <ThemedView style={styles.section}>
+              <ThemedView style={styles.sectionHeader}>
+                <ThemedText style={styles.sectionTitle}>
+                  Pending Leave Requests
+                </ThemedText>
+                <TouchableOpacity
+                  onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
+                >
+                  <ThemedText style={styles.seeAll}>See All</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+              {pendingLeavesData.leaves.slice(0, 2).map((leave: any) => (
                 <Card
-                  key={leave.id}
+                  key={leave._id || leave.id}
                   style={styles.leaveCard}
                   onPress={() => router.push(OWNER_ROUTES.LEAVE_APPROVALS)}
                 >
                   <ThemedView style={styles.leaveHeader}>
                     <ThemedView style={styles.leaveInfo}>
                       <ThemedText style={styles.leaveName}>
-                        {leave.staffId}
+                        {leave.staffId?.name || leave.staffId || 'Staff Member'}
                       </ThemedText>
                       <ThemedText style={styles.leaveType}>
-                        {leave.type} Leave
+                        {leave.leaveType || leave.type} Leave
                       </ThemedText>
                     </ThemedView>
                     <Badge label="Pending" variant="warning" size="small" />
                   </ThemedView>
                   <ThemedText style={styles.leaveDates}>
-                    {leave.startDate} - {leave.endDate} ({leave.totalDays} days)
+                    {new Date(leave.startDate).toLocaleDateString()} -{' '}
+                    {new Date(leave.endDate).toLocaleDateString()} (
+                    {leave.totalDays || 0} days)
                   </ThemedText>
                 </Card>
               ))}
-          </ThemedView>
-        )}
+            </ThemedView>
+          )}
 
         {/* Quick Actions */}
         <ThemedView style={styles.section}>
@@ -306,6 +335,11 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     color: NeutralColors.gray600,
     marginBottom: 4,
+  },
+  headerUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
   },
   userName: {
     fontSize: FontSizes['3xl'],

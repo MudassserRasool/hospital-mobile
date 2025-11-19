@@ -47,11 +47,8 @@ export default function PatientDashboard() {
   } = useGetDoctorsQuery({});
 
   // Fetch appointments for quick access
-  const {
-    data: appointments = [],
-    isLoading: loadingAppointments,
-    refetch: refetchAppointments,
-  } = useGetMyAppointmentsQuery();
+  const { isLoading: loadingAppointments, refetch: refetchAppointments } =
+    useGetMyAppointmentsQuery(undefined);
 
   const filters = ['All', 'General', 'Dentist', 'Nutritionist'];
 
@@ -70,7 +67,11 @@ export default function PatientDashboard() {
       {/* Header */}
       <ThemedView style={styles.header}>
         <ThemedView style={styles.headerTop}>
-          <ThemedView style={styles.userInfo}>
+          <TouchableOpacity
+            style={styles.userInfo}
+            onPress={() => router.push(PATIENT_ROUTES.PROFILE)}
+            activeOpacity={0.7}
+          >
             <Image
               source={{
                 uri: user?.avatar || 'https://i.pravatar.cc/150?img=12',
@@ -83,7 +84,7 @@ export default function PatientDashboard() {
                 {user?.name || 'Andrew Ainsley'}
               </ThemedText>
             </ThemedView>
-          </ThemedView>
+          </TouchableOpacity>
           <ThemedView style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
               <MaterialIcons
