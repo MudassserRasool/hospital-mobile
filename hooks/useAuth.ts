@@ -10,6 +10,7 @@ import { User } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AUTH_TOKEN_KEY = '@hospital_auth_token';
+const AUTH_REFRESH_TOKEN_KEY = '@hospital_auth_refresh_token';
 const AUTH_USER_KEY = '@hospital_auth_user';
 
 export function useAuth() {
@@ -18,10 +19,18 @@ export function useAuth() {
     (state: RootState) => state.auth
   );
 
-  const login = async (userData: User, authToken: string, userRole: 'patient' | 'staff' | 'owner') => {
+  const login = async (
+    userData: User,
+    authToken: string,
+    userRole: 'patient' | 'staff' | 'owner',
+    refreshToken?: string
+  ) => {
     try {
       // Save to AsyncStorage
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, authToken);
+      if (refreshToken) {
+        await AsyncStorage.setItem(AUTH_REFRESH_TOKEN_KEY, refreshToken);
+      }
       await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
       
       // Update Redux state
@@ -35,6 +44,7 @@ export function useAuth() {
     try {
       // Clear AsyncStorage
       await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+      await AsyncStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
       await AsyncStorage.removeItem(AUTH_USER_KEY);
       
       // Update Redux state

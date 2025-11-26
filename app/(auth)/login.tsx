@@ -12,19 +12,27 @@ import { MaterialIcons } from '@expo/vector-icons';
 // import { Application } from 'expo';
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { styles } from './login.style';
 
 import { ROLES } from '@/constants';
 import { packageName } from '@/constants/expoConstants';
-import { PATIENT_ROUTES } from '@/constants/routes';
+import {
+  AUTH_ROUTES,
+  OWNER_ROUTES,
+  PATIENT_ROUTES,
+  STAFF_ROUTES,
+} from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { useGenerateGuestTokenMutation } from '@/redux/features/auth/authApi';
+import {
+  useGenerateGuestTokenMutation,
+  useLoginWithCredentialsMutation,
+} from '@/redux/features/auth/authApi';
 import { router } from 'expo-router';
 // Get package name
 // or
@@ -37,26 +45,94 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loginMode, setLoginMode] = useState<'email' | 'phone'>('email');
-  const { data, isLoading, error } = useGetHospitalByPackageIdQuery(
-    packageName || '',
-    { skip: !packageName }
-  );
+  const [loginMode] = useState<'email' | 'phone'>('email');
+  useGetHospitalByPackageIdQuery(packageName || '', { skip: !packageName });
+  const [generateGuestToken] = useGenerateGuestTokenMutation();
+
   const [
-    generateGuestToken,
-    { isLoading: isGeneratingGuestToken, error: generateGuestTokenError },
-  ] = useGenerateGuestTokenMutation();
+    loginWithCredentials,
+    { isLoading: isLoggingIn },
+  ] = useLoginWithCredentialsMutation();
 
   // const [registerDevice] = useRegisterDeviceTokenMutation();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please enter email and password',
+      });
       return;
     }
 
-    // Email/password login not implemented for mobile
-    // Mobile users must use Google OAuth
+    try {
+      const response = await loginWithCredentials({
+        email,
+        password,
+      }).unwrap();
+
+      if (response?.user && response?.accessToken) {
+        // Sanitize user object (remove password and other sensitive fields)
+        const { password, refreshTokens, ...sanitizedUser } = response.user;
+
+        // Save credentials to AsyncStorage and Redux using useAuth hook
+        await login(
+          sanitizedUser,
+          response.accessToken,
+          response.user.role as 'patient' | 'staff' | 'owner',
+          response.refreshToken
+        );
+
+        Toast.show({
+          type: 'success',
+          text1: 'Login Successful',
+          text2: 'Welcome back!',
+        });
+
+        // Navigate based on role
+        setTimeout(() => {
+          if (response.user.role === ROLES.PATIENT) {
+            router.replace(PATIENT_ROUTES.DASHBOARD);
+          } else if (response.user.role === ROLES.STAFF) {
+            router.replace(STAFF_ROUTES.DASHBOARD);
+          } else if (response.user.role === ROLES.OWNER) {
+            router.replace(OWNER_ROUTES.DASHBOARD);
+          } else {
+            router.replace(PATIENT_ROUTES.DASHBOARD);
+          }
+        }, 500);
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage =
+        error?.data?.message || error?.message || 'Login failed';
+
+      // If user needs to verify with OTP, navigate to OTP screen
+      if (
+        errorMessage.toLowerCase().includes('verify') ||
+        errorMessage.toLowerCase().includes('otp')
+      ) {
+        Toast.show({
+          type: 'info',
+          text1: 'Verification Required',
+          text2: errorMessage,
+        });
+
+        setTimeout(() => {
+          router.replace({
+            pathname: AUTH_ROUTES.OTP_VERIFICATION,
+            params: { email },
+          });
+        }, 1000);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Login Failed',
+          text2: errorMessage,
+        });
+      }
+    }
   };
 
   const handleGestLogin = async () => {
@@ -73,23 +149,43 @@ export default function LoginScreen() {
         // Save credentials to AsyncStorage and Redux using useAuth hook
         await login(sanitizedUser, response.data.guestToken, ROLES.PATIENT);
 
+        Toast.show({
+          type: 'success',
+          text1: 'Guest Login Successful',
+          text2: 'Welcome!',
+        });
+
         // Navigate to patient dashboard
-        router.replace(PATIENT_ROUTES.DASHBOARD);
+        setTimeout(() => {
+          router.replace(PATIENT_ROUTES.DASHBOARD);
+        }, 500);
       } else {
-        Alert.alert('Error', 'Guest token or user not found in response');
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Guest token or user not found in response',
+        });
         console.log('response---GUEST TOKEN---->', response);
       }
     } catch (error: any) {
       console.error('Guest login error:', error);
       const errorMessage =
         error?.data?.message || error?.message || 'Unable to login as guest';
-      Alert.alert('Error', errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: 'Guest Login Failed',
+        text2: errorMessage,
+      });
     }
   };
 
   const handelLoginWithPhoneNumberAndPassword = async () => {
     if (!phoneNumber || !password) {
-      Alert.alert('Error', 'Please enter phone number and password');
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please enter phone number and password',
+      });
       return;
     }
   };
@@ -198,6 +294,7 @@ export default function LoginScreen() {
                     title="Sign In"
                     onPress={handleLogin}
                     fullWidth
+                    loading={isLoggingIn}
                     style={styles.loginButton}
                     leftIcon={
                       <MaterialIcons
@@ -260,6 +357,20 @@ export default function LoginScreen() {
                   />
                 </>
               )}
+            </ThemedView>
+
+            {/* Footer */}
+            <ThemedView style={styles.footer}>
+              <ThemedText style={styles.footerText}>
+                Don&apos;t have an account?{' '}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => router.push(AUTH_ROUTES.REGISTER)}
+              >
+                <ThemedText style={[styles.footerText, styles.linkText]}>
+                  Sign Up
+                </ThemedText>
+              </TouchableOpacity>
             </ThemedView>
 
             {/* Divider */}

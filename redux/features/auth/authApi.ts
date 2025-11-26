@@ -77,6 +77,44 @@ export const authApi = apiSlice.injectEndpoints({
         body: { mobilePackageId: packageName },
       }),
     }),
+
+    // Register with credentials
+    registerWithCredentials: builder.mutation({
+      query: (data) => ({
+        url: '/auth/register/credentials',
+        method: 'POST',
+        body: data, // { email, password, firstName, lastName, role, phone?, hospitalId? }
+      }),
+    }),
+
+    // Login with credentials
+    loginWithCredentials: builder.mutation({
+      query: (data) => ({
+        url: '/auth/login/credentials',
+        method: 'POST',
+        body: data, // { email, password }
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
+
+    // Verify OTP
+    verifyOtp: builder.mutation({
+      query: (data) => ({
+        url: '/auth/otp/verify',
+        method: 'POST',
+        body: data, // { email, otp } or { phone, otp }
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
+
+    // Resend OTP
+    resendOtp: builder.mutation({
+      query: (data) => ({
+        url: '/auth/otp/resend',
+        method: 'POST',
+        body: data, // { email } or { phone }
+      }),
+    }),
   }),
 });
 
@@ -89,4 +127,8 @@ export const {
   useRegisterDeviceTokenMutation,
   useUnregisterDeviceTokenMutation,
   useGenerateGuestTokenMutation,
+  useRegisterWithCredentialsMutation,
+  useLoginWithCredentialsMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation,
 } = authApi;

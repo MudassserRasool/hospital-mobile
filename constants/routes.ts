@@ -5,6 +5,7 @@
 export const AUTH_ROUTES = {
   LOGIN: '/(auth)/login',
   REGISTER: '/(auth)/register',
+  OTP_VERIFICATION: '/(auth)/otpVerification',
 } as const;
 
 export const PATIENT_ROUTES = {

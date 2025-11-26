@@ -11,6 +11,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 
 export const unstable_settings = {
@@ -48,6 +49,8 @@ export default function RootLayout() {
           backgroundColor="black" // only works on Android
           translucent={false} // false ensures background color is applied properly
         />
+              <Toast />
+
       </ThemeProvider>
     </Provider>
   );
