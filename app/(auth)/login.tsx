@@ -67,10 +67,11 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await loginWithCredentials({
+      let response = await loginWithCredentials({
         email,
         password,
       }).unwrap();
+      response = response.data;
 
       if (response?.user && response?.accessToken) {
         // Sanitize user object (remove password and other sensitive fields)

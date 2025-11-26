@@ -6,6 +6,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
+import { AUTH_ROUTES } from '@/constants/routes';
 import {
   BorderRadius,
   BrandColors,
@@ -15,20 +16,36 @@ import {
   Spacing,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetProfileQuery } from '@/redux/features/auth/authApi';
+import {
+  useGetProfileQuery,
+  useLogoutMutation,
+} from '@/redux/features/auth/authApi';
 import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
+import Toast from 'react-native-toast-message';
+
+const AUTH_REFRESH_TOKEN_KEY = '@hospital_auth_refresh_token';
 
 interface ViewProfileProps {
   onEditPress?: () => void;
 }
 
 const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { data: profileData, isLoading } = useGetProfileQuery(undefined, {
     skip: !user,
   });
+  const [logoutMutation, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const [isLoggingOutState, setIsLoggingOutState] = useState(false);
 
   const userData = profileData?.data || profileData || user;
 
@@ -74,6 +91,67 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
       owner: 'business',
     };
     return iconMap[role] || 'person';
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsLoggingOutState(true);
+              
+              // Get refresh token from AsyncStorage
+              const refreshToken = await AsyncStorage.getItem(
+                AUTH_REFRESH_TOKEN_KEY
+              );
+
+              // Call logout API if refresh token exists
+              if (refreshToken) {
+                try {
+                  await logoutMutation({ refreshToken }).unwrap();
+                } catch (error) {
+                  // Even if API call fails, continue with local logout
+                  console.error('Logout API error:', error);
+                }
+              }
+
+              // Clear local storage and Redux state
+              await logout();
+
+              Toast.show({
+                type: 'success',
+                text1: 'Logged Out',
+                text2: 'You have been successfully logged out',
+              });
+
+              // Navigate to login screen
+              setTimeout(() => {
+                router.replace(AUTH_ROUTES.LOGIN);
+              }, 500);
+            } catch (error) {
+              console.error('Logout error:', error);
+              Toast.show({
+                type: 'error',
+                text1: 'Logout Failed',
+                text2: 'An error occurred while logging out',
+              });
+            } finally {
+              setIsLoggingOutState(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -221,6 +299,23 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
           style={styles.editButton}
         />
       )}
+
+      {/* Logout Button */}
+      <Button
+        title={isLoggingOut || isLoggingOutState ? 'Logging out...' : 'Logout'}
+        onPress={handleLogout}
+        variant="danger"
+        loading={isLoggingOut || isLoggingOutState}
+        leftIcon={
+          <MaterialIcons
+            name="logout"
+            size={20}
+            color={NeutralColors.white}
+          />
+        }
+        fullWidth
+        style={styles.logoutButton}
+      />
     </ScrollView>
   );
 };
@@ -328,6 +423,9 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.medium,
   },
   editButton: {
+    marginTop: Spacing.md,
+  },
+  logoutButton: {
     marginTop: Spacing.md,
   },
 });
