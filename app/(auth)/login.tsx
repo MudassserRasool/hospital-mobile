@@ -37,7 +37,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loginMode, setLoginMode] = useState<'email' | 'phone'>('phone');
+  const [loginMode, setLoginMode] = useState<'email' | 'phone'>('email');
   const { data, isLoading, error } = useGetHospitalByPackageIdQuery(
     packageName || '',
     { skip: !packageName }
