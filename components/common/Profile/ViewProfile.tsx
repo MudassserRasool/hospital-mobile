@@ -6,7 +6,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
-import { AUTH_ROUTES } from '@/constants/routes';
 import {
   BorderRadius,
   BrandColors,
@@ -133,10 +132,12 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
                 text2: 'You have been successfully logged out',
               });
 
-              // Navigate to login screen
+              // Navigate to root which will check auth and redirect to login
+              // Use a small delay to ensure state is cleared and Redux updates
               setTimeout(() => {
-                router.replace(AUTH_ROUTES.LOGIN);
-              }, 500);
+                // Navigate to root - index.tsx will check auth state and redirect to login
+                router.replace('/');
+              }, 300);
             } catch (error) {
               console.error('Logout error:', error);
               Toast.show({

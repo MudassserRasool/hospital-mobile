@@ -42,7 +42,7 @@ export default function Index() {
     };
 
     init();
-  }, []);
+  }, [isAuthenticated, role]); // React to auth state changes
 
   return (
     <ThemedView
