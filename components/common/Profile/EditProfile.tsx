@@ -47,7 +47,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
     firstName: '',
     lastName: '',
     phone: '',
-    profilePicture: '',
+    avatar: '',
   });
 
   const [errors, setErrors] = useState<{
@@ -65,7 +65,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
           userData?.name?.split(' ').slice(1).join(' ') ||
           '',
         phone: userData?.phone || '',
-        profilePicture: userData?.profilePicture || userData?.avatar || '',
+        avatar: userData?.avatar || '',
       });
     }
   }, [userData]);
@@ -115,8 +115,8 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       if (formData.lastName) updateData.lastName = formData.lastName.trim();
       if (formData.phone !== undefined)
         updateData.phone = formData.phone.trim() || null;
-      if (formData.profilePicture)
-        updateData.profilePicture = formData.profilePicture;
+      if (formData.avatar)
+        updateData.avatar = formData.avatar;
 
       await updateProfile(updateData).unwrap();
       Alert.alert('Success', 'Profile updated successfully');
@@ -138,7 +138,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   }
 
   const displayAvatar =
-    formData.profilePicture || userData?.profilePicture || userData?.avatar;
+    formData.avatar || userData?.avatar;
 
   return (
     <ScrollView
@@ -146,6 +146,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
+
       {/* Profile Picture Section */}
       <Card style={styles.avatarCard}>
         <ThemedView style={styles.avatarSection}>
@@ -223,9 +224,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         {/* Profile Picture Upload */}
         <FileUploadInput
           label="Profile Picture"
-          value={formData.profilePicture}
+          value={formData.avatar}
           onUploadSuccess={(url) => {
-            handleInputChange('profilePicture', url);
+            handleInputChange('avatar', url);
           }}
           onUploadError={(error) => {
             Alert.alert('Upload Error', error);

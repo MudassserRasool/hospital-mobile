@@ -101,9 +101,10 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
       const response = await uploadFile(formData).unwrap();
       
       // Call success callback with the URL
-      onUploadSuccess?.(response.url);
+      onUploadSuccess?.(response.data.url);
       setLocalImageUri(null); // Clear local URI after successful upload
     } catch (error: any) {
+      console.log('error', error);
       const errorMessage =
         error?.data?.message ||
         error?.message ||

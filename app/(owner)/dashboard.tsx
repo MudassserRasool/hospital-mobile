@@ -33,6 +33,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+const mockDashboardStats = {
+  totalStaff: 85,
+  activeStaff: 72,
+  totalDoctors: 28,
+  todayAppointments: 45,
+  pendingLeaves: 8,
+  monthlyRevenue: 1250000,
+  monthlyAppointments: 450,
+  averageRating: 4.7,
+};
+
 export default function OwnerDashboard() {
   const { user } = useAuth();
   const primaryColor = useThemeColor({}, 'primary');
@@ -40,7 +51,7 @@ export default function OwnerDashboard() {
   // Fetch data from APIs
   // @ts-ignore - RTK Query hooks that don't take parameters
   const {
-    data: stats,
+    data: stats = mockDashboardStats,
     isLoading: loadingStats,
     refetch: refetchStats,
   } = useGetHospitalStatsQuery();
@@ -177,7 +188,7 @@ export default function OwnerDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {stats.totalDoctors}
+              {stats?.totalDoctors}
             </ThemedText>
             <ThemedText style={styles.statLabel}>Doctors</ThemedText>
             <ThemedText style={styles.statSubtext}>specialists</ThemedText>
@@ -197,7 +208,7 @@ export default function OwnerDashboard() {
               />
             </ThemedView>
             <ThemedText style={styles.statValue}>
-              {stats.todayAppointments}
+              {stats?.todayAppointments}
             </ThemedText>
             <ThemedText style={styles.statLabel}>Today&apos;s Appts</ThemedText>
             <ThemedText style={styles.statSubtext}>

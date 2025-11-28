@@ -3,9 +3,9 @@
  */
 
 import { ENV } from '@/constants/enviroment';
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { apiSlice } from '../../apiSlice';
 import type { RootState } from '../../store';
+import { store } from '../../store';
 
 export interface FileUploadResponse {
   filename: string;
@@ -16,66 +16,91 @@ export interface FileUploadResponse {
   url: string;
 }
 
-// Custom baseQuery for file uploads that properly handles FormData
-const fileUploadBaseQuery = fetchBaseQuery({
-  baseUrl: ENV.API_BASE_URL,
-  prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
-    if (token) {
-      headers.set('authorization', `Bearer ${token}`);
-    }
-    // Don't set Content-Type - let fetch set it automatically with boundary for FormData
-    return headers;
-  },
-  fetchFn: async (input, init) => {
-    // Use native fetch to properly handle FormData
-    const token = (init?.headers as Headers)?.get('authorization');
-    const headers = new Headers();
-    if (token) {
-      headers.set('authorization', token);
-    }
-    // Don't set Content-Type - browser/fetch will set it with boundary
-    
-    return fetch(input, {
-      ...init,
-      headers,
-    });
-  },
-});
-
 export const fileApi = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
     // Upload single file
     uploadFile: builder.mutation<FileUploadResponse, FormData>({
-      queryFn: async (formData, api, extraOptions, baseQuery) => {
-        // Use custom baseQuery for file uploads
-        const result = await fileUploadBaseQuery(
-          {
-            url: '/files/upload',
+      queryFn: async (formData, api, extraOptions) => {
+        // Get token from store
+        const state = store.getState() as RootState;
+        const token = state.auth.token;
+
+        // Create headers
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['authorization'] = `Bearer ${token}`;
+        }
+        // Don't set Content-Type - fetch will set it with boundary for FormData
+
+        try {
+          const response = await fetch(`${ENV.API_BASE_URL}/files/upload`, {
             method: 'POST',
+            headers,
             body: formData,
-          },
-          api,
-          extraOptions
-        );
-        return result as { data: FileUploadResponse } | { error: any };
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({
+              message: 'Upload failed',
+            }));
+            return { error: { status: response.status, data: error } };
+          }
+
+          const data = await response.json();
+          return { data };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              error: error?.message || 'Network error',
+            },
+          };
+        }
       },
     }),
 
     // Upload multiple files
     uploadMultipleFiles: builder.mutation<FileUploadResponse[], FormData>({
-      queryFn: async (formData, api, extraOptions, baseQuery) => {
-        const result = await fileUploadBaseQuery(
-          {
-            url: '/files/upload/multiple',
-            method: 'POST',
-            body: formData,
-          },
-          api,
-          extraOptions
-        );
-        return result as { data: FileUploadResponse[] } | { error: any };
+      queryFn: async (formData, api, extraOptions) => {
+        // Get token from store
+        const state = store.getState() as RootState;
+        const token = state.auth.token;
+
+        // Create headers
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['authorization'] = `Bearer ${token}`;
+        }
+        // Don't set Content-Type - fetch will set it with boundary for FormData
+
+        try {
+          const response = await fetch(
+            `${ENV.API_BASE_URL}/files/upload/multiple`,
+            {
+              method: 'POST',
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({
+              message: 'Upload failed',
+            }));
+            return { error: { status: response.status, data: error } };
+          }
+
+          const data = await response.json();
+          return { data };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              error: error?.message || 'Network error',
+            },
+          };
+        }
       },
     }),
 
