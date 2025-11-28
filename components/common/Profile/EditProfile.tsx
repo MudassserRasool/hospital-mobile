@@ -6,6 +6,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card, Input } from '@/components/ui';
+import FileUploadInput from '@/components/ui/FileUploadInput/FileUploadInput';
 import {
   BrandColors,
   FontSizes,
@@ -161,9 +162,6 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
               </ThemedView>
             )}
           </ThemedView>
-          <ThemedText style={styles.avatarHint}>
-            Profile picture URL (optional)
-          </ThemedText>
         </ThemedView>
       </Card>
 
@@ -222,20 +220,17 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
           }
         />
 
-        {/* Profile Picture URL */}
-        <Input
-          label="Profile Picture URL"
-          placeholder="Enter image URL (optional)"
+        {/* Profile Picture Upload */}
+        <FileUploadInput
+          label="Profile Picture"
           value={formData.profilePicture}
-          onChangeText={(value) => handleInputChange('profilePicture', value)}
-          leftIcon={
-            <MaterialIcons
-              name="image"
-              size={20}
-              color={NeutralColors.gray400}
-            />
-          }
-          helperText="Enter a valid image URL to update your profile picture"
+          onUploadSuccess={(url) => {
+            handleInputChange('profilePicture', url);
+          }}
+          onUploadError={(error) => {
+            Alert.alert('Upload Error', error);
+          }}
+          helperText="Upload an image from your device"
         />
       </Card>
 
