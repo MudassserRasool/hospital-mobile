@@ -44,13 +44,16 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
     userData?.name ||
     `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() ||
     'User';
-  const displayEmail = userData?.email || '';
+  const displayEmail = userData?.email || 'Not provided';
   const displayPhone = userData?.phone || 'Not provided';
   const displayRole = userData?.role || '';
   const displayAvatar =
-    userData?.profilePicture || userData?.avatar || userData?.profilePicture;
+    userData?.profilePicture || userData?.avatar || null;
 
   const getRoleDisplayName = (role: string) => {
+    if (!role || role.trim() === '') {
+      return 'User';
+    }
     const roleMap: { [key: string]: string } = {
       patient: 'Patient',
       doctor: 'Doctor',
@@ -64,6 +67,9 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
   };
 
   const getRoleIcon = (role: string) => {
+    if (!role || role.trim() === '') {
+      return 'person';
+    }
     const iconMap: { [key: string]: string } = {
       patient: 'person',
       doctor: 'medical-services',

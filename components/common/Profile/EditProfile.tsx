@@ -138,7 +138,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   }
 
   const displayAvatar =
-    formData.avatar || userData?.avatar;
+    formData.avatar || userData?.avatar || null;
 
   return (
     <ScrollView
