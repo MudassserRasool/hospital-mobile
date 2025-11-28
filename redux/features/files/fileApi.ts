@@ -7,13 +7,18 @@ import { apiSlice } from '../../apiSlice';
 import type { RootState } from '../../store';
 import { store } from '../../store';
 
+export interface FileData{
+    file: File;
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    path: string;
+    url: string;
+}
+
 export interface FileUploadResponse {
-  filename: string;
-  originalName: string;
-  mimetype: string;
-  size: number;
-  path: string;
-  url: string;
+  data: FileData;
 }
 
 export const fileApi = apiSlice.injectEndpoints({
