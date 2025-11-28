@@ -10,5 +10,4 @@ const FileUploadInput = () => {
     </ThemedView>
   )
 }
-
 export default FileUploadInput
