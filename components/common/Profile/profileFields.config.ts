@@ -34,6 +34,7 @@ export interface ProfileField {
   options?: Array<{ label: string; value: string }>;
   fields?: ProfileField[]; // For nested objects like emergencyContact
   helperText?: string;
+  isEditable?: boolean;
 }
 
 // Common fields for all roles
@@ -94,6 +95,7 @@ export const PATIENT_FIELDS: ProfileField[] = [
     placeholder: 'Select blood type',
     icon: 'bloodtype',
     options: BLOOD_TYPES,
+    isEditable: true,
   },
   {
     key: 'allergies',
@@ -102,6 +104,7 @@ export const PATIENT_FIELDS: ProfileField[] = [
     placeholder: 'Add allergies (comma separated)',
     icon: 'warning',
     helperText: 'Enter allergies separated by commas',
+    isEditable: false,
   },
   {
     key: 'chronicConditions',
@@ -110,6 +113,7 @@ export const PATIENT_FIELDS: ProfileField[] = [
     placeholder: 'Add chronic conditions (comma separated)',
     icon: 'medical-services',
     helperText: 'Enter conditions separated by commas',
+    isEditable: false,
   },
   {
     key: 'medicalRecordNumber',
@@ -117,21 +121,22 @@ export const PATIENT_FIELDS: ProfileField[] = [
     type: 'text',
     placeholder: 'Enter medical record number',
     icon: 'badge',
+    isEditable: false,
   },
-  {
-    key: 'insuranceProvider',
-    label: 'Insurance Provider',
-    type: 'text',
-    placeholder: 'Enter insurance provider name',
-    icon: 'account-balance',
-  },
-  {
-    key: 'insurancePolicyNumber',
-    label: 'Insurance Policy Number',
-    type: 'text',
-    placeholder: 'Enter insurance policy number',
-    icon: 'description',
-  },
+//   {
+//     key: 'insuranceProvider',
+//     label: 'Insurance Provider',
+//     type: 'text',
+//     placeholder: 'Enter insurance provider name',
+//     icon: 'account-balance',
+//   },
+//   {
+//     key: 'insurancePolicyNumber',
+//     label: 'Insurance Policy Number',
+//     type: 'text',
+//     placeholder: 'Enter insurance policy number',
+//     icon: 'description',
+//   },
   {
     key: 'emergencyContact',
     label: 'Emergency Contact',
@@ -259,12 +264,12 @@ export function getFieldSections(role: string): {
           (f) => ['bloodType', 'allergies', 'chronicConditions', 'medicalRecordNumber'].includes(f.key)
         ),
       });
-      sections.push({
-        title: 'Insurance Information',
-        fields: PATIENT_FIELDS.filter(
-          (f) => ['insuranceProvider', 'insurancePolicyNumber'].includes(f.key)
-        ),
-      });
+    //   sections.push({
+    //     title: 'Insurance Information',
+    //     fields: PATIENT_FIELDS.filter(
+    //       (f) => ['insuranceProvider', 'insurancePolicyNumber'].includes(f.key)
+    //     ),
+    //   });
       sections.push({
         title: 'Emergency Contact',
         fields: PATIENT_FIELDS.filter((f) => f.key === 'emergencyContact'),
