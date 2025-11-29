@@ -297,9 +297,11 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
     }
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: any, sectionTitle?: string) => {
     const fieldValue = formData[field.key];
     const fieldError = errors[field.key];
+    // Check if section title matches field label (to avoid duplicate titles)
+    const shouldShowNestedTitle = sectionTitle !== field.label;
 
     switch (field.type) {
       case 'text':
@@ -405,6 +407,37 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         );
 
       case 'object':
+        // If section title matches field label, don't wrap in Card or show nested title
+        if (!shouldShowNestedTitle) {
+          return (
+            <ThemedView key={field.key}>
+              {field.fields?.map((nestedField: any) => (
+                <Input
+                  key={nestedField.key}
+                  label={nestedField.label}
+                  placeholder={nestedField.placeholder}
+                  value={
+                    formData[field.key]?.[nestedField.key] || ''
+                  }
+                  onChangeText={(value) =>
+                    handleNestedInputChange(field.key, nestedField.key, value)
+                  }
+                  error={errors[`${field.key}.${nestedField.key}`]}
+                  leftIcon={
+                    nestedField.icon ? (
+                      <MaterialIcons
+                        name={nestedField.icon as any}
+                        size={20}
+                        color={NeutralColors.gray400}
+                      />
+                    ) : undefined
+                  }
+                />
+              ))}
+            </ThemedView>
+          );
+        }
+        // Otherwise, render with Card and nested title
         return (
           <Card key={field.key} style={styles.nestedCard}>
             <ThemedText style={styles.sectionTitle}>{field.label}</ThemedText>
@@ -497,7 +530,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
                 />
               );
             }
-            return renderField(field);
+            return renderField(field, section.title);
           })}
         </Card>
       ))}
