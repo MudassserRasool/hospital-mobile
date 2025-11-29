@@ -19,10 +19,10 @@ import { useGetProfileQuery } from '@/redux/features/auth/authApi';
 import {
   useGetMyProfileQuery,
 } from '@/redux/features/patient/patientApi';
-import { getFieldSections } from './profileFields.config';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
+import { getFieldSections } from './profileFields.config';
 
 interface ViewProfileProps {
   onEditPress?: () => void;
@@ -72,11 +72,6 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
     : displayName;
   const displayEmail =
     userData?.email || userData?.userId?.email || 'Not provided';
-  const displayPhone =
-    userData?.phone ||
-    userData?.userId?.phone ||
-    userData?.phone ||
-    'Not provided';
   const displayRole = userData?.role || '';
   const displayAvatar =
     userData?.profilePicture ||
@@ -206,16 +201,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
 
       {/* Dynamic Profile Sections */}
       {fieldSections.map((section, sectionIndex) => {
-        // Filter fields that have values or are always shown
-        const fieldsToShow = section.fields.filter((field) => {
-          // Always show common fields
-          if (['firstName', 'lastName', 'phone', 'email'].includes(field.key)) {
-            return true;
-          }
-          // Show field if it has a value
-          const value = userData?.[field.key] || userData?.userId?.[field.key];
-          return value !== undefined && value !== null && value !== '';
-        });
+        // Show all fields in ViewProfile (including those without values and isEditable: false)
+        const fieldsToShow = section.fields;
 
         if (fieldsToShow.length === 0) {
           return null;
@@ -261,8 +248,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
 
               // Handle nested objects (like emergencyContact)
               if (field.type === 'object' && field.fields) {
-                const objectValue = userData?.[field.key];
-                if (!objectValue) return null;
+                const objectValue = userData?.[field.key] || {};
 
                 return (
                   <ThemedView key={field.key} style={styles.nestedSection}>

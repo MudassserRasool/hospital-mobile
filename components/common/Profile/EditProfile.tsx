@@ -509,31 +509,43 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       </Card>
 
       {/* Dynamic Form Sections */}
-      {fieldSections.map((section, sectionIndex) => (
-        <Card key={sectionIndex} style={styles.formCard}>
-          <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
-          {section.fields.map((field) => {
-            // Skip profilePicture as it's handled separately
-            if (field.key === 'profilePicture') {
-              return (
-                <FileUploadInput
-                  key={field.key}
-                  label={field.label}
-                  value={formData.profilePicture || ''}
-                  onUploadSuccess={(url) => {
-                    handleInputChange('profilePicture', url);
-                  }}
-                  onUploadError={(error) => {
-                    Alert.alert('Upload Error', error);
-                  }}
-                  helperText="Upload an image from your device"
-                />
-              );
-            }
-            return renderField(field, section.title);
-          })}
-        </Card>
-      ))}
+      {fieldSections.map((section, sectionIndex) => {
+        // Filter out fields that are not editable (isEditable: false)
+        const editableFields = section.fields.filter(
+          (field) => field.isEditable !== false
+        );
+
+        // Don't render section if no editable fields
+        if (editableFields.length === 0) {
+          return null;
+        }
+
+        return (
+          <Card key={sectionIndex} style={styles.formCard}>
+            <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
+            {editableFields.map((field) => {
+              // Skip profilePicture as it's handled separately
+              if (field.key === 'profilePicture') {
+                return (
+                  <FileUploadInput
+                    key={field.key}
+                    label={field.label}
+                    value={formData.profilePicture || ''}
+                    onUploadSuccess={(url) => {
+                      handleInputChange('profilePicture', url);
+                    }}
+                    onUploadError={(error) => {
+                      Alert.alert('Upload Error', error);
+                    }}
+                    helperText="Upload an image from your device"
+                  />
+                );
+              }
+              return renderField(field, section.title);
+            })}
+          </Card>
+        );
+      })}
 
       {/* Action Buttons */}
       <ThemedView style={styles.buttonContainer}>
