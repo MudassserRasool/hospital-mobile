@@ -142,6 +142,7 @@ export const PATIENT_FIELDS: ProfileField[] = [
     label: 'Emergency Contact',
     type: 'object',
     icon: 'emergency',
+    isEditable: true,
     fields: [
       {
         key: 'name',
@@ -176,6 +177,7 @@ export const DOCTOR_STAFF_FIELDS: ProfileField[] = [
     type: 'text',
     placeholder: 'Enter your specialization',
     icon: 'medical-services',
+    isEditable: true,
   },
   {
     key: 'licenseNumber',
@@ -183,6 +185,7 @@ export const DOCTOR_STAFF_FIELDS: ProfileField[] = [
     type: 'text',
     placeholder: 'Enter your license number',
     icon: 'badge',
+    isEditable: true,
   },
   {
     key: 'experience',
@@ -191,6 +194,7 @@ export const DOCTOR_STAFF_FIELDS: ProfileField[] = [
     placeholder: 'e.g., 5 years',
     icon: 'work',
     helperText: 'Years of experience or description',
+    isEditable: true,
   },
 ];
 
