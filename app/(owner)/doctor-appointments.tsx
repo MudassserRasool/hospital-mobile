@@ -7,10 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Badge, Card } from '@/components/ui';
 import {
-  FontSizes,
-  FontWeights,
-  NeutralColors,
-  Spacing,
+    FontSizes,
+    FontWeights,
+    NeutralColors,
+    Spacing,
 } from '@/constants/theme';
 import { mockAppointments, mockDoctors } from '@/utils/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -75,7 +75,7 @@ export default function DoctorAppointmentsScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <Card style={styles.doctorCard}>
-            <Image source={{ uri: doctor.avatar }} style={styles.avatar} />
+            <Image source={{ uri: doctor.profilePicture }} style={styles.avatar} />
             <ThemedView style={styles.doctorInfo}>
               <ThemedText style={styles.doctorName}>{doctor.name}</ThemedText>
               <ThemedText style={styles.specialty}>

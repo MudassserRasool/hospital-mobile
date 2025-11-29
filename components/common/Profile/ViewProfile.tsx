@@ -7,12 +7,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
 import {
-  BorderRadius,
-  BrandColors,
-  FontSizes,
-  FontWeights,
-  NeutralColors,
-  Spacing,
+    BorderRadius,
+    BrandColors,
+    FontSizes,
+    FontWeights,
+    NeutralColors,
+    Spacing,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetProfileQuery } from '@/redux/features/auth/authApi';
@@ -47,8 +47,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
   const displayEmail = userData?.email || 'Not provided';
   const displayPhone = userData?.phone || 'Not provided';
   const displayRole = userData?.role || '';
-  const displayAvatar =
-    userData?.profilePicture || userData?.avatar || null;
+  const displayAvatar = userData?.profilePicture || null;
 
   const getRoleDisplayName = (role: string) => {
     if (!role || role.trim() === '') {

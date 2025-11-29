@@ -8,7 +8,7 @@ export interface StaffProfile {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
+  profilePicture?: string;
   role: 'doctor' | 'nurse' | 'receptionist' | 'technician' | 'admin';
   department: string;
   employeeId: string;

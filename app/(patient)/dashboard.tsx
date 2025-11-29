@@ -74,7 +74,7 @@ export default function PatientDashboard() {
           >
             <Image
               source={{
-                uri: user?.avatar
+                uri: user?.profilePicture
               }}
               style={styles.avatar}
             />

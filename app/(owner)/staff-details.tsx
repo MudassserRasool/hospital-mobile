@@ -7,12 +7,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Badge, Button, Card } from '@/components/ui';
 import {
-  BorderRadius,
-  BrandColors,
-  FontSizes,
-  FontWeights,
-  NeutralColors,
-  Spacing,
+    BorderRadius,
+    BrandColors,
+    FontSizes,
+    FontWeights,
+    NeutralColors,
+    Spacing,
 } from '@/constants/theme';
 import { mockAttendanceSummary, mockStaffProfile } from '@/utils/mockData';
 import { Stack } from 'expo-router';
@@ -35,7 +35,7 @@ export default function StaffDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.profileCard}>
-          <Image source={{ uri: staff.avatar }} style={styles.avatar} />
+          <Image source={{ uri: staff.profilePicture }} style={styles.avatar} />
           <ThemedText style={styles.name}>{staff.name}</ThemedText>
           <ThemedText style={styles.role}>
             {staff.role} • {staff.department}

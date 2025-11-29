@@ -47,7 +47,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
     firstName: '',
     lastName: '',
     phone: '',
-    avatar: '',
+    profilePicture: '',
   });
 
   const [errors, setErrors] = useState<{
@@ -65,7 +65,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
           userData?.name?.split(' ').slice(1).join(' ') ||
           '',
         phone: userData?.phone || '',
-        avatar: userData?.avatar || '',
+        profilePicture: userData?.profilePicture || '',
       });
     }
   }, [userData]);
@@ -115,8 +115,8 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       if (formData.lastName) updateData.lastName = formData.lastName.trim();
       if (formData.phone !== undefined)
         updateData.phone = formData.phone.trim() || null;
-      if (formData.avatar)
-        updateData.avatar = formData.avatar;
+      if (formData.profilePicture)
+        updateData.profilePicture = formData.profilePicture;
 
       await updateProfile(updateData).unwrap();
       Alert.alert('Success', 'Profile updated successfully');
@@ -138,7 +138,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   }
 
   const displayAvatar =
-    formData.avatar || userData?.avatar || null;
+    formData.profilePicture || userData?.profilePicture || null;
 
   return (
     <ScrollView
@@ -224,9 +224,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         {/* Profile Picture Upload */}
         <FileUploadInput
           label="Profile Picture"
-          value={formData.avatar}
+          value={formData.profilePicture}
           onUploadSuccess={(url) => {
-            handleInputChange('avatar', url);
+            handleInputChange('profilePicture', url);
           }}
           onUploadError={(error) => {
             Alert.alert('Upload Error', error);

@@ -8,7 +8,7 @@ export interface Doctor {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
+  profilePicture?: string;
   specialty: string;
   department: string;
   qualification: string;
