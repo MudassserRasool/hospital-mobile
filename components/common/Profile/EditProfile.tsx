@@ -1,11 +1,11 @@
 /**
  * Edit Profile Component
- * Form for editing user profile information
+ * Role-based profile editing with dynamic fields
  */
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button, Card, Input } from '@/components/ui';
+import { Button, Card, Input, Select } from '@/components/ui';
 import FileUploadInput from '@/components/ui/FileUploadInput/FileUploadInput';
 import {
   BrandColors,
@@ -13,12 +13,20 @@ import {
   FontWeights,
   NeutralColors,
   Spacing,
+  StatusColors,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useGetProfileQuery,
   useUpdateProfileMutation,
 } from '@/redux/features/auth/authApi';
+import {
+  useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
+} from '@/redux/features/patient/patientApi';
+import {
+  useUpdateProfileMutation as useUpdateProfileProfileMutation,
+} from '@/redux/features/profiles/profilesApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -28,6 +36,8 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { getFieldSections } from './profileFields.config';
+// Date picker will be handled via text input with date keyboard
 
 interface EditProfileProps {
   onCancel?: () => void;
@@ -36,67 +46,143 @@ interface EditProfileProps {
 
 const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   const { user } = useAuth();
-  const { data: profileData, isLoading } = useGetProfileQuery(undefined, {
-    skip: !user,
-  });
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  const userRole = user?.role || 'patient';
+  const isPatient = userRole === 'patient';
 
+  // Use patient API for patients, auth API for others
+  const {
+    data: patientProfileData,
+    isLoading: isLoadingPatient,
+  } = useGetMyProfileQuery(undefined, {
+    skip: !isPatient || !user,
+  });
+
+  const {
+    data: authProfileData,
+    isLoading: isLoadingAuth,
+  } = useGetProfileQuery(undefined, {
+    skip: isPatient || !user,
+  });
+
+  const [updatePatientProfile, { isLoading: isUpdatingPatient }] =
+    useUpdateMyProfileMutation();
+  const [updateAuthProfile, { isLoading: isUpdatingAuth }] =
+    useUpdateProfileMutation();
+  const [updateProfileProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateProfileProfileMutation();
+
+  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
+  const isUpdating =
+    isPatient
+      ? isUpdatingPatient
+      : isUpdatingAuth || isUpdatingProfile;
+  const profileData = isPatient ? patientProfileData : authProfileData;
   const userData = profileData?.data || profileData || user;
 
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    profilePicture: '',
-  });
+  // Get field sections for current role
+  const fieldSections = getFieldSections(userRole);
 
-  const [errors, setErrors] = useState<{
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-  }>({});
+  // Initialize form data with all possible fields
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Initialize form data from userData
   useEffect(() => {
     if (userData) {
-      setFormData({
-        firstName: userData?.firstName || userData?.name?.split(' ')[0] || '',
+      const initialData: Record<string, any> = {
+        firstName:
+          userData?.firstName ||
+          userData?.userId?.firstName ||
+          userData?.name?.split(' ')[0] ||
+          '',
         lastName:
           userData?.lastName ||
+          userData?.userId?.lastName ||
           userData?.name?.split(' ').slice(1).join(' ') ||
           '',
-        phone: userData?.phone || '',
-        profilePicture: userData?.profilePicture || '',
-      });
+        phone: userData?.phone || userData?.userId?.phone || '',
+        profilePicture:
+          userData?.profilePicture ||
+          userData?.userId?.profilePicture ||
+          '',
+        dateOfBirth: userData?.dateOfBirth
+          ? new Date(userData.dateOfBirth)
+          : undefined,
+        gender: userData?.gender || '',
+        bloodType: userData?.bloodType || '',
+        allergies: userData?.allergies?.join(', ') || '',
+        chronicConditions: userData?.chronicConditions?.join(', ') || '',
+        medicalRecordNumber: userData?.medicalRecordNumber || '',
+        insuranceProvider: userData?.insuranceProvider || '',
+        insurancePolicyNumber: userData?.insurancePolicyNumber || '',
+        specialization: userData?.specialization || '',
+        licenseNumber: userData?.licenseNumber || '',
+        experience: userData?.experience || '',
+        emergencyContact: userData?.emergencyContact || {
+          name: '',
+          phone: '',
+          relation: '',
+        },
+      };
+
+      setFormData(initialData);
     }
   }, [userData]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
     // Clear error when user starts typing
-    if (errors[field as keyof typeof errors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
-      }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
+  const handleNestedInputChange = (
+    parentField: string,
+    childField: string,
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [parentField]: {
+        ...(prev[parentField] || {}),
+        [childField]: value,
+      },
+    }));
+  };
 
-    if (!formData.firstName.trim()) {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate required common fields
+    if (!formData.firstName?.trim()) {
       newErrors.firstName = 'First name is required';
     }
-
-    if (!formData.lastName.trim()) {
+    if (!formData.lastName?.trim()) {
       newErrors.lastName = 'Last name is required';
     }
-
     if (formData.phone && !/^\+?[\d\s-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
+    }
+
+    // Validate emergency contact if it exists
+    if (formData.emergencyContact) {
+      if (!formData.emergencyContact.name?.trim()) {
+        newErrors['emergencyContact.name'] = 'Contact name is required';
+      }
+      if (!formData.emergencyContact.phone?.trim()) {
+        newErrors['emergencyContact.phone'] = 'Contact phone is required';
+      }
+      if (!formData.emergencyContact.relation?.trim()) {
+        newErrors['emergencyContact.relation'] = 'Relationship is required';
+      }
     }
 
     setErrors(newErrors);
@@ -109,16 +195,98 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
     }
 
     try {
-      const updateData: any = {};
+      if (isPatient) {
+        // For patients, update everything via /patients/me
+        const updateData: any = {};
 
-      if (formData.firstName) updateData.firstName = formData.firstName.trim();
-      if (formData.lastName) updateData.lastName = formData.lastName.trim();
-      if (formData.phone !== undefined)
-        updateData.phone = formData.phone.trim() || null;
-      if (formData.profilePicture)
-        updateData.profilePicture = formData.profilePicture;
+        // Common fields
+        if (formData.firstName)
+          updateData.firstName = formData.firstName.trim();
+        if (formData.lastName)
+          updateData.lastName = formData.lastName.trim();
+        if (formData.phone !== undefined)
+          updateData.phone = formData.phone.trim() || null;
+        if (formData.profilePicture)
+          updateData.profilePicture = formData.profilePicture;
 
-      await updateProfile(updateData).unwrap();
+        // Profile fields
+        if (formData.dateOfBirth) {
+          updateData.dateOfBirth = formData.dateOfBirth.toISOString();
+        }
+        if (formData.gender) updateData.gender = formData.gender;
+
+        // Patient-specific fields
+        if (formData.bloodType) updateData.bloodType = formData.bloodType;
+        if (formData.allergies) {
+          updateData.allergies = formData.allergies
+            .split(',')
+            .map((a: string) => a.trim())
+            .filter((a: string) => a.length > 0);
+        }
+        if (formData.chronicConditions) {
+          updateData.chronicConditions = formData.chronicConditions
+            .split(',')
+            .map((c: string) => c.trim())
+            .filter((c: string) => c.length > 0);
+        }
+        if (formData.medicalRecordNumber)
+          updateData.medicalRecordNumber = formData.medicalRecordNumber;
+        if (formData.insuranceProvider)
+          updateData.insuranceProvider = formData.insuranceProvider;
+        if (formData.insurancePolicyNumber)
+          updateData.insurancePolicyNumber = formData.insurancePolicyNumber;
+        if (formData.emergencyContact) {
+          updateData.emergencyContact = {
+            name: formData.emergencyContact.name?.trim(),
+            phone: formData.emergencyContact.phone?.trim(),
+            relation: formData.emergencyContact.relation?.trim(),
+          };
+        }
+
+        await updatePatientProfile(updateData).unwrap();
+      } else {
+        // For non-patients, update user fields via /auth/profile and profile fields via /profiles/me
+        const userUpdateData: any = {};
+        const profileUpdateData: any = {};
+
+        // User fields (basic info)
+        if (formData.firstName)
+          userUpdateData.firstName = formData.firstName.trim();
+        if (formData.lastName)
+          userUpdateData.lastName = formData.lastName.trim();
+        if (formData.phone !== undefined)
+          userUpdateData.phone = formData.phone.trim() || null;
+        if (formData.profilePicture)
+          userUpdateData.profilePicture = formData.profilePicture;
+
+        // Profile fields (role-specific)
+        if (formData.dateOfBirth) {
+          profileUpdateData.dateOfBirth =
+            formData.dateOfBirth.toISOString();
+        }
+        if (formData.gender) profileUpdateData.gender = formData.gender;
+
+        // Doctor/Staff fields
+        if (['doctor', 'nurse', 'staff', 'receptionist'].includes(userRole)) {
+          if (formData.specialization)
+            profileUpdateData.specialization = formData.specialization;
+          if (formData.licenseNumber)
+            profileUpdateData.licenseNumber = formData.licenseNumber;
+          if (formData.experience)
+            profileUpdateData.experience = formData.experience;
+        }
+
+        // Update user fields if any
+        if (Object.keys(userUpdateData).length > 0) {
+          await updateAuthProfile(userUpdateData).unwrap();
+        }
+
+        // Update profile fields if any
+        if (Object.keys(profileUpdateData).length > 0) {
+          await updateProfileProfile(profileUpdateData).unwrap();
+        }
+      }
+
       Alert.alert('Success', 'Profile updated successfully');
       onSave?.();
     } catch (error: any) {
@@ -126,6 +294,148 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         'Error',
         error?.data?.message || 'Failed to update profile. Please try again.'
       );
+    }
+  };
+
+  const renderField = (field: any) => {
+    const fieldValue = formData[field.key];
+    const fieldError = errors[field.key];
+
+    switch (field.type) {
+      case 'text':
+      case 'email':
+      case 'phone':
+        return (
+          <Input
+            key={field.key}
+            label={field.label}
+            placeholder={field.placeholder}
+            value={fieldValue || ''}
+            onChangeText={(value) => handleInputChange(field.key, value)}
+            error={fieldError}
+            keyboardType={
+              field.type === 'email'
+                ? 'email-address'
+                : field.type === 'phone'
+                ? 'phone-pad'
+                : 'default'
+            }
+            leftIcon={
+              field.icon ? (
+                <MaterialIcons
+                  name={field.icon as any}
+                  size={20}
+                  color={NeutralColors.gray400}
+                />
+              ) : undefined
+            }
+            helperText={field.helperText}
+          />
+        );
+
+      case 'date':
+        return (
+          <Input
+            key={field.key}
+            label={field.label}
+            placeholder={field.placeholder || 'YYYY-MM-DD'}
+            value={
+              fieldValue
+                ? new Date(fieldValue).toISOString().split('T')[0]
+                : ''
+            }
+            onChangeText={(value) => {
+              // Parse date string to Date object
+              if (value) {
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                  handleInputChange(field.key, date);
+                }
+              }
+            }}
+            error={fieldError}
+            keyboardType="default"
+            leftIcon={
+              field.icon ? (
+                <MaterialIcons
+                  name={field.icon as any}
+                  size={20}
+                  color={NeutralColors.gray400}
+                />
+              ) : undefined
+            }
+            helperText={field.helperText || 'Format: YYYY-MM-DD'}
+          />
+        );
+
+      case 'select':
+        return (
+          <Select
+            key={field.key}
+            label={field.label}
+            value={fieldValue || ''}
+            options={field.options || []}
+            onValueChange={(value) => handleInputChange(field.key, value)}
+            placeholder={field.placeholder}
+            error={fieldError}
+            helperText={field.helperText}
+          />
+        );
+
+      case 'multiselect':
+        return (
+          <Input
+            key={field.key}
+            label={field.label}
+            placeholder={field.placeholder}
+            value={fieldValue || ''}
+            onChangeText={(value) => handleInputChange(field.key, value)}
+            error={fieldError}
+            helperText={field.helperText || 'Separate items with commas'}
+            leftIcon={
+              field.icon ? (
+                <MaterialIcons
+                  name={field.icon as any}
+                  size={20}
+                  color={NeutralColors.gray400}
+                />
+              ) : undefined
+            }
+          />
+        );
+
+      case 'object':
+        return (
+          <Card key={field.key} style={styles.nestedCard}>
+            <ThemedText style={styles.sectionTitle}>{field.label}</ThemedText>
+            {field.fields?.map((nestedField: any) => (
+              <Input
+                key={nestedField.key}
+                label={nestedField.label}
+                placeholder={nestedField.placeholder}
+                value={
+                  formData[field.key]?.[nestedField.key] || ''
+                }
+                onChangeText={(value) =>
+                  handleNestedInputChange(field.key, nestedField.key, value)
+                }
+                error={errors[`${field.key}.${nestedField.key}`]}
+                leftIcon={
+                  nestedField.icon ? (
+                    <MaterialIcons
+                      name={nestedField.icon as any}
+                      size={20}
+                      color={NeutralColors.gray400}
+                    />
+                  ) : undefined
+                }
+              />
+            ))}
+          </Card>
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -146,7 +456,6 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-
       {/* Profile Picture Section */}
       <Card style={styles.avatarCard}>
         <ThemedView style={styles.avatarSection}>
@@ -166,74 +475,32 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         </ThemedView>
       </Card>
 
-      {/* Form Card */}
-      <Card style={styles.formCard}>
-        <ThemedText style={styles.sectionTitle}>
-          Personal Information
-        </ThemedText>
-
-        {/* First Name */}
-        <Input
-          label="First Name"
-          placeholder="Enter your first name"
-          value={formData.firstName}
-          onChangeText={(value) => handleInputChange('firstName', value)}
-          error={errors.firstName}
-          leftIcon={
-            <MaterialIcons
-              name="person"
-              size={20}
-              color={NeutralColors.gray400}
-            />
-          }
-        />
-
-        {/* Last Name */}
-        <Input
-          label="Last Name"
-          placeholder="Enter your last name"
-          value={formData.lastName}
-          onChangeText={(value) => handleInputChange('lastName', value)}
-          error={errors.lastName}
-          leftIcon={
-            <MaterialIcons
-              name="person-outline"
-              size={20}
-              color={NeutralColors.gray400}
-            />
-          }
-        />
-
-        {/* Phone */}
-        <Input
-          label="Phone Number"
-          placeholder="Enter your phone number"
-          value={formData.phone}
-          onChangeText={(value) => handleInputChange('phone', value)}
-          error={errors.phone}
-          keyboardType="phone-pad"
-          leftIcon={
-            <MaterialIcons
-              name="phone"
-              size={20}
-              color={NeutralColors.gray400}
-            />
-          }
-        />
-
-        {/* Profile Picture Upload */}
-        <FileUploadInput
-          label="Profile Picture"
-          value={formData.profilePicture}
-          onUploadSuccess={(url) => {
-            handleInputChange('profilePicture', url);
-          }}
-          onUploadError={(error) => {
-            Alert.alert('Upload Error', error);
-          }}
-          helperText="Upload an image from your device"
-        />
-      </Card>
+      {/* Dynamic Form Sections */}
+      {fieldSections.map((section, sectionIndex) => (
+        <Card key={sectionIndex} style={styles.formCard}>
+          <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
+          {section.fields.map((field) => {
+            // Skip profilePicture as it's handled separately
+            if (field.key === 'profilePicture') {
+              return (
+                <FileUploadInput
+                  key={field.key}
+                  label={field.label}
+                  value={formData.profilePicture || ''}
+                  onUploadSuccess={(url) => {
+                    handleInputChange('profilePicture', url);
+                  }}
+                  onUploadError={(error) => {
+                    Alert.alert('Upload Error', error);
+                  }}
+                  helperText="Upload an image from your device"
+                />
+              );
+            }
+            return renderField(field);
+          })}
+        </Card>
+      ))}
 
       {/* Action Buttons */}
       <ThemedView style={styles.buttonContainer}>
@@ -296,18 +563,51 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: NeutralColors.gray300,
   },
-  avatarHint: {
-    fontSize: FontSizes.xs,
-    color: NeutralColors.gray500,
-    textAlign: 'center',
-  },
   formCard: {
     marginBottom: Spacing.lg,
+  },
+  nestedCard: {
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
   },
   sectionTitle: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.semibold,
     marginBottom: Spacing.md,
+  },
+  fieldContainer: {
+    marginBottom: Spacing.md,
+  },
+  label: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semibold,
+    marginBottom: Spacing.xs,
+  },
+  required: {
+    color: StatusColors.error,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: NeutralColors.gray300,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    minHeight: 48,
+    gap: Spacing.sm,
+  },
+  datePickerButtonError: {
+    borderColor: StatusColors.error,
+  },
+  datePickerText: {
+    flex: 1,
+    fontSize: FontSizes.md,
+  },
+  errorText: {
+    color: StatusColors.error,
+    fontSize: FontSizes.xs,
+    marginTop: Spacing.xs,
   },
   buttonContainer: {
     gap: Spacing.md,

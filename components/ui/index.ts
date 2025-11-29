@@ -16,3 +16,6 @@ export type { SearchBarProps } from './SearchBar/SearchBar';
 export { Badge } from './Badge/Badge';
 export type { BadgeProps } from './Badge/Badge';
 
+export { Select } from './Select/Select';
+export type { SelectProps, SelectOption } from './Select/Select';
+

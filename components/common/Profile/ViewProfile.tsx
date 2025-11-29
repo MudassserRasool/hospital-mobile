@@ -1,21 +1,25 @@
 /**
  * View Profile Component
- * Displays user profile information in a beautiful card layout
+ * Role-based profile display with dynamic fields
  */
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
 import {
-    BorderRadius,
-    BrandColors,
-    FontSizes,
-    FontWeights,
-    NeutralColors,
-    Spacing,
+  BorderRadius,
+  BrandColors,
+  FontSizes,
+  FontWeights,
+  NeutralColors,
+  Spacing,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetProfileQuery } from '@/redux/features/auth/authApi';
+import {
+  useGetMyProfileQuery,
+} from '@/redux/features/patient/patientApi';
+import { getFieldSections } from './profileFields.config';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
@@ -26,10 +30,26 @@ interface ViewProfileProps {
 
 const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
   const { user } = useAuth();
-  const { data: profileData, isLoading } = useGetProfileQuery(undefined, {
-    skip: !user,
+  const userRole = user?.role || 'patient';
+  const isPatient = userRole === 'patient';
+
+  // Use patient API for patients, auth API for others
+  const {
+    data: patientProfileData,
+    isLoading: isLoadingPatient,
+  } = useGetMyProfileQuery(undefined, {
+    skip: !isPatient || !user,
   });
 
+  const {
+    data: authProfileData,
+    isLoading: isLoadingAuth,
+  } = useGetProfileQuery(undefined, {
+    skip: isPatient || !user,
+  });
+
+  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
+  const profileData = isPatient ? patientProfileData : authProfileData;
   const userData = profileData?.data || profileData || user;
 
   if (isLoading) {
@@ -42,12 +62,26 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
 
   const displayName =
     userData?.name ||
+    userData?.firstName ||
+    userData?.userId?.firstName ||
     `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() ||
     'User';
-  const displayEmail = userData?.email || 'Not provided';
-  const displayPhone = userData?.phone || 'Not provided';
+  const displayLastName = userData?.lastName || userData?.userId?.lastName || '';
+  const fullName = displayLastName
+    ? `${displayName} ${displayLastName}`.trim()
+    : displayName;
+  const displayEmail =
+    userData?.email || userData?.userId?.email || 'Not provided';
+  const displayPhone =
+    userData?.phone ||
+    userData?.userId?.phone ||
+    userData?.phone ||
+    'Not provided';
   const displayRole = userData?.role || '';
-  const displayAvatar = userData?.profilePicture || null;
+  const displayAvatar =
+    userData?.profilePicture ||
+    userData?.userId?.profilePicture ||
+    null;
 
   const getRoleDisplayName = (role: string) => {
     if (!role || role.trim() === '') {
@@ -81,6 +115,54 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
     return iconMap[role] || 'person';
   };
 
+  const formatDate = (date: string | Date | undefined) => {
+    if (!date) return 'Not provided';
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString();
+    } catch {
+      return 'Not provided';
+    }
+  };
+
+  const formatArray = (arr: string[] | undefined) => {
+    if (!arr || arr.length === 0) return 'None';
+    return arr.join(', ');
+  };
+
+  // Get field sections for current role
+  const fieldSections = getFieldSections(userRole);
+
+  const renderFieldValue = (field: any) => {
+    const fieldKey = field.key;
+    let value: any;
+
+    // Handle nested fields (like emergencyContact)
+    if (fieldKey.includes('.')) {
+      const [parent, child] = fieldKey.split('.');
+      value = userData?.[parent]?.[child];
+    } else {
+      value = userData?.[fieldKey] || userData?.userId?.[fieldKey];
+    }
+
+    if (value === undefined || value === null || value === '') {
+      return 'Not provided';
+    }
+
+    switch (field.type) {
+      case 'date':
+        return formatDate(value);
+      case 'multiselect':
+        return formatArray(Array.isArray(value) ? value : [value]);
+      case 'select':
+        return value;
+      case 'object':
+        return JSON.stringify(value);
+      default:
+        return String(value);
+    }
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -107,7 +189,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
 
           {/* Name and Role */}
           <ThemedView style={styles.nameSection}>
-            <ThemedText style={styles.name}>{displayName}</ThemedText>
+            <ThemedText style={styles.name}>{fullName}</ThemedText>
             <ThemedView style={styles.roleContainer}>
               <MaterialIcons
                 name={getRoleIcon(displayRole) as any}
@@ -122,97 +204,140 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
         </ThemedView>
       </Card>
 
-      {/* Profile Information Card */}
-      <Card style={styles.infoCard}>
-        <ThemedText style={styles.sectionTitle}>Profile Information</ThemedText>
+      {/* Dynamic Profile Sections */}
+      {fieldSections.map((section, sectionIndex) => {
+        // Filter fields that have values or are always shown
+        const fieldsToShow = section.fields.filter((field) => {
+          // Always show common fields
+          if (['firstName', 'lastName', 'phone', 'email'].includes(field.key)) {
+            return true;
+          }
+          // Show field if it has a value
+          const value = userData?.[field.key] || userData?.userId?.[field.key];
+          return value !== undefined && value !== null && value !== '';
+        });
 
-        {/* Email */}
-        <ThemedView style={styles.infoRow}>
-          <ThemedView style={styles.infoIconContainer}>
-            <MaterialIcons name="email" size={20} color={BrandColors.primary} />
-          </ThemedView>
-          <ThemedView style={styles.infoContent}>
-            <ThemedText style={styles.infoLabel}>Email</ThemedText>
-            <ThemedText style={styles.infoValue}>{displayEmail}</ThemedText>
-          </ThemedView>
-        </ThemedView>
+        if (fieldsToShow.length === 0) {
+          return null;
+        }
 
-        {/* Phone */}
-        <ThemedView style={[styles.infoRow, styles.infoRowLast]}>
-          <ThemedView style={styles.infoIconContainer}>
-            <MaterialIcons name="phone" size={20} color={BrandColors.primary} />
-          </ThemedView>
-          <ThemedView style={styles.infoContent}>
-            <ThemedText style={styles.infoLabel}>Phone</ThemedText>
-            <ThemedText style={styles.infoValue}>{displayPhone}</ThemedText>
-          </ThemedView>
-        </ThemedView>
-      </Card>
+        return (
+          <Card key={sectionIndex} style={styles.infoCard}>
+            <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
 
-      {/* Additional Info Card (if available) */}
-      {(userData?.specialization ||
-        userData?.department ||
-        userData?.employeeId) && (
-        <Card style={styles.infoCard}>
-          <ThemedText style={styles.sectionTitle}>
-            Additional Information
-          </ThemedText>
+            {fieldsToShow.map((field, fieldIndex) => {
+              // Skip profilePicture as it's shown in header
+              if (field.key === 'profilePicture') {
+                return null;
+              }
 
-          {userData?.specialization && (
-            <ThemedView style={styles.infoRow}>
-              <ThemedView style={styles.infoIconContainer}>
-                <MaterialIcons
-                  name="medical-services"
-                  size={20}
-                  color={BrandColors.primary}
-                />
-              </ThemedView>
-              <ThemedView style={styles.infoContent}>
-                <ThemedText style={styles.infoLabel}>Specialization</ThemedText>
-                <ThemedText style={styles.infoValue}>
-                  {userData.specialization}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-          )}
+              // Handle email separately (not in field config)
+              if (field.key === 'email') {
+                return (
+                  <ThemedView
+                    key={field.key}
+                    style={[
+                      styles.infoRow,
+                      fieldIndex === fieldsToShow.length - 1 &&
+                        styles.infoRowLast,
+                    ]}
+                  >
+                    <ThemedView style={styles.infoIconContainer}>
+                      <MaterialIcons
+                        name="email"
+                        size={20}
+                        color={BrandColors.primary}
+                      />
+                    </ThemedView>
+                    <ThemedView style={styles.infoContent}>
+                      <ThemedText style={styles.infoLabel}>Email</ThemedText>
+                      <ThemedText style={styles.infoValue}>
+                        {displayEmail}
+                      </ThemedText>
+                    </ThemedView>
+                  </ThemedView>
+                );
+              }
 
-          {userData?.department && (
-            <ThemedView style={styles.infoRow}>
-              <ThemedView style={styles.infoIconContainer}>
-                <MaterialIcons
-                  name="business"
-                  size={20}
-                  color={BrandColors.primary}
-                />
-              </ThemedView>
-              <ThemedView style={styles.infoContent}>
-                <ThemedText style={styles.infoLabel}>Department</ThemedText>
-                <ThemedText style={styles.infoValue}>
-                  {userData.department}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-          )}
+              // Handle nested objects (like emergencyContact)
+              if (field.type === 'object' && field.fields) {
+                const objectValue = userData?.[field.key];
+                if (!objectValue) return null;
 
-          {userData?.employeeId && (
-            <ThemedView style={[styles.infoRow, styles.infoRowLast]}>
-              <ThemedView style={styles.infoIconContainer}>
-                <MaterialIcons
-                  name="badge"
-                  size={20}
-                  color={BrandColors.primary}
-                />
-              </ThemedView>
-              <ThemedView style={styles.infoContent}>
-                <ThemedText style={styles.infoLabel}>Employee ID</ThemedText>
-                <ThemedText style={styles.infoValue}>
-                  {userData.employeeId}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-          )}
-        </Card>
-      )}
+                return (
+                  <ThemedView key={field.key} style={styles.nestedSection}>
+                    <ThemedText style={styles.nestedTitle}>
+                      {field.label}
+                    </ThemedText>
+                    {field.fields.map((nestedField) => {
+                      const nestedValue =
+                        objectValue[nestedField.key] || 'Not provided';
+                      return (
+                        <ThemedView
+                          key={nestedField.key}
+                          style={[
+                            styles.infoRow,
+                            nestedField === field.fields?.[field.fields.length - 1] &&
+                              styles.infoRowLast,
+                          ]}
+                        >
+                          <ThemedView style={styles.infoIconContainer}>
+                            <MaterialIcons
+                              name={
+                                (nestedField.icon as any) || 'info'
+                              }
+                              size={20}
+                              color={BrandColors.primary}
+                            />
+                          </ThemedView>
+                          <ThemedView style={styles.infoContent}>
+                            <ThemedText style={styles.infoLabel}>
+                              {nestedField.label}
+                            </ThemedText>
+                            <ThemedText style={styles.infoValue}>
+                              {nestedValue}
+                            </ThemedText>
+                          </ThemedView>
+                        </ThemedView>
+                      );
+                    })}
+                  </ThemedView>
+                );
+              }
+
+              const fieldValue = renderFieldValue(field);
+              const fieldIcon = field.icon || 'info';
+
+              return (
+                <ThemedView
+                  key={field.key}
+                  style={[
+                    styles.infoRow,
+                    fieldIndex === fieldsToShow.length - 1 &&
+                      styles.infoRowLast,
+                  ]}
+                >
+                  <ThemedView style={styles.infoIconContainer}>
+                    <MaterialIcons
+                      name={fieldIcon as any}
+                      size={20}
+                      color={BrandColors.primary}
+                    />
+                  </ThemedView>
+                  <ThemedView style={styles.infoContent}>
+                    <ThemedText style={styles.infoLabel}>
+                      {field.label}
+                    </ThemedText>
+                    <ThemedText style={styles.infoValue}>
+                      {fieldValue}
+                    </ThemedText>
+                  </ThemedView>
+                </ThemedView>
+              );
+            })}
+          </Card>
+        );
+      })}
 
       {/* Edit Button */}
       {onEditPress && (
@@ -298,6 +423,18 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.semibold,
     marginBottom: Spacing.md,
+  },
+  nestedSection: {
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: NeutralColors.gray200,
+  },
+  nestedTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.semibold,
+    marginBottom: Spacing.sm,
+    color: BrandColors.primary,
   },
   infoRow: {
     flexDirection: 'row',
