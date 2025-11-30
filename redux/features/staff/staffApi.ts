@@ -76,8 +76,17 @@ export const staffApi = apiSlice.injectEndpoints({
 
     // Profile
     getMyProfile: builder.query({
-      query: () => '/auth/profile',
+      query: () => '/staff/me',
       providesTags: ['User'],
+    }),
+
+    updateMyProfile: builder.mutation({
+      query: (data) => ({
+        url: '/staff/me',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
     }),
 
     // Schedule (for doctors/nurses)
@@ -125,6 +134,7 @@ export const {
   useGetMyLeaveBalanceQuery,
   useCancelLeaveRequestMutation,
   useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
   useGetMyScheduleQuery,
   useGetMyPatientAppointmentsQuery,
   useCheckInPatientMutation,

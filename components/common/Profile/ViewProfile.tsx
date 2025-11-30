@@ -7,18 +7,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, Card } from '@/components/ui';
 import {
-  BorderRadius,
-  BrandColors,
-  FontSizes,
-  FontWeights,
-  NeutralColors,
-  Spacing,
+    BorderRadius,
+    BrandColors,
+    FontSizes,
+    FontWeights,
+    NeutralColors,
+    Spacing,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetProfileQuery } from '@/redux/features/auth/authApi';
-import {
-  useGetMyProfileQuery,
-} from '@/redux/features/patient/patientApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
@@ -26,30 +22,19 @@ import { getFieldSections } from './profileFields.config';
 
 interface ViewProfileProps {
   onEditPress?: () => void;
+  profileData: any;
+  isLoading: boolean;
+  role: string;
 }
 
-const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
+const ViewProfile: React.FC<ViewProfileProps> = ({
+  onEditPress,
+  profileData,
+  isLoading,
+  role,
+}) => {
   const { user } = useAuth();
-  const userRole = user?.role || 'patient';
-  const isPatient = userRole === 'patient';
-
-  // Use patient API for patients, auth API for others
-  const {
-    data: patientProfileData,
-    isLoading: isLoadingPatient,
-  } = useGetMyProfileQuery(undefined, {
-    skip: !isPatient || !user,
-  });
-
-  const {
-    data: authProfileData,
-    isLoading: isLoadingAuth,
-  } = useGetProfileQuery(undefined, {
-    skip: isPatient || !user,
-  });
-
-  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
-  const profileData = isPatient ? patientProfileData : authProfileData;
+  const userRole = role || user?.role || 'patient';
   const userData = profileData?.data || profileData || user;
 
   if (isLoading) {
@@ -126,7 +111,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
   };
 
   // Get field sections for current role
-  const fieldSections = getFieldSections(userRole);
+  const fieldSections = getFieldSections(role || userRole);
 
   const renderFieldValue = (field: any) => {
     const fieldKey = field.key;

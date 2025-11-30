@@ -16,17 +16,6 @@ import {
   StatusColors,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  useGetProfileQuery,
-  useUpdateProfileMutation,
-} from '@/redux/features/auth/authApi';
-import {
-  useGetMyProfileQuery,
-  useUpdateMyProfileMutation,
-} from '@/redux/features/patient/patientApi';
-import {
-  useUpdateProfileMutation as useUpdateProfileProfileMutation,
-} from '@/redux/features/profiles/profilesApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -42,47 +31,28 @@ import { getFieldSections } from './profileFields.config';
 interface EditProfileProps {
   onCancel?: () => void;
   onSave?: () => void;
+  profileData: any;
+  isLoading: boolean;
+  updateProfile: (data: any) => Promise<any>;
+  isUpdating: boolean;
+  role: string;
 }
 
-const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
+const EditProfile: React.FC<EditProfileProps> = ({
+  onCancel,
+  onSave,
+  profileData,
+  isLoading,
+  updateProfile,
+  isUpdating,
+  role,
+}) => {
   const { user } = useAuth();
-  const userRole = user?.role || 'patient';
-  const isPatient = userRole === 'patient';
-
-  // Use patient API for patients, auth API for others
-  const {
-    data: patientProfileData,
-    isLoading: isLoadingPatient,
-    refetch: refetchPatientProfile,
-  } = useGetMyProfileQuery(undefined, {
-    skip: !isPatient || !user,
-  });
-
-  const {
-    data: authProfileData,
-    isLoading: isLoadingAuth,
-    refetch: refetchAuthProfile,
-  } = useGetProfileQuery(undefined, {
-    skip: isPatient || !user,
-  });
-
-  const [updatePatientProfile, { isLoading: isUpdatingPatient }] =
-    useUpdateMyProfileMutation();
-  const [updateAuthProfile, { isLoading: isUpdatingAuth }] =
-    useUpdateProfileMutation();
-  const [updateProfileProfile, { isLoading: isUpdatingProfile }] =
-    useUpdateProfileProfileMutation();
-
-  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
-  const isUpdating =
-    isPatient
-      ? isUpdatingPatient
-      : isUpdatingAuth || isUpdatingProfile;
-  const profileData = isPatient ? patientProfileData : authProfileData;
+  const userRole = role || user?.role || 'patient';
   const userData = profileData?.data || profileData || user;
 
   // Get field sections for current role
-  const fieldSections = getFieldSections(userRole);
+  const fieldSections = getFieldSections(role || userRole);
 
   // Initialize form data with all possible fields
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -197,27 +167,27 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
     }
 
     try {
-      if (isPatient) {
-        // For patients, update everything via /patients/me
-        const updateData: any = {};
+      // Prepare update data based on role
+      const updateData: any = {};
 
-        // Common fields
-        if (formData.firstName)
-          updateData.firstName = formData.firstName.trim();
-        if (formData.lastName)
-          updateData.lastName = formData.lastName.trim();
-        if (formData.phone !== undefined)
-          updateData.phone = formData.phone.trim() || null;
-        if (formData.profilePicture)
-          updateData.profilePicture = formData.profilePicture;
+      // Common fields
+      if (formData.firstName)
+        updateData.firstName = formData.firstName.trim();
+      if (formData.lastName)
+        updateData.lastName = formData.lastName.trim();
+      if (formData.phone !== undefined)
+        updateData.phone = formData.phone.trim() || null;
+      if (formData.profilePicture)
+        updateData.profilePicture = formData.profilePicture;
 
-        // Profile fields
-        if (formData.dateOfBirth) {
-          updateData.dateOfBirth = formData.dateOfBirth.toISOString();
-        }
-        if (formData.gender) updateData.gender = formData.gender;
+      // Profile fields
+      if (formData.dateOfBirth) {
+        updateData.dateOfBirth = formData.dateOfBirth.toISOString();
+      }
+      if (formData.gender) updateData.gender = formData.gender;
 
-        // Patient-specific fields
+      // Patient-specific fields
+      if (userRole === 'patient') {
         if (formData.bloodType) updateData.bloodType = formData.bloodType;
         if (formData.allergies) {
           updateData.allergies = formData.allergies
@@ -244,55 +214,20 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
             relation: formData.emergencyContact.relation?.trim(),
           };
         }
-
-        await updatePatientProfile(updateData).unwrap();
-        // Refetch patient profile data
-        await refetchPatientProfile();
-      } else {
-        // For non-patients, update user fields via /auth/profile and profile fields via /profiles/me
-        const userUpdateData: any = {};
-        const profileUpdateData: any = {};
-
-        // User fields (basic info)
-        if (formData.firstName)
-          userUpdateData.firstName = formData.firstName.trim();
-        if (formData.lastName)
-          userUpdateData.lastName = formData.lastName.trim();
-        if (formData.phone !== undefined)
-          userUpdateData.phone = formData.phone.trim() || null;
-        if (formData.profilePicture)
-          userUpdateData.profilePicture = formData.profilePicture;
-
-        // Profile fields (role-specific)
-        if (formData.dateOfBirth) {
-          profileUpdateData.dateOfBirth =
-            formData.dateOfBirth.toISOString();
-        }
-        if (formData.gender) profileUpdateData.gender = formData.gender;
-
-        // Doctor/Staff fields
-        if (['doctor', 'nurse', 'staff', 'receptionist'].includes(userRole)) {
-          if (formData.specialization)
-            profileUpdateData.specialization = formData.specialization;
-          if (formData.licenseNumber)
-            profileUpdateData.licenseNumber = formData.licenseNumber;
-          if (formData.experience)
-            profileUpdateData.experience = formData.experience;
-        }
-
-        // Update user fields if any
-        if (Object.keys(userUpdateData).length > 0) {
-          await updateAuthProfile(userUpdateData).unwrap();
-        }
-
-        // Update profile fields if any
-        if (Object.keys(profileUpdateData).length > 0) {
-          await updateProfileProfile(profileUpdateData).unwrap();
-        }
-
-        // Refetch auth profile data
-        await refetchAuthProfile();
       }
+
+      // Staff/Doctor/Owner fields
+      if (['doctor', 'nurse', 'staff', 'receptionist', 'owner'].includes(userRole)) {
+        if (formData.specialization)
+          updateData.specialization = formData.specialization;
+        if (formData.licenseNumber)
+          updateData.licenseNumber = formData.licenseNumber;
+        if (formData.experience)
+          updateData.experience = formData.experience;
+      }
+
+      // Call the update function passed as prop
+      await updateProfile(updateData);
 
       Alert.alert('Success', 'Profile updated successfully');
       onSave?.();

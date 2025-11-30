@@ -15,7 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
+  TouchableOpacity
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { styles } from './login.style';
@@ -90,19 +90,18 @@ export default function LoginScreen() {
           text1: 'Login Successful',
           text2: 'Welcome back!',
         });
-
+        // window.alert(response.user.role);
         // Navigate based on role
         setTimeout(() => {
+          
           if (response.user.role === ROLES.PATIENT) {
             router.replace(PATIENT_ROUTES.DASHBOARD);
           } else if (response.user.role === ROLES.STAFF) {
             router.replace(STAFF_ROUTES.DASHBOARD);
           } else if (response.user.role === ROLES.OWNER) {
             router.replace(OWNER_ROUTES.DASHBOARD);
-          } else {
-            router.replace(PATIENT_ROUTES.DASHBOARD);
           }
-        }, 500);
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Login error:', error);

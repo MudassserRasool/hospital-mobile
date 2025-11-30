@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
-  const { isAuthenticated, role, checkAuthStatus } = useAuth();
+  const { isAuthenticated, role ="patient", checkAuthStatus } = useAuth();
 
   useEffect(() => {
     const init = async () => {
@@ -28,7 +28,7 @@ export default function Index() {
         router.replace(AUTH_ROUTES.LOGIN);
         return;
       }
-      console.log('role', role);
+      console.log('role----', role);
       // Redirect based on role
       if (role === ROLES.PATIENT) {
         router.replace(PATIENT_ROUTES.DASHBOARD);
