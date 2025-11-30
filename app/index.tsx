@@ -12,12 +12,14 @@ import {
   STAFF_ROUTES,
 } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
-  const { isAuthenticated, role, checkAuthStatus } = useAuth();
+  const { role, checkAuthStatus } = useAuth();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
     const init = async () => {
@@ -28,21 +30,55 @@ export default function Index() {
         router.replace(AUTH_ROUTES.LOGIN);
         return;
       }
-      console.log('role', role);
-      // Redirect based on role
-      if (role === ROLES.PATIENT) {
-        router.replace(PATIENT_ROUTES.DASHBOARD);
-      } else if (role === ROLES.STAFF) {
-        router.replace(STAFF_ROUTES.DASHBOARD);
-      } else if (role === ROLES.OWNER) {
-        router.replace(OWNER_ROUTES.DASHBOARD);
+
+      // Get role directly from AsyncStorage since Redux state might not update immediately
+      const storedUser = await AsyncStorage.getItem('@hospital_auth_user');
+      
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        const userRole = userData.role;
+        
+        console.log('role', userRole);
+        
+        if (hasRedirected.current) return;
+        hasRedirected.current = true;
+        
+        // Redirect based on role
+        if (userRole === ROLES.PATIENT) {
+          router.replace(PATIENT_ROUTES.DASHBOARD);
+        } else if (userRole === ROLES.STAFF) {
+          router.replace(STAFF_ROUTES.DASHBOARD);
+        } else if (userRole === ROLES.OWNER) {
+          router.replace(OWNER_ROUTES.DASHBOARD);
+        } else {
+          router.replace(AUTH_ROUTES.LOGIN);
+        }
       } else {
         router.replace(AUTH_ROUTES.LOGIN);
       }
     };
 
     init();
-  }, []);
+  }, [checkAuthStatus]);
+
+  // Fallback: Watch for role changes in Redux state (in case AsyncStorage approach doesn't work)
+  useEffect(() => {
+    if (hasRedirected.current || !role) return;
+
+    hasRedirected.current = true;
+    console.log('role from Redux', role);
+
+    // Redirect based on role
+    if (role === ROLES.PATIENT) {
+      router.replace(PATIENT_ROUTES.DASHBOARD);
+    } else if (role === ROLES.STAFF) {
+      router.replace(STAFF_ROUTES.DASHBOARD);
+    } else if (role === ROLES.OWNER) {
+      router.replace(OWNER_ROUTES.DASHBOARD);
+    } else {
+      router.replace(AUTH_ROUTES.LOGIN);
+    }
+  }, [role]);
 
   return (
     <ThemedView

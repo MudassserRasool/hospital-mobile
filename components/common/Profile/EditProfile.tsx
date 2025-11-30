@@ -16,17 +16,6 @@ import {
   StatusColors,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  useGetProfileQuery,
-  useUpdateProfileMutation,
-} from '@/redux/features/auth/authApi';
-import {
-  useGetMyProfileQuery,
-  useUpdateMyProfileMutation,
-} from '@/redux/features/patient/patientApi';
-import {
-  useUpdateProfileMutation as useUpdateProfileProfileMutation,
-} from '@/redux/features/profiles/profilesApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -40,45 +29,28 @@ import { getFieldSections } from './profileFields.config';
 // Date picker will be handled via text input with date keyboard
 
 interface EditProfileProps {
+  profileData?: any;
+  isLoading?: boolean;
+  isUpdating?: boolean;
+  onUpdateProfile?: (updateData: any) => Promise<{ success: boolean; error?: string }>;
+  refetch?: () => void;
   onCancel?: () => void;
   onSave?: () => void;
 }
 
-const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
+const EditProfile: React.FC<EditProfileProps> = ({
+  profileData,
+  isLoading = false,
+  isUpdating = false,
+  onUpdateProfile,
+  refetch,
+  onCancel,
+  onSave,
+}) => {
   const { user } = useAuth();
   const userRole = user?.role || 'patient';
   const isPatient = userRole === 'patient';
 
-  // Use patient API for patients, auth API for others
-  const {
-    data: patientProfileData,
-    isLoading: isLoadingPatient,
-    refetch: refetchPatientProfile,
-  } = useGetMyProfileQuery(undefined, {
-    skip: !isPatient || !user,
-  });
-
-  const {
-    data: authProfileData,
-    isLoading: isLoadingAuth,
-    refetch: refetchAuthProfile,
-  } = useGetProfileQuery(undefined, {
-    skip: isPatient || !user,
-  });
-
-  const [updatePatientProfile, { isLoading: isUpdatingPatient }] =
-    useUpdateMyProfileMutation();
-  const [updateAuthProfile, { isLoading: isUpdatingAuth }] =
-    useUpdateProfileMutation();
-  const [updateProfileProfile, { isLoading: isUpdatingProfile }] =
-    useUpdateProfileProfileMutation();
-
-  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
-  const isUpdating =
-    isPatient
-      ? isUpdatingPatient
-      : isUpdatingAuth || isUpdatingProfile;
-  const profileData = isPatient ? patientProfileData : authProfileData;
   const userData = profileData?.data || profileData || user;
 
   // Get field sections for current role
@@ -196,28 +168,33 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
       return;
     }
 
+    if (!onUpdateProfile) {
+      Alert.alert('Error', 'Update function not available');
+      return;
+    }
+
     try {
+      // Prepare update data based on role
+      const updateData: any = {};
+
+      // Common fields
+      if (formData.firstName)
+        updateData.firstName = formData.firstName.trim();
+      if (formData.lastName)
+        updateData.lastName = formData.lastName.trim();
+      if (formData.phone !== undefined)
+        updateData.phone = formData.phone.trim() || null;
+      if (formData.profilePicture)
+        updateData.profilePicture = formData.profilePicture;
+
+      // Profile fields
+      if (formData.dateOfBirth) {
+        updateData.dateOfBirth = formData.dateOfBirth.toISOString();
+      }
+      if (formData.gender) updateData.gender = formData.gender;
+
+      // Patient-specific fields
       if (isPatient) {
-        // For patients, update everything via /patients/me
-        const updateData: any = {};
-
-        // Common fields
-        if (formData.firstName)
-          updateData.firstName = formData.firstName.trim();
-        if (formData.lastName)
-          updateData.lastName = formData.lastName.trim();
-        if (formData.phone !== undefined)
-          updateData.phone = formData.phone.trim() || null;
-        if (formData.profilePicture)
-          updateData.profilePicture = formData.profilePicture;
-
-        // Profile fields
-        if (formData.dateOfBirth) {
-          updateData.dateOfBirth = formData.dateOfBirth.toISOString();
-        }
-        if (formData.gender) updateData.gender = formData.gender;
-
-        // Patient-specific fields
         if (formData.bloodType) updateData.bloodType = formData.bloodType;
         if (formData.allergies) {
           updateData.allergies = formData.allergies
@@ -244,62 +221,33 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
             relation: formData.emergencyContact.relation?.trim(),
           };
         }
-
-        await updatePatientProfile(updateData).unwrap();
-        // Refetch patient profile data
-        await refetchPatientProfile();
       } else {
-        // For non-patients, update user fields via /auth/profile and profile fields via /profiles/me
-        const userUpdateData: any = {};
-        const profileUpdateData: any = {};
-
-        // User fields (basic info)
-        if (formData.firstName)
-          userUpdateData.firstName = formData.firstName.trim();
-        if (formData.lastName)
-          userUpdateData.lastName = formData.lastName.trim();
-        if (formData.phone !== undefined)
-          userUpdateData.phone = formData.phone.trim() || null;
-        if (formData.profilePicture)
-          userUpdateData.profilePicture = formData.profilePicture;
-
-        // Profile fields (role-specific)
-        if (formData.dateOfBirth) {
-          profileUpdateData.dateOfBirth =
-            formData.dateOfBirth.toISOString();
-        }
-        if (formData.gender) profileUpdateData.gender = formData.gender;
-
-        // Doctor/Staff fields
+        // Staff/Owner fields
         if (['doctor', 'nurse', 'staff', 'receptionist'].includes(userRole)) {
           if (formData.specialization)
-            profileUpdateData.specialization = formData.specialization;
+            updateData.specialization = formData.specialization;
           if (formData.licenseNumber)
-            profileUpdateData.licenseNumber = formData.licenseNumber;
+            updateData.licenseNumber = formData.licenseNumber;
           if (formData.experience)
-            profileUpdateData.experience = formData.experience;
+            updateData.experience = formData.experience;
         }
-
-        // Update user fields if any
-        if (Object.keys(userUpdateData).length > 0) {
-          await updateAuthProfile(userUpdateData).unwrap();
-        }
-
-        // Update profile fields if any
-        if (Object.keys(profileUpdateData).length > 0) {
-          await updateProfileProfile(profileUpdateData).unwrap();
-        }
-
-        // Refetch auth profile data
-        await refetchAuthProfile();
       }
 
-      Alert.alert('Success', 'Profile updated successfully');
-      onSave?.();
+      const result = await onUpdateProfile(updateData);
+
+      if (result.success) {
+        Alert.alert('Success', 'Profile updated successfully');
+        if (refetch) {
+          await refetch();
+        }
+        onSave?.();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update profile. Please try again.');
+      }
     } catch (error: any) {
       Alert.alert(
         'Error',
-        error?.data?.message || 'Failed to update profile. Please try again.'
+        error?.message || 'Failed to update profile. Please try again.'
       );
     }
   };

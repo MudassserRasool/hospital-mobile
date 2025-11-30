@@ -12,6 +12,15 @@ export const ownerApi = apiSlice.injectEndpoints({
       providesTags: ['User'],
     }),
 
+    updateMyProfile: builder.mutation({
+      query: (data) => ({
+        url: '/owners/me',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
     // Hospital Management
     getHospitalProfile: builder.query({
       query: () => '/owners/hospital',
@@ -170,6 +179,7 @@ export const ownerApi = apiSlice.injectEndpoints({
 
 export const {
   useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
   useGetHospitalProfileQuery,
   useUpdateHospitalProfileMutation,
   useGetHospitalStatsQuery,

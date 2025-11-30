@@ -13,43 +13,30 @@ import {
   FontWeights,
   NeutralColors,
   Spacing,
+  StatusColors,
 } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetProfileQuery } from '@/redux/features/auth/authApi';
-import {
-  useGetMyProfileQuery,
-} from '@/redux/features/patient/patientApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
 import { getFieldSections } from './profileFields.config';
 
 interface ViewProfileProps {
+  profileData?: any;
+  isLoading?: boolean;
   onEditPress?: () => void;
+  onLogout?: () => void;
 }
 
-const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
+const ViewProfile: React.FC<ViewProfileProps> = ({
+  profileData,
+  isLoading = false,
+  onEditPress,
+  onLogout,
+}) => {
   const { user } = useAuth();
   const userRole = user?.role || 'patient';
-  const isPatient = userRole === 'patient';
-
-  // Use patient API for patients, auth API for others
-  const {
-    data: patientProfileData,
-    isLoading: isLoadingPatient,
-  } = useGetMyProfileQuery(undefined, {
-    skip: !isPatient || !user,
-  });
-
-  const {
-    data: authProfileData,
-    isLoading: isLoadingAuth,
-  } = useGetProfileQuery(undefined, {
-    skip: isPatient || !user,
-  });
-
-  const isLoading = isPatient ? isLoadingPatient : isLoadingAuth;
-  const profileData = isPatient ? patientProfileData : authProfileData;
+  
   const userData = profileData?.data || profileData || user;
 
   if (isLoading) {
@@ -182,6 +169,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
             )}
           </ThemedView>
 
+          <ThemedText>{JSON.stringify(profileData)}</ThemedText>
+
           {/* Name and Role */}
           <ThemedView style={styles.nameSection}>
             <ThemedText style={styles.name}>{fullName}</ThemedText>
@@ -229,6 +218,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
                         styles.infoRowLast,
                     ]}
                   >
+                    <ThemedText>{JSON.stringify(profileData)}</ThemedText>
                     <ThemedView style={styles.infoIconContainer}>
                       <MaterialIcons
                         name="email"
@@ -255,6 +245,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
                     <ThemedText style={styles.nestedTitle}>
                       {field.label}
                     </ThemedText>
+                    <ThemedText>{JSON.stringify(profileData)}</ThemedText>
                     {field.fields.map((nestedField) => {
                       const nestedValue =
                         objectValue[nestedField.key] || 'Not provided';
@@ -325,18 +316,32 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ onEditPress }) => {
         );
       })}
 
-      {/* Edit Button */}
-      {onEditPress && (
-        <Button
-          title="Edit Profile"
-          onPress={onEditPress}
-          leftIcon={
-            <MaterialIcons name="edit" size={20} color={NeutralColors.white} />
-          }
-          fullWidth
-          style={styles.editButton}
-        />
-      )}
+      {/* Action Buttons */}
+      <ThemedView style={styles.buttonContainer}>
+        {onEditPress && (
+          <Button
+            title="Edit Profile"
+            onPress={onEditPress}
+            leftIcon={
+              <MaterialIcons name="edit" size={20} color={NeutralColors.white} />
+            }
+            fullWidth
+            style={styles.editButton}
+          />
+        )}
+        {onLogout && (
+          <Button
+            title="Logout"
+            onPress={onLogout}
+            variant="outline"
+            leftIcon={
+              <MaterialIcons name="logout" size={20} color={StatusColors.error} />
+            }
+            fullWidth
+            style={styles.logoutButton}
+          />
+        )}
+      </ThemedView>
     </ScrollView>
   );
 };
@@ -455,7 +460,14 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: FontWeights.medium,
   },
-  editButton: {
+  buttonContainer: {
+    gap: Spacing.md,
     marginTop: Spacing.md,
+  },
+  editButton: {
+    marginBottom: 0,
+  },
+  logoutButton: {
+    marginTop: 0,
   },
 });
