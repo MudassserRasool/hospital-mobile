@@ -53,6 +53,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   const {
     data: patientProfileData,
     isLoading: isLoadingPatient,
+    refetch: refetchPatientProfile,
   } = useGetMyProfileQuery(undefined, {
     skip: !isPatient || !user,
   });
@@ -60,6 +61,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
   const {
     data: authProfileData,
     isLoading: isLoadingAuth,
+    refetch: refetchAuthProfile,
   } = useGetProfileQuery(undefined, {
     skip: isPatient || !user,
   });
@@ -244,6 +246,8 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         }
 
         await updatePatientProfile(updateData).unwrap();
+        // Refetch patient profile data
+        await refetchPatientProfile();
       } else {
         // For non-patients, update user fields via /auth/profile and profile fields via /profiles/me
         const userUpdateData: any = {};
@@ -285,6 +289,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSave }) => {
         if (Object.keys(profileUpdateData).length > 0) {
           await updateProfileProfile(profileUpdateData).unwrap();
         }
+
+        // Refetch auth profile data
+        await refetchAuthProfile();
       }
 
       Alert.alert('Success', 'Profile updated successfully');
